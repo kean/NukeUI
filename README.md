@@ -7,7 +7,7 @@ It uses [Nuke](https://github.com/kean/Nuke) for loading images and has all cust
 The library contains two types:
 
 - `LazyImage` for SwiftUI
-- `LazyImageView` for UIKit, AppKit, and watchOS
+- `LazyImageView` for UIKit and AppKit
 
 Both views have an equivalent sets of APIs.
 
