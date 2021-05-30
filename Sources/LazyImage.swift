@@ -38,7 +38,7 @@ public struct LazyImage: View {
     }
 
     public var body: some View {
-        URLImageViewWrapper(source: $loadedSource, configure: configure)
+        LazyImageViewWrapper(source: $loadedSource, configure: configure)
             .onAppear { loadedSource = source }
     }
 }
@@ -46,7 +46,7 @@ public struct LazyImage: View {
 #warning("add onSuccess/onFailure callbacks")
 
 @available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
-private struct URLImageViewWrapper: UIViewRepresentable {
+private struct LazyImageViewWrapper: UIViewRepresentable {
     @Binding var source: ImageRequestConvertible?
     var configure: ((LazyImageView) -> Void)?
 
