@@ -85,6 +85,8 @@ public final class URLImageView: _PlatformBaseView {
     public lazy var animatedImageView = GIFImageView()
     #endif
 
+    #warning("add callbacks")
+
     #warning("other options like managing priority and auto-retrying")
 
     public override init(frame: CGRect) {

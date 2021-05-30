@@ -2,7 +2,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "URLImage",
+    name: "NukeUI",
     platforms: [
         .macOS(.v10_14),
         .iOS(.v12),
@@ -10,14 +10,14 @@ let package = Package(
         .watchOS(.v5)
     ],
     products: [
-        .library(name: "URLImage", targets: ["URLImage"])
+        .library(name: "NukeUI", targets: ["NukeUI"])
     ],
     dependencies: [
         .package(url: "https://github.com/kean/Nuke.git", .branch("master")),
         .package(url: "https://github.com/kaishin/Gifu", from: "3.0.0")
     ],
     targets: [
-        .target(name: "URLImage", dependencies: [
+        .target(name: "NukeUI", dependencies: [
             .product(name: "Nuke", package: "Nuke"),
             .product(name: "Gifu", package: "Gifu", condition: .when(platforms: [.iOS, .tvOS]))
         ], path: "Sources")
