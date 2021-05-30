@@ -7,11 +7,11 @@ import Nuke
 import SwiftUI
 
 #warning("should it be based on URLImageView?")
-@available(iOS 14.0, tvOS 14.0, watchOS 7.0, macOS 11.0, *)
+@available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
 public struct URLImage: View {
-    private var placeholder: AnyView?
     private let source: ImageRequestConvertible?
-    @StateObject private var model = URLImageViewModel()
+    private var placeholder: AnyView?
+    @State private var loadedSource: ImageRequestConvertible?
     private var configure: ((URLImageView) -> Void)?
 
     public init(source: ImageRequestConvertible?) {
@@ -39,21 +39,16 @@ public struct URLImage: View {
     }
 
     public var body: some View {
-        URLImageViewWrapper(model: model, configure: configure)
-            .onAppear { model.source = source }
+        URLImageViewWrapper(source: $loadedSource, configure: configure)
+            .onAppear { loadedSource = source }
     }
 }
 
 #warning("add onSuccess/onFailure callbacks")
 
-@available(iOS 14.0, tvOS 14.0, watchOS 7.0, macOS 11.0, *)
-private final class URLImageViewModel: ObservableObject {
-    @Published var source: ImageRequestConvertible?
-}
-
-@available(iOS 14.0, tvOS 14.0, watchOS 7.0, macOS 11.0, *)
+@available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
 private struct URLImageViewWrapper: UIViewRepresentable {
-    @ObservedObject var model: URLImageViewModel
+    @Binding var source: ImageRequestConvertible?
     var configure: ((URLImageView) -> Void)?
 
     func makeUIView(context: Context) -> URLImageView {
@@ -63,6 +58,6 @@ private struct URLImageViewWrapper: UIViewRepresentable {
     }
 
     func updateUIView(_ imageView: URLImageView, context: Context) {
-        imageView.load(model.source)
+        imageView.load(source)
     }
 }
