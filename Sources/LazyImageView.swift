@@ -223,7 +223,14 @@ public final class LazyImageView: _PlatformBaseView {
             return
         }
 
-        #warning("TODO: in-memory lookup")
+        // Quick synchronous memory cache lookup.
+        if let image = pipeline.cache[request] {
+            display(image, true, .success)
+            if !image.isPreview { // Final image was downloaded
+                onFinished?(.success(ImageResponse(container: image, cacheType: .memory)))
+                return
+            }
+        }
 
         if let priority = self.priority {
             request.priority = priority
@@ -269,6 +276,7 @@ public final class LazyImageView: _PlatformBaseView {
         self.imageTask = nil
     }
 
+    #warning("do we need response type here?")
     private func display(_ container: Nuke.ImageContainer, _ isFromMemory: Bool, _ response: ImageType) {
         // TODO: Add support for animated transitions and other options
         #if canImport(Gifu)
