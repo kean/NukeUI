@@ -19,35 +19,7 @@ import Gifu
 #warning("how will animated image rendering work?")
 public final class LazyImageView: _PlatformBaseView {
 
-    #if os(macOS)
-    /// An image to be shown while the request is in progress.
-    public var placeholder: NSImage? { didSet { setPlaceholder(placeholder )} }
-    /// A view to be shown while the request is in progress. For example, can be a spinner.
-    public var placeholderView: NSView? { didSet { setPlaceholderView(placeholderView)} }
-
-    public var failureImage: NSImage?
-    #else
-    /// An image to be shown while the request is in progress.
-    public var placeholder: UIImage? { didSet { setPlaceholder(placeholder )} }
-    /// A view to be shown while the request is in progress. For example, can be a spinner.
-    public var placeholderView: UIView? { didSet { setPlaceholderView(placeholderView)} }
-
-    public var failureImage: UIImage?
-    #endif
-
-    #warning("impl")
-    /// `.fill` by default.
-    public var placeholderPosition: SubviewPosition = .fill {
-        didSet {
-            guard oldValue != placeholderPosition, placeholderView != nil else {
-                return
-            }
-            setNeedsUpdateConstraints()
-        }
-    }
-
-    private var placeholderConstraints: [NSLayoutConstraint] = []
-
+    #warning("need this?")
     public enum ImageType {
         case success, placeholder, failure
     }
@@ -76,6 +48,32 @@ public final class LazyImageView: _PlatformBaseView {
     #endif
 
     #warning("other options like managing priority and auto-retrying")
+
+    // MARK: Placeholder
+
+    #if os(macOS)
+    /// An image to be shown while the request is in progress.
+    public var placeholderImage: NSImage? { didSet { setPlaceholderImage(placeholderImage )} }
+
+    /// A view to be shown while the request is in progress. For example, can be a spinner.
+    public var placeholderView: NSView? { didSet { setPlaceholderView(placeholderView)} }
+    #else
+    /// An image to be shown while the request is in progress.
+    public var placeholderImage: UIImage? { didSet { setPlaceholderImage(placeholderImage )} }
+
+    /// A view to be shown while the request is in progress. For example, can be a spinner.
+    public var placeholderView: UIView? { didSet { setPlaceholderView(placeholderView)} }
+    #endif
+
+    /// `.fill` by default.
+    public var placeholderPosition: SubviewPosition = .fill {
+        didSet {
+            guard oldValue != placeholderPosition, placeholderView != nil else { return }
+            setNeedsUpdateConstraints()
+        }
+    }
+
+    private var placeholderConstraints: [NSLayoutConstraint] = []
 
     // MARK: Underlying Views
 
@@ -259,13 +257,14 @@ public final class LazyImageView: _PlatformBaseView {
         case fill
     }
 
-    // MARK: Placeholder
+    // MARK: Private (Placeholder)
 
-    private func setPlaceholder(_ placeholder: _PlatformImage?) {
-        guard let placeholder = placeholder else {
+    private func setPlaceholderImage(_ placeholderImage: _PlatformImage?) {
+        guard let placeholderImage = placeholderImage else {
+            placeholderView = nil
             return
         }
-        placeholderView = _PlatformImageView(image: placeholder)
+        placeholderView = _PlatformImageView(image: placeholderImage)
     }
 
     private func setPlaceholderView(_ view: _PlatformBaseView?) {

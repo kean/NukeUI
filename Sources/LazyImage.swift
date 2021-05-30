@@ -20,15 +20,16 @@ public struct LazyImage: View {
     private var onFinished: ((_ result: Result<ImageResponse, ImagePipeline.Error>) -> Void)?
     private var onImageViewCreated: ((LazyImageView) -> Void)?
 
-
     #warning("content mode")
 
-    // MARK: Managing Image Tasks
+    // MARK: Placeholder
 
     /// Displayed while the image is loading.
     public func placeholder<Placeholder: View>(@ViewBuilder content: () -> Placeholder?) -> Self {
         map { $0.placeholder = AnyView(content()) }
     }
+
+    // MARK: Managing Image Tasks
 
     public func priority(_ priority: ImageRequest.Priority?) -> Self {
         map { $0.priority = priority }
