@@ -91,6 +91,10 @@ public final class LazyImageView: _PlatformBaseView {
     public struct Transition {
         var style: Style
 
+        init(style: Style) {
+            self.style = style
+        }
+
         enum Style { // internal representation
             case fadeIn(parameters: Parameters)
         }
@@ -115,6 +119,13 @@ public final class LazyImageView: _PlatformBaseView {
             Transition(style: .fadeIn(parameters: Parameters(duration: duration)))
         }
         #endif
+
+        @available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
+        init(_ transition: LazyImage.Transition) {
+            switch transition.style {
+            case .fadeIn(let parameters): self = .fadeIn(duration: parameters.duration)
+            }
+        }
     }
 
     // MARK: Underlying Views

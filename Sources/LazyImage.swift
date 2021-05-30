@@ -14,6 +14,7 @@ public struct LazyImage: View {
     // Options
     private var placeholderView: AnyView?
     private var failureView: AnyView?
+    private var transition: Transition?
     private var priority: ImageRequest.Priority?
     private var pipeline: ImagePipeline = .shared
     private var onStarted: ((_ task: ImageTask) -> Void)?
@@ -23,7 +24,7 @@ public struct LazyImage: View {
 
     #warning("how to pass contentMode to the image view?")
 
-    // MARK: Placeholder
+    // MARK: Placeholder View
 
     #warning("this probably needs to be redone in SwiftUI")
 
@@ -32,9 +33,37 @@ public struct LazyImage: View {
         map { $0.placeholderView = AnyView(content()) }
     }
 
+    // MARK: Failure View
+
     /// A view to be shown if the request fails.
     public func failure<Failure: View>(@ViewBuilder _ content: () -> Failure?) -> Self {
         map { $0.failureView = AnyView(content()) }
+    }
+
+    // MARK: Transition
+
+    /// A transition to be run when displaying an image.
+    public func transition(_ transition: Transition?) -> Self {
+        map { $0.transition = transition }
+    }
+
+    /// An animated image transition.
+    public struct Transition {
+        var style: Style
+
+        enum Style { // internal representation
+            case fadeIn(parameters: Parameters)
+        }
+
+        struct Parameters { // internal representation
+            let duration: TimeInterval
+        }
+
+        /// Fade-in transition (cross-fade in case the image view is already
+        /// displaying an image).
+        public static func fadeIn(duration: TimeInterval) -> Transition {
+            Transition(style: .fadeIn(parameters: Parameters(duration: duration)))
+        }
     }
 
     // MARK: Managing Image Tasks
@@ -95,6 +124,7 @@ public struct LazyImage: View {
 
         view.placeholderView = placeholderView.map(toPlatformView)
         view.failureView = failureView.map(toPlatformView)
+        view.transition = transition.map(LazyImageView.Transition.init)
         view.priority = priority
         view.pipeline = pipeline
         view.onStarted = onStarted
