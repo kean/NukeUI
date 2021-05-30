@@ -12,7 +12,28 @@ import UIKit
 
 import SwiftUI
 
-extension UIView {
+#if os(macOS)
+public typealias _PlatformBaseView = NSView
+typealias _PlatformImage = NSImage
+typealias _PlatformImageView = NSImageView
+
+@available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
+typealias _PlatformHostringController<T: View> = NSHostingController<T>
+#else
+public typealias _PlatformBaseView = UIView
+typealias _PlatformImage = UIImage
+typealias _PlatformImageView = UIImageView
+
+@available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
+typealias _PlatformHostringController<T: View> = UIHostingController<T>
+#endif
+
+@available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
+func toPlatformView<T: View>(_ view: T) -> _PlatformBaseView {
+    _PlatformHostringController(rootView: view).view
+}
+
+extension _PlatformBaseView {
     @discardableResult
     func pinToSuperview() -> [NSLayoutConstraint] {
         translatesAutoresizingMaskIntoConstraints = false
@@ -38,23 +59,14 @@ extension UIView {
     }
 }
 
-#if os(macOS)
-public typealias _PlatformBaseView = NSView
-typealias _PlatformImage = NSImage
-typealias _PlatformImageView = NSImageView
-
 @available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
-typealias _PlatformHostringController<T: View> = NSHostingController<T>
-#else
-public typealias _PlatformBaseView = UIView
-typealias _PlatformImage = UIImage
-typealias _PlatformImageView = UIImageView
-
-@available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
-typealias _PlatformHostringController<T: View> = UIHostingController<T>
-#endif
-
-@available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
-func toPlatformView<T: View>(_ view: T) -> _PlatformBaseView {
-    _PlatformHostringController(rootView: view).view
+extension UIView.ContentMode {
+    init(_ contentMode: LazyImage.ContentMode) {
+        switch contentMode {
+        case .aspectFill: self = .scaleAspectFill
+        case .aspectFit: self = .scaleAspectFit
+        case .fill: self = .scaleToFill
+        case .center: self = .center
+        }
+    }
 }

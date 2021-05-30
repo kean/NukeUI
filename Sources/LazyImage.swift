@@ -7,6 +7,11 @@ import Nuke
 import SwiftUI
 
 /// Lazily loads and displays an image with the given source.
+///
+/// Because the view is lazy, the image view doesn't know its size before the
+/// image is downloaded. The user must specify the size for the view and the
+/// image will take all of the available space. By default, it fills the space,
+/// but you can change the content mode.
 @available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
 public struct LazyImage: View {
     private let source: ImageRequestConvertible?
@@ -22,8 +27,21 @@ public struct LazyImage: View {
     private var onProgress: ((_ response: ImageResponse?, _ completed: Int64, _ total: Int64) -> Void)?
     private var onCompletion: ((_ result: Result<ImageResponse, ImagePipeline.Error>) -> Void)?
     private var onImageViewCreated: ((LazyImageView) -> Void)?
+    private var contentMode: ContentMode?
 
-    #warning("how to pass contentMode to the image view?")
+    // MARK: Content Mode
+
+    /// Sets the displayed image content mode.
+    public func contentMode(_ contentMode: ContentMode?) -> Self {
+        map { $0.contentMode = contentMode }
+    }
+
+    public enum ContentMode {
+        case aspectFit
+        case aspectFill
+        case center
+        case fill
+    }
 
     // MARK: Placeholder View
 
@@ -123,6 +141,10 @@ public struct LazyImage: View {
     private func configure(_ view: LazyImageView) {
         onImageViewCreated?(view)
 
+        if let contentMode = contentMode {
+            view.imageView.contentMode = .init(contentMode)
+            view.animatedImageView.contentMode = .init(contentMode)
+        }
         view.placeholderView = placeholderView.map(toPlatformView)
         view.failureView = failureView.map(toPlatformView)
         view.transition = transition.map(LazyImageView.Transition.init)
