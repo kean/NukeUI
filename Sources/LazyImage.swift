@@ -25,8 +25,8 @@ public struct LazyImage: View {
 
     #warning("impl")
     /// Displayed while the image is loading.
-    public func placeholder<Placeholder: View>(_ view: Placeholder?) -> Self {
-        map { $0.placeholder = placeholder }
+    public func placeholder<Placeholder: View>(@ViewBuilder content: () -> Placeholder?) -> Self {
+        map { $0.placeholder = AnyView(content()) }
     }
 
     public func priority(_ priority: ImageRequest.Priority?) -> Self {
