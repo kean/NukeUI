@@ -19,18 +19,17 @@ import Gifu
 #warning("how will animated image rendering work?")
 public final class LazyImageView: _PlatformBaseView {
 
-    #warning("impl + rename?")
     #if os(macOS)
-    /// An image to be displayed during the download.
+    /// An image to be shown while the request is in progress.
     public var placeholder: NSImage? { didSet { setPlaceholder(placeholder )} }
-    /// A view to be displayed during the download. For example, can be a spinner.
+    /// A view to be shown while the request is in progress. For example, can be a spinner.
     public var placeholderView: NSView? { didSet { setPlaceholderView(placeholderView)} }
 
     public var failureImage: NSImage?
     #else
-    /// An image to be displayed during the download.
+    /// An image to be shown while the request is in progress.
     public var placeholder: UIImage? { didSet { setPlaceholder(placeholder )} }
-    /// A view to be displayed during the download. For example, can be a spinner.
+    /// A view to be shown while the request is in progress. For example, can be a spinner.
     public var placeholderView: UIView? { didSet { setPlaceholderView(placeholderView)} }
 
     public var failureImage: UIImage?
@@ -38,36 +37,16 @@ public final class LazyImageView: _PlatformBaseView {
 
     #warning("impl")
     /// `.fill` by default.
-    public var placeholderPosition: SubviewPosition = .fill
-
-    func setPlaceholder(_ placeholder: _PlatformImage?) {
-        guard let placeholder = placeholder else {
-            return
-        }
-        placeholderView = _PlatformImageView(image: placeholder)
-    }
-
-    func setPlaceholderView(_ view: _PlatformBaseView?) {
-        if let previousView = placeholderView {
-            previousView.removeFromSuperview()
-        }
-        if let newView = view {
-            addSubview(newView)
-            switch placeholderPosition {
-            case .center: newView.centerInSuperview()
-            case .fill: newView.pinToSuperview()
+    public var placeholderPosition: SubviewPosition = .fill {
+        didSet {
+            guard oldValue != placeholderPosition, placeholderView != nil else {
+                return
             }
-            #if os(iOS) || os(tvOS)
-            if let spinner = newView as? UIActivityIndicatorView {
-                spinner.startAnimating()
-            }
-            #endif
+            setNeedsUpdateConstraints()
         }
     }
 
-    func refreshPlaceholderPosition() {
-        #warning("TODO + move separarely")
-    }
+    private var placeholderConstraints: [NSLayoutConstraint] = []
 
     public enum ImageType {
         case success, placeholder, failure
@@ -96,11 +75,9 @@ public final class LazyImageView: _PlatformBaseView {
 
     #endif
 
-    /// Current image task.
-    public var imageTask: ImageTask?
+    #warning("other options like managing priority and auto-retrying")
 
-    /// The pipeline to be used for download. `shared` by default.
-    public var pipeline: ImagePipeline = .shared
+    // MARK: Underlying Views
 
     #if os(macOS)
     /// Returns an underlying image view.
@@ -115,14 +92,7 @@ public final class LazyImageView: _PlatformBaseView {
     public lazy var animatedImageView = GIFImageView()
     #endif
 
-    /// Gets called when the request is started.
-    public var onStarted: ((_ task: ImageTask) -> Void)?
-
-    /// Gets called when the request progress is updated.
-    public var onProgress: ((_ response: ImageResponse?, _ completed: Int64, _ total: Int64) -> Void)?
-
-    /// Gets called when the request is completed.
-    public var onFinished: ((_ result: Result<ImageResponse, ImagePipeline.Error>) -> Void)?
+    // MARK: Managing Image Tasks
 
     /// Sets the priority of the image task. The priorit can be changed
     /// dynamically. `nil` by default.
@@ -134,7 +104,24 @@ public final class LazyImageView: _PlatformBaseView {
         }
     }
 
-    #warning("other options like managing priority and auto-retrying")
+    /// Current image task.
+    public var imageTask: ImageTask?
+
+    /// The pipeline to be used for download. `shared` by default.
+    public var pipeline: ImagePipeline = .shared
+
+    // MARK: Callbacks
+
+    /// Gets called when the request is started.
+    public var onStarted: ((_ task: ImageTask) -> Void)?
+
+    /// Gets called when the request progress is updated.
+    public var onProgress: ((_ response: ImageResponse?, _ completed: Int64, _ total: Int64) -> Void)?
+
+    /// Gets called when the request is completed.
+    public var onFinished: ((_ result: Result<ImageResponse, ImagePipeline.Error>) -> Void)?
+
+    // MARK: Initializers
 
     public override init(frame: CGRect) {
         super.init(frame: frame)
@@ -157,6 +144,14 @@ public final class LazyImageView: _PlatformBaseView {
             load(source)
         }
     }
+
+    public override func updateConstraints() {
+        super.updateConstraints()
+
+        updatePlaceholderConstraints()
+    }
+
+    // MARK: Loading
 
     /// Loads an image with the given request.
     private func load(_ request: ImageRequestConvertible?) {
@@ -263,36 +258,39 @@ public final class LazyImageView: _PlatformBaseView {
         /// Fill the superview.
         case fill
     }
-}
 
-// MARK: Helpers
+    // MARK: Placeholder
 
-private extension UIView {
-    func pinToSuperview() {
-        translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            topAnchor.constraint(equalTo: superview!.topAnchor),
-            bottomAnchor.constraint(equalTo: superview!.bottomAnchor),
-            leftAnchor.constraint(equalTo: superview!.leftAnchor),
-            rightAnchor.constraint(equalTo: superview!.rightAnchor)
-        ])
+    private func setPlaceholder(_ placeholder: _PlatformImage?) {
+        guard let placeholder = placeholder else {
+            return
+        }
+        placeholderView = _PlatformImageView(image: placeholder)
     }
 
-    func centerInSuperview() {
-        translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            centerXAnchor.constraint(equalTo: superview!.centerXAnchor),
-            centerYAnchor.constraint(equalTo: superview!.centerYAnchor)
-        ])
+    private func setPlaceholderView(_ view: _PlatformBaseView?) {
+        if let previousView = placeholderView {
+            previousView.removeFromSuperview()
+        }
+        if let newView = view {
+            addSubview(newView)
+            setNeedsUpdateConstraints()
+            #if os(iOS) || os(tvOS)
+            if let spinner = newView as? UIActivityIndicatorView {
+                spinner.startAnimating()
+            }
+            #endif
+        }
+    }
+
+    private func updatePlaceholderConstraints() {
+        NSLayoutConstraint.deactivate(placeholderConstraints)
+
+        if let placeholderView = self.placeholderView {
+            switch placeholderPosition {
+            case .center: placeholderConstraints = placeholderView.centerInSuperview()
+            case .fill: placeholderConstraints = placeholderView.pinToSuperview()
+            }
+        }
     }
 }
-
-#if os(macOS)
-public typealias _PlatformBaseView = NSView
-typealias _PlatformImage = NSImage
-typealias _PlatformImageView = NSImageView
-#else
-public typealias _PlatformBaseView = UIView
-typealias _PlatformImage = UIImage
-typealias _PlatformImageView = UIImageView
-#endif

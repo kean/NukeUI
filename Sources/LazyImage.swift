@@ -13,17 +13,18 @@ public struct LazyImage: View {
 
     // Options
     private var placeholder: AnyView?
-    private var onImageViewCreated: ((LazyImageView) -> Void)?
+    private var priority: ImageRequest.Priority?
+    private var pipeline: ImagePipeline = .shared
     private var onStarted: ((_ task: ImageTask) -> Void)?
     private var onProgress: ((_ response: ImageResponse?, _ completed: Int64, _ total: Int64) -> Void)?
     private var onFinished: ((_ result: Result<ImageResponse, ImagePipeline.Error>) -> Void)?
-    private var priority: ImageRequest.Priority?
+    private var onImageViewCreated: ((LazyImageView) -> Void)?
 
-    public init(source: ImageRequestConvertible?) {
-        self.source = source
-    }
 
-    #warning("impl")
+    #warning("content mode")
+
+    // MARK: Managing Image Tasks
+
     /// Displayed while the image is loading.
     public func placeholder<Placeholder: View>(@ViewBuilder content: () -> Placeholder?) -> Self {
         map { $0.placeholder = AnyView(content()) }
@@ -32,6 +33,13 @@ public struct LazyImage: View {
     public func priority(_ priority: ImageRequest.Priority?) -> Self {
         map { $0.priority = priority }
     }
+
+    /// Changes the underlying pipeline used for image loading.
+    public func pipeline(_ pipeline: ImagePipeline) -> Self {
+        map { $0.pipeline = pipeline }
+    }
+
+    // MARK: Callbacks
 
     /// Gets called when the request is started.
     public func onStarted(_ closure: @escaping (_ task: ImageTask) -> Void) -> Self {
@@ -56,6 +64,12 @@ public struct LazyImage: View {
         map { $0.onImageViewCreated = configure }
     }
 
+    // MARK: Initializers
+
+    public init(source: ImageRequestConvertible?) {
+        self.source = source
+    }
+
     public var body: some View {
         LazyImageViewWrapper(source: $loadedSource, configure: configure)
             .onAppear { loadedSource = source }
@@ -75,10 +89,11 @@ public struct LazyImage: View {
         #else
         view.placeholderView = placeholder.map(UIHostingController.init(rootView:))?.view
         #endif
+        view.priority = priority
+        view.pipeline = pipeline
         view.onStarted = onStarted
         view.onProgress = onProgress
         view.onFinished = onFinished
-        view.priority = priority
     }
 }
 
