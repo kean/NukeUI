@@ -27,12 +27,6 @@ public final class LazyImageView: _PlatformBaseView {
     #warning("impl")
     public var isPrepareForReuseEnabled = true
 
-    #warning("impl")
-    public var isProgressiveRenderingEnabled = true
-
-    #warning("impl")
-    public var isAnimatedImageRenderingEnabled = true
-
     public func setTransition(_ transition: Any, for type: ImageType) {
         #warning("implement")
     }
@@ -119,6 +113,14 @@ public final class LazyImageView: _PlatformBaseView {
     /// Gets called when the request is completed.
     public var onFinished: ((_ result: Result<ImageResponse, ImagePipeline.Error>) -> Void)?
 
+    // MARK: Other Options
+
+    /// `true` by default. If disabled, progressive image scans will be ignored.
+    public var isProgressiveImageRenderingEnabled = true
+
+    /// `true` by default If disabled, animated image rendering will be disabled.
+    public var isAnimatedImageRenderingEnabled = true
+
     // MARK: Initializers
 
     public override init(frame: CGRect) {
@@ -174,14 +176,18 @@ public final class LazyImageView: _PlatformBaseView {
             with: request,
             queue: .main,
             progress: { [weak self] response, completedCount, totalCount in
-                #warning("TODO: implement progressive decoding")
-                self?.onProgress?(response, completedCount, totalCount)
+                guard let self = self else { return }
+                if self.isProgressiveImageRenderingEnabled, let response = response {
+                    self.display(response.container, false, .success)
+                }
+                self.onProgress?(response, completedCount, totalCount)
             },
             completion: { [weak self] result in
                 #warning("temo")
                 DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(3)) {
-                self?.handle(result, isFromMemory: false)
-                self?.onFinished?(result)
+                    guard let self = self else { return }
+                    self.handle(result, isFromMemory: false)
+                    self.onFinished?(result)
                 }
             }
         )
@@ -212,7 +218,7 @@ public final class LazyImageView: _PlatformBaseView {
     private func display(_ container: Nuke.ImageContainer, _ isFromMemory: Bool, _ response: ImageType) {
         // TODO: Add support for animated transitions and other options
         #if canImport(Gifu)
-        if let data = container.data, container.type == .gif {
+        if isAnimatedImageRenderingEnabled, let data = container.data, container.type == .gif {
             if animatedImageView.superview == nil {
                 insertSubview(animatedImageView, belowSubview: imageView)
                 animatedImageView.pinToSuperview()
