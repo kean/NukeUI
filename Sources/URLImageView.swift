@@ -11,15 +11,53 @@ import AppKit
 import UIKit
 #endif
 
+#warning("hide these?")
 #if os(macOS)
-public typealias URLBaseImageView = NSImageView
-public typealias URLPlatformImage = NSImage
+public typealias PlatformImageView = NSImageView
 #else
-public typealias URLBaseImageView = UIImageView
-public typealias URLPlatformImage = UIImage
+public typealias PlatformImageView = UIImageView
 #endif
 
-public final class URLImageView: URLBaseImageView {
+#warning("should it be based on UIView instead?")
+#warning("how will animated image rendering work?")
+public final class URLImageView: PlatformImageView {
+
+    #warning("impl")
+    #if os(macOS)
+    public var placeholder: NSImage?
+    #warning("note on that you can show an activity indicator view this way")
+    public var placeholderView: NSView?
+    #else
+    public var placeholder: UIImage?
+    public var placeholderView: UIView?
+    #endif
+
+    public enum ImageType {
+        case success, placeholder, failure
+    }
+
+    #warning("impl")
+    public var isPrepareForReuseEnabled = true
+
+    #warning("impl")
+    public var isProgressiveRenderingEnabled = true
+
+    #warning("impl")
+    public var isAnimatedImageRenderingEnabled = true
+
+    public func setTransition(_ transition: Any, for type: ImageType) {
+        #warning("implement")
+    }
+
+    #if os(iOS) || os(tvOS)
+
+    /// Set a custom content mode to be used for each image type (placeholder, success,
+    /// failure).
+    public func setContentMode(_ contentMode: UIView.ContentMode, for type: ImageType = .success) {
+        #warning("impl")
+    }
+
+    #endif
 
     /// Current image task.
     public var imageTask: ImageTask?
@@ -76,22 +114,8 @@ public final class URLImageView: URLBaseImageView {
         self.imageTask = nil
     }
 
-    #if os(iOS) || os(tvOS) || os(macOS)
-
-    private func display(_ container: ImageContainer, _ isFromMemory: Bool, _ response: ResponseType) {
+    private func display(_ container: ImageContainer, _ isFromMemory: Bool, _ response: ImageType) {
         // TODO: Add support for animated transitions and other options
         self.image = container.image
     }
-
-    #elseif os(watchOS)
-
-    private func display(_ image: ImageContainer, _ isFromMemory: Bool, _ response: ImageLoadingOptions.ResponseType) {
-        self.image = container.image
-    }
-
-    #endif
-}
-
-private enum ResponseType {
-    case success, failure, placeholder
 }
