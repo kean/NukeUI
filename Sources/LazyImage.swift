@@ -17,8 +17,8 @@ public typealias ImagePipeline = Nuke.ImagePipeline
 /// but you can change the content mode.
 @available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
 public struct LazyImage: View {
-    private let source: ImageRequestConvertible?
-    @State private var loadedSource: ImageRequestConvertible?
+    private let source: ImageRequest?
+    @State private var loadedSource: ImageRequest?
 
     // Options
     private var placeholderView: AnyView?
@@ -132,12 +132,14 @@ public struct LazyImage: View {
     // MARK: Initializers
 
     public init(source: ImageRequestConvertible?) {
-        self.source = source
+        self.source = source?.asImageRequest()
     }
 
     public var body: some View {
         LazyImageViewWrapper(source: $loadedSource, configure: configure)
             .onAppear { loadedSource = source }
+            // Making sure it reload if the source changes
+            .id(source.map(ImageRequest.ID.init))
     }
 
     private func map(_ closure: (inout LazyImage) -> Void) -> Self {
@@ -167,6 +169,20 @@ public struct LazyImage: View {
     }
 }
 
+private extension ImageRequest {
+    struct ID: Hashable {
+        let imageId: String?
+        let priority: ImageRequest.Priority
+        let options: ImageRequest.Options
+
+        init(_ request: ImageRequest) {
+            self.imageId = request.imageId
+            self.priority = request.priority
+            self.options = request.options
+        }
+    }
+}
+
 #if os(macOS)
 @available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
 private struct LazyImageViewWrapper: NSViewRepresentable {
@@ -186,7 +202,7 @@ private struct LazyImageViewWrapper: NSViewRepresentable {
 #else
 @available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
 private struct LazyImageViewWrapper: UIViewRepresentable {
-    @Binding var source: ImageRequestConvertible?
+    @Binding var source: ImageRequest?
     var configure: ((LazyImageView) -> Void)?
 
     func makeUIView(context: Context) -> LazyImageView {
