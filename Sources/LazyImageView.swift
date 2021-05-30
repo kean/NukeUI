@@ -17,18 +17,8 @@ import UIKit
 import Gifu
 #endif
 
-#warning("should it be based on UIView instead?")
-#warning("how will animated image rendering work?")
+/// Lazily loads and displays an image with the given source.
 public final class LazyImageView: _PlatformBaseView {
-
-    #warning("need this?")
-    public enum ImageType {
-        case success, placeholder, failure
-    }
-
-    public func setTransition(_ transition: Any, for type: ImageType) {
-        #warning("implement")
-    }
 
     // MARK: Placeholder View
 
@@ -287,12 +277,9 @@ public final class LazyImageView: _PlatformBaseView {
                 self.onProgress?(response, completedCount, totalCount)
             },
             completion: { [weak self] result in
-                #warning("temo")
-                DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(3)) {
-                    guard let self = self else { return }
-                    self.handle(result, isFromMemory: false)
-                    self.onCompletion?(result)
-                }
+                guard let self = self else { return }
+                self.handle(result, isFromMemory: false)
+                self.onCompletion?(result)
             }
         )
         imageTask = task
