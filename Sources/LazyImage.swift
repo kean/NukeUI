@@ -51,8 +51,6 @@ public struct LazyImage: View {
 
     // MARK: Placeholder View
 
-    #warning("this probably needs to be redone in SwiftUI")
-
     /// An image to be shown while the request is in progress.
     public func placeholder<Placeholder: View>(@ViewBuilder _ content: () -> Placeholder?) -> Self {
         map { $0.placeholderView = AnyView(content()) }
