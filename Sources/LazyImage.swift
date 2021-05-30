@@ -18,7 +18,7 @@ public struct LazyImage: View {
     private var pipeline: ImagePipeline = .shared
     private var onStarted: ((_ task: ImageTask) -> Void)?
     private var onProgress: ((_ response: ImageResponse?, _ completed: Int64, _ total: Int64) -> Void)?
-    private var onFinished: ((_ result: Result<ImageResponse, ImagePipeline.Error>) -> Void)?
+    private var onCompletion: ((_ result: Result<ImageResponse, ImagePipeline.Error>) -> Void)?
     private var onImageViewCreated: ((LazyImageView) -> Void)?
 
     #warning("how to pass contentMode to the image view?")
@@ -61,8 +61,8 @@ public struct LazyImage: View {
     }
 
     /// Gets called when the request is completed.
-    public func onFinished(_ closure: @escaping (_ result: Result<ImageResponse, ImagePipeline.Error>) -> Void) -> Self {
-        map { $0.onFinished = closure }
+    public func onCompletion(_ closure: @escaping (_ result: Result<ImageResponse, ImagePipeline.Error>) -> Void) -> Self {
+        map { $0.onCompletion = closure }
     }
 
     /// Returns an underlying image view.
@@ -99,7 +99,7 @@ public struct LazyImage: View {
         view.pipeline = pipeline
         view.onStarted = onStarted
         view.onProgress = onProgress
-        view.onFinished = onFinished
+        view.onCompletion = onCompletion
     }
 }
 

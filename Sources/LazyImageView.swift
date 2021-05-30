@@ -168,7 +168,7 @@ public final class LazyImageView: _PlatformBaseView {
     public var onProgress: ((_ response: ImageResponse?, _ completed: Int64, _ total: Int64) -> Void)?
 
     /// Gets called when the request is completed.
-    public var onFinished: ((_ result: Result<ImageResponse, ImagePipeline.Error>) -> Void)?
+    public var onCompletion: ((_ result: Result<ImageResponse, ImagePipeline.Error>) -> Void)?
 
     // MARK: Other Options
 
@@ -247,7 +247,7 @@ public final class LazyImageView: _PlatformBaseView {
         guard var request = request?.asImageRequest() else {
             let result: Result<ImageResponse, ImagePipeline.Error> = .failure(.dataLoadingFailed(URLError(.unknown)))
             handle(result, isFromMemory: true)
-            onFinished?(result)
+            onCompletion?(result)
             return
         }
 
@@ -255,7 +255,7 @@ public final class LazyImageView: _PlatformBaseView {
         if let image = pipeline.cache[request] {
             display(image, isFromMemory: true)
             if !image.isPreview { // Final image was downloaded
-                onFinished?(.success(ImageResponse(container: image, cacheType: .memory)))
+                onCompletion?(.success(ImageResponse(container: image, cacheType: .memory)))
                 return
             }
         }
@@ -282,7 +282,7 @@ public final class LazyImageView: _PlatformBaseView {
                 DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(3)) {
                     guard let self = self else { return }
                     self.handle(result, isFromMemory: false)
-                    self.onFinished?(result)
+                    self.onCompletion?(result)
                 }
             }
         )
