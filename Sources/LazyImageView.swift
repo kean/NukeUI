@@ -135,6 +135,8 @@ public final class LazyImageView: _PlatformBaseView {
             return animatedImageView
         }
         let animatedImageView = GIFImageView()
+        animatedImageView.contentMode = .scaleAspectFill
+        animatedImageView.clipsToBounds = true
         _animatedImageView = animatedImageView
         return animatedImageView
     }
@@ -197,6 +199,8 @@ public final class LazyImageView: _PlatformBaseView {
 
     private func didInit() {
         addSubview(imageView)
+        imageView.contentMode = .scaleAspectFill
+        imageView.clipsToBounds = true
         imageView.pinToSuperview()
     }
 
