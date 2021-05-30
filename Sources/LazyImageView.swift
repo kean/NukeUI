@@ -219,19 +219,8 @@ public final class LazyImageView: _PlatformBaseView {
         updateFailureViewConstraints()
     }
 
-    #if os(iOS) || os(tvOS)
     /// Cancels current request and prepares the view for reuse.
-    public func prepareForReuse() {
-        _prepareForReuse()
-    }
-    #else
-    /// Cancels current request and prepares the view for reuse.
-    public override func prepareForReuse() {
-        _prepareForReuse()
-    }
-    #endif
-
-    private func _prepareForReuse() {
+    public func reset() {
         cancel()
 
         placeholderView?.isHidden = true
@@ -260,7 +249,7 @@ public final class LazyImageView: _PlatformBaseView {
         cancel()
 
         if isPrepareForReuseEnabled {
-            prepareForReuse()
+            reset()
         }
 
         guard var request = request?.asImageRequest() else {
