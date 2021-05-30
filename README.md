@@ -1,4 +1,4 @@
-![image-3](https://user-images.githubusercontent.com/1567433/120118417-6fb3af00-c160-11eb-879f-5f9474bc3ed7.png)
+# NukeUI
 
 A comprehensive solution for displaying lazily loaded images on Apple platforms. 
 
