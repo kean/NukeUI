@@ -23,7 +23,7 @@ public typealias _PlatformBaseView = UIView
 
 #warning("should it be based on UIView instead?")
 #warning("how will animated image rendering work?")
-public final class URLImageView: _PlatformBaseView {
+public final class LazyImageView: _PlatformBaseView {
 
     #warning("impl")
     #if os(macOS)

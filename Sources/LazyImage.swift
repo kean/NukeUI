@@ -6,13 +6,12 @@ import Foundation
 import Nuke
 import SwiftUI
 
-#warning("should it be based on URLImageView?")
 @available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
-public struct URLImage: View {
+public struct LazyImage: View {
     private let source: ImageRequestConvertible?
     private var placeholder: AnyView?
     @State private var loadedSource: ImageRequestConvertible?
-    private var configure: ((URLImageView) -> Void)?
+    private var configure: ((LazyImageView) -> Void)?
 
     public init(source: ImageRequestConvertible?) {
         self.source = source
@@ -32,7 +31,7 @@ public struct URLImage: View {
     ///
     /// - parameter configure: A closure that gets called once when the view is
     /// created and allows you to configure it based on your needs.
-    public func imageView(_ configure: @escaping (URLImageView) -> Void) -> Self {
+    public func imageView(_ configure: @escaping (LazyImageView) -> Void) -> Self {
         var copy = self
         copy.configure = configure
         return copy
@@ -49,15 +48,15 @@ public struct URLImage: View {
 @available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
 private struct URLImageViewWrapper: UIViewRepresentable {
     @Binding var source: ImageRequestConvertible?
-    var configure: ((URLImageView) -> Void)?
+    var configure: ((LazyImageView) -> Void)?
 
-    func makeUIView(context: Context) -> URLImageView {
-        let view = URLImageView()
+    func makeUIView(context: Context) -> LazyImageView {
+        let view = LazyImageView()
         configure?(view)
         return view
     }
 
-    func updateUIView(_ imageView: URLImageView, context: Context) {
+    func updateUIView(_ imageView: LazyImageView, context: Context) {
         imageView.load(source)
     }
 }
