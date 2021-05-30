@@ -178,6 +178,7 @@ public final class LazyImageView: _PlatformBaseView {
             progress: { [weak self] response, completedCount, totalCount in
                 guard let self = self else { return }
                 if self.isProgressiveImageRenderingEnabled, let response = response {
+                    self.placeholderView?.isHidden = true
                     self.display(response.container, false, .success)
                 }
                 self.onProgress?(response, completedCount, totalCount)
