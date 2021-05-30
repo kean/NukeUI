@@ -29,6 +29,8 @@ public struct LazyImage: View {
     private var pipeline: ImagePipeline = .shared
     private var onStarted: ((_ task: ImageTask) -> Void)?
     private var onProgress: ((_ response: ImageResponse?, _ completed: Int64, _ total: Int64) -> Void)?
+    private var onSuccess: ((_ response: ImageResponse) -> Void)?
+    private var onFailure: ((_ response: ImagePipeline.Error) -> Void)?
     private var onCompletion: ((_ result: Result<ImageResponse, ImagePipeline.Error>) -> Void)?
     private var onImageViewCreated: ((LazyImageView) -> Void)?
     private var contentMode: ContentMode?
@@ -116,6 +118,16 @@ public struct LazyImage: View {
         map { $0.onProgress = closure }
     }
 
+    /// Gets called when the requests finished successfully.
+    public func onSuccess(_ closure: @escaping (_ response: ImageResponse) -> Void) -> Self {
+        map { $0.onSuccess = closure }
+    }
+
+    /// Gets called when the requests fails.
+    public func onFailure(_ closure: @escaping (_ response: ImagePipeline.Error) -> Void) -> Self {
+        map { $0.onFailure = closure }
+    }
+
     /// Gets called when the request is completed.
     public func onCompletion(_ closure: @escaping (_ result: Result<ImageResponse, ImagePipeline.Error>) -> Void) -> Self {
         map { $0.onCompletion = closure }
@@ -125,7 +137,7 @@ public struct LazyImage: View {
     ///
     /// - parameter configure: A closure that gets called once when the view is
     /// created and allows you to configure it based on your needs.
-    public func onImageViewCreated(_ configure: @escaping (LazyImageView) -> Void) -> Self {
+    public func onImageViewCreated(_ configure: ((LazyImageView) -> Void)?) -> Self {
         map { $0.onImageViewCreated = configure }
     }
 
@@ -167,6 +179,8 @@ public struct LazyImage: View {
         view.pipeline = pipeline
         view.onStarted = onStarted
         view.onProgress = onProgress
+        view.onSuccess = onSuccess
+        view.onFailure = onFailure
         view.onCompletion = onCompletion
     }
 }
