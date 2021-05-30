@@ -87,6 +87,7 @@ public final class LazyImageView: _PlatformBaseView {
 
         enum Style { // internal representation
             case fadeIn(parameters: Parameters)
+            case custom(closure: (LazyImageView, Nuke.ImageContainer) -> Void)
         }
 
         struct Parameters { // internal representation
@@ -109,6 +110,12 @@ public final class LazyImageView: _PlatformBaseView {
             Transition(style: .fadeIn(parameters: Parameters(duration: duration)))
         }
         #endif
+
+        /// Fade-in transition (cross-fade in case the image view is already
+        /// displaying an image).
+        public static func custom(_ closure: @escaping (LazyImageView, Nuke.ImageContainer) -> Void) -> Transition {
+            Transition(style: .custom(closure: closure))
+        }
 
         @available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
         init(_ transition: LazyImage.Transition) {
@@ -345,7 +352,7 @@ public final class LazyImageView: _PlatformBaseView {
         #endif
 
         if !isFromMemory, let transition = transition {
-            runTransition(transition)
+            runTransition(transition, container)
         }
     }
 
@@ -447,10 +454,12 @@ public final class LazyImageView: _PlatformBaseView {
 
     // MARK: Private (Transitions)
 
-    private func runTransition(_ transition: Transition) {
+    private func runTransition(_ transition: Transition, _ image: Nuke.ImageContainer) {
         switch transition.style {
         case .fadeIn(let parameters):
             runFadeInTransition(params: parameters)
+        case .custom(let closure):
+            closure(self, image)
         }
     }
 
