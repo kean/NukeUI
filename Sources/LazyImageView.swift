@@ -24,9 +24,6 @@ public final class LazyImageView: _PlatformBaseView {
         case success, placeholder, failure
     }
 
-    #warning("impl")
-    public var isPrepareForReuseEnabled = true
-
     public func setTransition(_ transition: Any, for type: ImageType) {
         #warning("implement")
     }
@@ -43,31 +40,57 @@ public final class LazyImageView: _PlatformBaseView {
 
     #warning("other options like managing priority and auto-retrying")
 
-    // MARK: Placeholder
+    // MARK: Placeholder View
 
     #if os(macOS)
     /// An image to be shown while the request is in progress.
-    public var placeholderImage: NSImage? { didSet { setPlaceholderImage(placeholderImage )} }
+    public var placeholderImage: NSImage? { didSet { setPlaceholderImage(placeholderImage) } }
 
     /// A view to be shown while the request is in progress. For example, can be a spinner.
-    public var placeholderView: NSView? { didSet { setPlaceholderView(placeholderView)} }
+    public var placeholderView: NSView? { didSet { setPlaceholderView(placeholderView) } }
     #else
     /// An image to be shown while the request is in progress.
-    public var placeholderImage: UIImage? { didSet { setPlaceholderImage(placeholderImage )} }
+    public var placeholderImage: UIImage? { didSet { setPlaceholderImage(placeholderImage) } }
 
     /// A view to be shown while the request is in progress. For example, can be a spinner.
-    public var placeholderView: UIView? { didSet { setPlaceholderView(placeholderView)} }
+    public var placeholderView: UIView? { didSet { setPlaceholderView(placeholderView) } }
     #endif
 
     /// `.fill` by default.
-    public var placeholderPosition: SubviewPosition = .fill {
+    public var placeholderViewPosition: SubviewPosition = .fill {
         didSet {
-            guard oldValue != placeholderPosition, placeholderView != nil else { return }
+            guard oldValue != placeholderViewPosition, placeholderView != nil else { return }
             setNeedsUpdateConstraints()
         }
     }
 
-    private var placeholderConstraints: [NSLayoutConstraint] = []
+    private var placeholderViewConstraints: [NSLayoutConstraint] = []
+
+    // MARK: Failure View
+
+    #if os(macOS)
+    /// An image to be shown if the request fails.
+    public var failureImage: NSImage? { didSet { setFailureImage(failureView) } }
+
+    /// A view to be shown if the request fails.
+    public var failureView: NSView? { didSet { setFailureView(failureView) } }
+    #else
+    /// An image to be shown if the request fails.
+    public var failureImage: UIImage? { didSet { setFailureImage(failureImage) } }
+
+    /// A view to be shown if the request fails.
+    public var failureView: UIView? { didSet { setFailureView(failureView) } }
+    #endif
+
+    /// `.fill` by default.
+    public var failureViewPosition: SubviewPosition = .fill {
+        didSet {
+            guard oldValue != failureViewPosition, failureView != nil else { return }
+            setNeedsUpdateConstraints()
+        }
+    }
+
+    private var failureViewConstraints: [NSLayoutConstraint] = []
 
     // MARK: Underlying Views
 
@@ -81,7 +104,16 @@ public final class LazyImageView: _PlatformBaseView {
 
     #if canImport(Gifu)
     /// Returns an underlying animated image view used for rendering animated images.
-    public lazy var animatedImageView = GIFImageView()
+    public var animatedImageView: GIFImageView {
+        if let animatedImageView = _animatedImageView {
+            return animatedImageView
+        }
+        let animatedImageView = GIFImageView()
+        _animatedImageView = animatedImageView
+        return animatedImageView
+    }
+
+    private var _animatedImageView: GIFImageView?
     #endif
 
     // MARK: Managing Image Tasks
@@ -118,8 +150,12 @@ public final class LazyImageView: _PlatformBaseView {
     /// `true` by default. If disabled, progressive image scans will be ignored.
     public var isProgressiveImageRenderingEnabled = true
 
-    /// `true` by default If disabled, animated image rendering will be disabled.
+    /// `true` by default. If disabled, animated image rendering will be disabled.
     public var isAnimatedImageRenderingEnabled = true
+
+    /// `true` by default. If enabled, the image view will be cleared before the
+    /// new download is started.
+    public var isPrepareForReuseEnabled = true
 
     // MARK: Initializers
 
@@ -148,7 +184,24 @@ public final class LazyImageView: _PlatformBaseView {
     public override func updateConstraints() {
         super.updateConstraints()
 
-        updatePlaceholderConstraints()
+        updatePlaceholderViewConstraints()
+        updateFailureViewConstraints()
+    }
+
+    /// Cancels current request and prepares the view for reuse.
+    public func prepareForReuse() {
+        cancel()
+
+        placeholderView?.isHidden = true
+        failureView?.isHidden = true
+        _animatedImageView?.image = nil
+        imageView.image = nil
+    }
+
+    /// Cancels current request.
+    public func cancel() {
+        imageTask?.cancel()
+        imageTask = nil
     }
 
     // MARK: Loading
@@ -159,8 +212,14 @@ public final class LazyImageView: _PlatformBaseView {
 
         cancel()
 
+        if isPrepareForReuseEnabled {
+            prepareForReuse()
+        }
+
         guard var request = request?.asImageRequest() else {
-            // TODO: handle as failure
+            let result: Result<ImageResponse, ImagePipeline.Error> = .failure(.dataLoadingFailed(URLError(.unknown)))
+            handle(result, isFromMemory: true)
+            onFinished?(result)
             return
         }
 
@@ -196,11 +255,6 @@ public final class LazyImageView: _PlatformBaseView {
         onStarted?(task)
     }
 
-    public func cancel() {
-        imageTask?.cancel()
-        imageTask = nil
-    }
-
     // MARK: Handling Responses
 
     private func handle(_ result: Result<ImageResponse, ImagePipeline.Error>, isFromMemory: Bool) {
@@ -210,8 +264,7 @@ public final class LazyImageView: _PlatformBaseView {
         case let .success(response):
             display(response.container, isFromMemory, .success)
         case .failure:
-            // TODO: Display failureImage
-             break
+            failureView?.isHidden = false
         }
         self.imageTask = nil
     }
@@ -264,7 +317,7 @@ public final class LazyImageView: _PlatformBaseView {
         case fill
     }
 
-    // MARK: Private (Placeholder)
+    // MARK: Private (Placeholder View)
 
     private func setPlaceholderImage(_ placeholderImage: _PlatformImage?) {
         guard let placeholderImage = placeholderImage else {
@@ -289,13 +342,44 @@ public final class LazyImageView: _PlatformBaseView {
         }
     }
 
-    private func updatePlaceholderConstraints() {
-        NSLayoutConstraint.deactivate(placeholderConstraints)
+    private func updatePlaceholderViewConstraints() {
+        NSLayoutConstraint.deactivate(placeholderViewConstraints)
 
         if let placeholderView = self.placeholderView {
-            switch placeholderPosition {
-            case .center: placeholderConstraints = placeholderView.centerInSuperview()
-            case .fill: placeholderConstraints = placeholderView.pinToSuperview()
+            switch placeholderViewPosition {
+            case .center: placeholderViewConstraints = placeholderView.centerInSuperview()
+            case .fill: placeholderViewConstraints = placeholderView.pinToSuperview()
+            }
+        }
+    }
+
+    // MARK: Private (Failure View)
+
+    private func setFailureImage(_ failureImage: _PlatformImage?) {
+        guard let failureImage = failureImage else {
+            failureView = nil
+            return
+        }
+        failureView = _PlatformImageView(image: failureImage)
+    }
+
+    private func setFailureView(_ view: _PlatformBaseView?) {
+        if let previousView = failureView {
+            previousView.removeFromSuperview()
+        }
+        if let newView = view {
+            addSubview(newView)
+            setNeedsUpdateConstraints()
+        }
+    }
+
+    private func updateFailureViewConstraints() {
+        NSLayoutConstraint.deactivate(failureViewConstraints)
+
+        if let failureView = self.failureView {
+            switch failureViewPosition {
+            case .center: failureViewConstraints = failureView.centerInSuperview()
+            case .fill: failureViewConstraints = failureView.pinToSuperview()
             }
         }
     }
