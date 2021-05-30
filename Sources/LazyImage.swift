@@ -70,6 +70,11 @@ public struct LazyImage: View {
     private func configure(_ view: LazyImageView) {
         onImageViewCreated?(view)
 
+        #if os(macOS)
+        view.placeholderView = placeholder.map(NSHostingController.init(rootView:))?.view
+        #else
+        view.placeholderView = placeholder.map(UIHostingController.init(rootView:))?.view
+        #endif
         view.onStarted = onStarted
         view.onProgress = onProgress
         view.onFinished = onFinished
