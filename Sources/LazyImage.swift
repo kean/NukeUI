@@ -21,9 +21,11 @@ public struct LazyImage: View {
     private var onFinished: ((_ result: Result<ImageResponse, ImagePipeline.Error>) -> Void)?
     private var onImageViewCreated: ((LazyImageView) -> Void)?
 
-    #warning("content mode")
+    #warning("how to pass contentMode to the image view?")
 
     // MARK: Placeholder
+
+    #warning("this probably needs to be redone in SwiftUI")
 
     /// An image to be shown while the request is in progress.
     public func placeholder<Placeholder: View>(@ViewBuilder _ content: () -> Placeholder?) -> Self {
