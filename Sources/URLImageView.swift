@@ -11,25 +11,32 @@ import AppKit
 import UIKit
 #endif
 
-#warning("hide these?")
+#if canImport(Gifu)
+import Gifu
+#endif
+
 #if os(macOS)
-public typealias PlatformImageView = NSImageView
+public typealias _PlatformBaseView = NSView
 #else
-public typealias PlatformImageView = UIImageView
+public typealias _PlatformBaseView = UIView
 #endif
 
 #warning("should it be based on UIView instead?")
 #warning("how will animated image rendering work?")
-public final class URLImageView: PlatformImageView {
+public final class URLImageView: _PlatformBaseView {
 
     #warning("impl")
     #if os(macOS)
     public var placeholder: NSImage?
     #warning("note on that you can show an activity indicator view this way")
     public var placeholderView: NSView?
+
+    public var failureImage: NSImage?
     #else
     public var placeholder: UIImage?
     public var placeholderView: UIView?
+
+    public var failureImage: UIImage?
     #endif
 
     public enum ImageType {
@@ -64,6 +71,42 @@ public final class URLImageView: PlatformImageView {
 
     /// The pipeline to be used for download. `shared` by default.
     public var pipeline: ImagePipeline = .shared
+
+    #if os(macOS)
+    /// Returns underlying image view.
+    public let imageView = NSImageView()
+    #else
+    /// Returns underlying image view.
+    public let imageView = UIImageView()
+    #endif
+
+    #if canImport(Gifu)
+    private lazy var aninatedImageView = GIFImageView()
+    #endif
+
+    #warning("other options like managing priority and auto-retrying")
+
+    public override init(frame: CGRect) {
+        super.init(frame: frame)
+        didInit()
+    }
+
+    public required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        didInit()
+    }
+
+    private func didInit() {
+        addSubview(imageView)
+        imageView.pinToSuperview()
+    }
+
+    #warning("rework this")
+    public var source: ImageRequestConvertible? {
+        didSet {
+            load(source)
+        }
+    }
 
     /// Loads an image with the given request.
     public func load(
@@ -114,8 +157,63 @@ public final class URLImageView: PlatformImageView {
         self.imageTask = nil
     }
 
-    private func display(_ container: ImageContainer, _ isFromMemory: Bool, _ response: ImageType) {
+    private func display(_ container: Nuke.ImageContainer, _ isFromMemory: Bool, _ response: ImageType) {
         // TODO: Add support for animated transitions and other options
-        self.image = container.image
+        #if canImport(Gifu)
+        if let data = container.data, container.type == .gif {
+            if aninatedImageView.superview == nil {
+                addSubview(aninatedImageView)
+                aninatedImageView.pinToSuperview()
+            }
+            aninatedImageView.animate(withGIFData: data)
+            visibleView = .animated
+        } else {
+            imageView.image = container.image
+            visibleView = .regular
+        }
+        #else
+        imageView.image = container.image
+        #endif
+    }
+
+    var visibleView: ContentViewType = .regular {
+        didSet {
+            switch visibleView {
+            case .regular:
+                imageView.isHidden = false
+                #if canImport(Gifu)
+                aninatedImageView.isHidden = true
+                #endif
+            case .animated:
+                imageView.isHidden = true
+                #if canImport(Gifu)
+                aninatedImageView.isHidden = false
+                #endif
+            }
+        }
+    }
+
+    enum ContentViewType {
+        case regular, animated
+    }
+}
+
+private extension UIView {
+    func pinToSuperview() {
+        translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            topAnchor.constraint(equalTo: superview!.topAnchor),
+            bottomAnchor.constraint(equalTo: superview!.bottomAnchor),
+            leftAnchor.constraint(equalTo: superview!.leftAnchor),
+            rightAnchor.constraint(equalTo: superview!.rightAnchor)
+        ])
+    }
+
+    func centerInSuperview() {
+        translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            centerXAnchor.constraint(equalTo: superview!.centerXAnchor),
+            centerYAnchor.constraint(equalTo: superview!.centerYAnchor)
+        ])
     }
 }

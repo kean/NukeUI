@@ -1,4 +1,4 @@
-// swift-tools-version:5.1
+// swift-tools-version:5.3
 import PackageDescription
 
 let package = Package(
@@ -13,9 +13,13 @@ let package = Package(
         .library(name: "URLImage", targets: ["URLImage"])
     ],
     dependencies: [
-        .package(url: "https://github.com/kean/Nuke.git", .branch("master"))
+        .package(url: "https://github.com/kean/Nuke.git", .branch("master")),
+        .package(url: "https://github.com/kaishin/Gifu", from: "3.0.0")
     ],
     targets: [
-        .target(name: "URLImage", dependencies: ["Nuke"], path: "Sources")
+        .target(name: "URLImage", dependencies: [
+            .product(name: "Nuke", package: "Nuke"),
+            .product(name: "Gifu", package: "Gifu", condition: .when(platforms: [.iOS, .tvOS]))
+        ], path: "Sources")
     ]
 )

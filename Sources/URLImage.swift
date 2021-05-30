@@ -19,6 +19,8 @@ public struct URLImage: View {
         return self
     }
 
+    #warning("options to customize image view")
+
     public var body: some View {
         Text("Placeholder")
     }
