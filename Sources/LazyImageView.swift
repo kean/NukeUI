@@ -173,6 +173,12 @@ public final class LazyImageView: _PlatformBaseView {
     /// Gets called when the request progress is updated.
     public var onProgress: ((_ response: ImageResponse?, _ completed: Int64, _ total: Int64) -> Void)?
 
+    /// Gets called when the requests finished successfully.
+    public var onSuccess: ((_ response: ImageResponse) -> Void)?
+
+    /// Gets called when the requests fails.
+    public var onFailure: ((_ response: ImagePipeline.Error) -> Void)?
+
     /// Gets called when the request is completed.
     public var onCompletion: ((_ result: Result<ImageResponse, ImagePipeline.Error>) -> Void)?
 
@@ -255,7 +261,6 @@ public final class LazyImageView: _PlatformBaseView {
         guard var request = request?.asImageRequest() else {
             let result: Result<ImageResponse, ImagePipeline.Error> = .failure(.dataLoadingFailed(URLError(.unknown)))
             handle(result, isFromMemory: true)
-            onCompletion?(result)
             return
         }
 
@@ -267,7 +272,7 @@ public final class LazyImageView: _PlatformBaseView {
         if let image = pipeline.cache[request] {
             display(image, isFromMemory: true)
             if !image.isPreview { // Final image was downloaded
-                onCompletion?(.success(ImageResponse(container: image, cacheType: .memory)))
+                didComplete(.success(ImageResponse(container: image, cacheType: .memory)))
                 return
             }
         }
@@ -292,7 +297,6 @@ public final class LazyImageView: _PlatformBaseView {
             completion: { [weak self] result in
                 guard let self = self else { return }
                 self.handle(result, isFromMemory: false)
-                self.onCompletion?(result)
             }
         )
         imageTask = task
@@ -310,7 +314,17 @@ public final class LazyImageView: _PlatformBaseView {
             failureView?.isHidden = false
         }
         self.imageTask = nil
+        self.didComplete(result)
     }
+
+    private func didComplete(_ result: Result<ImageResponse, ImagePipeline.Error>) {
+        switch result {
+        case .success(let response): onSuccess?(response)
+        case .failure(let error): onFailure?(error)
+        }
+        onCompletion?(result)
+    }
+
 
     private func display(_ container: Nuke.ImageContainer, isFromMemory: Bool) {
         // TODO: Add support for animated transitions and other options
