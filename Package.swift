@@ -6,8 +6,7 @@ let package = Package(
     platforms: [
         .macOS(.v10_14),
         .iOS(.v12),
-        .tvOS(.v12),
-        .watchOS(.v5)
+        .tvOS(.v12)
     ],
     products: [
         .library(name: "NukeUI", targets: ["NukeUI"])
