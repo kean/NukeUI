@@ -82,6 +82,41 @@ public final class LazyImageView: _PlatformBaseView {
 
     private var failureViewConstraints: [NSLayoutConstraint] = []
 
+    // MARK: Transition
+
+    /// `nil` by default.
+    public var transition: Transition?
+
+    /// An animated image transition.
+    public struct Transition {
+        var style: Style
+
+        enum Style { // internal representation
+            case fadeIn(parameters: Parameters)
+        }
+
+        struct Parameters { // internal representation
+            let duration: TimeInterval
+            #if os(iOS) || os(tvOS)
+            let options: UIView.AnimationOptions
+            #endif
+        }
+
+        #if os(iOS) || os(tvOS)
+        /// Fade-in transition (cross-fade in case the image view is already
+        /// displaying an image).
+        public static func fadeIn(duration: TimeInterval, options: UIView.AnimationOptions = .allowUserInteraction) -> Transition {
+            Transition(style: .fadeIn(parameters: Parameters(duration: duration, options: options)))
+        }
+        #else
+        /// Fade-in transition (cross-fade in case the image view is already
+        /// displaying an image).
+        public static func fadeIn(duration: TimeInterval) -> Transition {
+            Transition(style: .fadeIn(parameters: Parameters(duration: duration)))
+        }
+        #endif
+    }
+
     // MARK: Underlying Views
 
     #if os(macOS)
@@ -184,6 +219,9 @@ public final class LazyImageView: _PlatformBaseView {
 
         placeholderView?.isHidden = true
         failureView?.isHidden = true
+        imageView.isHidden = true
+        _animatedImageView?.isHidden = true
+
         _animatedImageView?.image = nil
         imageView.image = nil
     }
@@ -215,7 +253,7 @@ public final class LazyImageView: _PlatformBaseView {
 
         // Quick synchronous memory cache lookup.
         if let image = pipeline.cache[request] {
-            display(image, true, .success)
+            display(image, isFromMemory: true)
             if !image.isPreview { // Final image was downloaded
                 onFinished?(.success(ImageResponse(container: image, cacheType: .memory)))
                 return
@@ -235,7 +273,7 @@ public final class LazyImageView: _PlatformBaseView {
                 guard let self = self else { return }
                 if self.isProgressiveImageRenderingEnabled, let response = response {
                     self.placeholderView?.isHidden = true
-                    self.display(response.container, false, .success)
+                    self.display(response.container, isFromMemory: false)
                 }
                 self.onProgress?(response, completedCount, totalCount)
             },
@@ -256,18 +294,16 @@ public final class LazyImageView: _PlatformBaseView {
 
     private func handle(_ result: Result<ImageResponse, ImagePipeline.Error>, isFromMemory: Bool) {
         placeholderView?.isHidden = true
-
         switch result {
         case let .success(response):
-            display(response.container, isFromMemory, .success)
+            display(response.container, isFromMemory: isFromMemory)
         case .failure:
             failureView?.isHidden = false
         }
         self.imageTask = nil
     }
 
-    #warning("do we need response type here?")
-    private func display(_ container: Nuke.ImageContainer, _ isFromMemory: Bool, _ response: ImageType) {
+    private func display(_ container: Nuke.ImageContainer, isFromMemory: Bool) {
         // TODO: Add support for animated transitions and other options
         #if canImport(Gifu)
         if isAnimatedImageRenderingEnabled, let data = container.data, container.type == .gif {
@@ -284,6 +320,10 @@ public final class LazyImageView: _PlatformBaseView {
         #else
         imageView.image = container.image
         #endif
+
+        if !isFromMemory, let transition = transition {
+            runTransition(transition)
+        }
     }
 
     var visibleView: ContentViewType = .regular {
@@ -381,6 +421,40 @@ public final class LazyImageView: _PlatformBaseView {
             }
         }
     }
+
+    // MARK: Private (Transitions)
+
+    private func runTransition(_ transition: Transition) {
+        switch transition.style {
+        case .fadeIn(let parameters):
+            runFadeInTransition(params: parameters)
+        }
+    }
+
+    #if os(iOS) || os(tvOS)
+
+    private func runFadeInTransition(params: Transition.Parameters) {
+        imageView.alpha = 0
+        _animatedImageView?.alpha = 0
+        UIView.animate(withDuration: params.duration, delay: 0, options: params.options) {
+            self.imageView.alpha = 1
+            self._animatedImageView?.alpha = 1
+        }
+    }
+
+    #elseif os(macOS)
+
+    private func runFadeInTransition(params: Transition.Parameters) {
+        let animation = CABasicAnimation(keyPath: "opacity")
+        animation.duration = params.duration
+        animation.fromValue = 0
+        animation.toValue = 1
+        imageView?.layer?.add(animation, forKey: "imageTransition")
+        _animatedImageView?.layer?.add(animation, forKey: "imageTransition")
+    }
+
+    #endif
 }
+
 
 #endif
