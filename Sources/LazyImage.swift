@@ -23,6 +23,7 @@ public struct LazyImage: View {
     // Options
     private var placeholderView: AnyView?
     private var failureView: AnyView?
+    private var processors: [ImageProcessing]?
     private var transition: Transition?
     private var priority: ImageRequest.Priority?
     private var pipeline: ImagePipeline = .shared
@@ -90,6 +91,10 @@ public struct LazyImage: View {
 
     // MARK: Managing Image Tasks
 
+    public func processors(_ processors: [ImageProcessing]?) -> Self {
+        map { $0.processors = processors }
+    }
+
     public func priority(_ priority: ImageRequest.Priority?) -> Self {
         map { $0.priority = priority }
     }
@@ -153,6 +158,7 @@ public struct LazyImage: View {
         view.placeholderView = placeholderView.map(toPlatformView)
         view.failureView = failureView.map(toPlatformView)
         view.transition = transition.map(LazyImageView.Transition.init)
+        view.processors = processors
         view.priority = priority
         view.pipeline = pipeline
         view.onStarted = onStarted

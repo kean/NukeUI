@@ -146,6 +146,9 @@ public final class LazyImageView: _PlatformBaseView {
 
     // MARK: Managing Image Tasks
 
+    /// Processors to be applied to the image. `nil` by default.
+    public var processors: [ImageProcessing]?
+
     /// Sets the priority of the image task. The priorit can be changed
     /// dynamically. `nil` by default.
     public var priority: ImageRequest.Priority? {
@@ -265,6 +268,10 @@ public final class LazyImageView: _PlatformBaseView {
             handle(result, isFromMemory: true)
             onCompletion?(result)
             return
+        }
+
+        if let processors = self.processors, !request.processors.isEmpty {
+            request.processors = processors
         }
 
         // Quick synchronous memory cache lookup.
