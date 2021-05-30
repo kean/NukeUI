@@ -9,6 +9,8 @@ The library contains two types:
 - `URLImage` for SwiftUI
 - `URLImageView` for UIKit, AppKit, and watchOS
 
+Both views have an equivalent set of APIs.
+
 ## License
 
 URLImage is available under the MIT license. See the LICENSE file for more info.
