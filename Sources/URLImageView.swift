@@ -73,15 +73,16 @@ public final class URLImageView: _PlatformBaseView {
     public var pipeline: ImagePipeline = .shared
 
     #if os(macOS)
-    /// Returns underlying image view.
+    /// Returns an underlying image view.
     public let imageView = NSImageView()
     #else
-    /// Returns underlying image view.
+    /// Returns an underlying image view.
     public let imageView = UIImageView()
     #endif
 
     #if canImport(Gifu)
-    private lazy var aninatedImageView = GIFImageView()
+    /// Returns an underlying animated image view used for rendering animated images.
+    public lazy var animatedImageView = GIFImageView()
     #endif
 
     #warning("other options like managing priority and auto-retrying")
@@ -161,11 +162,11 @@ public final class URLImageView: _PlatformBaseView {
         // TODO: Add support for animated transitions and other options
         #if canImport(Gifu)
         if let data = container.data, container.type == .gif {
-            if aninatedImageView.superview == nil {
-                addSubview(aninatedImageView)
-                aninatedImageView.pinToSuperview()
+            if animatedImageView.superview == nil {
+                addSubview(animatedImageView)
+                animatedImageView.pinToSuperview()
             }
-            aninatedImageView.animate(withGIFData: data)
+            animatedImageView.animate(withGIFData: data)
             visibleView = .animated
         } else {
             imageView.image = container.image
@@ -182,12 +183,12 @@ public final class URLImageView: _PlatformBaseView {
             case .regular:
                 imageView.isHidden = false
                 #if canImport(Gifu)
-                aninatedImageView.isHidden = true
+                animatedImageView.isHidden = true
                 #endif
             case .animated:
                 imageView.isHidden = true
                 #if canImport(Gifu)
-                aninatedImageView.isHidden = false
+                animatedImageView.isHidden = false
                 #endif
             }
         }
