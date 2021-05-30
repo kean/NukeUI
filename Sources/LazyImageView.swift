@@ -210,11 +210,9 @@ public final class LazyImageView: _PlatformBaseView {
         imageView.pinToSuperview()
     }
 
-    #warning("rework this")
+    /// Sets the given source and immediately starts the download.
     public var source: ImageRequestConvertible? {
-        didSet {
-            load(source)
-        }
+        didSet { load(source) }
     }
 
     public override func updateConstraints() {
