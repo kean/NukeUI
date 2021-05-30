@@ -11,7 +11,10 @@ public struct LazyImage: View {
     private let source: ImageRequestConvertible?
     private var placeholder: AnyView?
     @State private var loadedSource: ImageRequestConvertible?
-    private var configure: ((LazyImageView) -> Void)?
+    private var onImageViewCreated: ((LazyImageView) -> Void)?
+    private var onStarted: ((_ task: ImageTask) -> Void)?
+    private var onProgress: ((_ response: ImageResponse?, _ completed: Int64, _ total: Int64) -> Void)?
+    private var onFinished: ((_ result: Result<ImageResponse, ImagePipeline.Error>) -> Void)?
 
     public init(source: ImageRequestConvertible?) {
         self.source = source
@@ -20,26 +23,49 @@ public struct LazyImage: View {
     #warning("impl")
     /// Displayed while the image is loading.
     public func placeholder<Placeholder: View>(_ view: Placeholder?) -> Self {
-        var copy = self
-        copy.placeholder = placeholder
-        return copy
+        map { $0.placeholder = placeholder }
     }
 
-    #warning("options to customize image view")
+    /// Gets called when the request is started.
+    public func onStarted(_ closure: @escaping (_ task: ImageTask) -> Void) -> Self {
+        map { $0.onStarted = closure }
+    }
+
+    /// Gets called when the request progress is updated.
+    public func onProgress(_ closure: @escaping (_ response: ImageResponse?, _ completed: Int64, _ total: Int64) -> Void) -> Self {
+        map { $0.onProgress = closure }
+    }
+
+    /// Gets called when the request is completed.
+    public func onFinished(_ closure: @escaping (_ result: Result<ImageResponse, ImagePipeline.Error>) -> Void) -> Self {
+        map { $0.onFinished = closure }
+    }
 
     /// Returns an underlying image view.
     ///
     /// - parameter configure: A closure that gets called once when the view is
     /// created and allows you to configure it based on your needs.
-    public func imageView(_ configure: @escaping (LazyImageView) -> Void) -> Self {
+    public func onImageViewCreated(_ configure: @escaping (LazyImageView) -> Void) -> Self {
+        map { $0.onImageViewCreated = configure }
+    }
+
+    private func map(_ closure: (inout LazyImage) -> Void) -> Self {
         var copy = self
-        copy.configure = configure
+        closure(&copy)
         return copy
     }
 
     public var body: some View {
         LazyImageViewWrapper(source: $loadedSource, configure: configure)
             .onAppear { loadedSource = source }
+    }
+
+    private func configure(_ view: LazyImageView) {
+        onImageViewCreated?(view)
+
+        view.onStarted = onStarted
+        view.onProgress = onProgress
+        view.onFinished = onFinished
     }
 }
 
