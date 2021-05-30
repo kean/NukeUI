@@ -30,18 +30,6 @@ public final class LazyImageView: _PlatformBaseView {
         #warning("implement")
     }
 
-    #if os(iOS) || os(tvOS)
-
-    /// Set a custom content mode to be used for each image type (placeholder, success,
-    /// failure).
-    public func setContentMode(_ contentMode: UIView.ContentMode, for type: ImageType = .success) {
-        #warning("impl")
-    }
-
-    #endif
-
-    #warning("other options like managing priority and auto-retrying")
-
     // MARK: Placeholder View
 
     #if os(macOS)
