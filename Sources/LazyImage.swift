@@ -6,6 +6,9 @@ import Foundation
 import Nuke
 import SwiftUI
 
+public typealias ImageRequest = Nuke.ImageRequest
+public typealias ImagePipeline = Nuke.ImagePipeline
+
 /// Lazily loads and displays an image with the given source.
 ///
 /// Because the view is lazy, the image view doesn't know its size before the
