@@ -5,6 +5,8 @@
 import Foundation
 import Nuke
 
+#if !os(watchOS)
+
 #if os(macOS)
 import AppKit
 #else
@@ -392,3 +394,5 @@ public final class LazyImageView: _PlatformBaseView {
         }
     }
 }
+
+#endif

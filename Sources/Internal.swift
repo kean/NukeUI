@@ -10,6 +10,8 @@ import AppKit
 import UIKit
 #endif
 
+import SwiftUI
+
 extension UIView {
     @discardableResult
     func pinToSuperview() -> [NSLayoutConstraint] {
@@ -40,9 +42,19 @@ extension UIView {
 public typealias _PlatformBaseView = NSView
 typealias _PlatformImage = NSImage
 typealias _PlatformImageView = NSImageView
+
+@available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
+typealias _PlatformHostringController<T: View> = NSHostingController<T>
 #else
 public typealias _PlatformBaseView = UIView
 typealias _PlatformImage = UIImage
 typealias _PlatformImageView = UIImageView
+
+@available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
+typealias _PlatformHostringController<T: View> = UIHostingController<T>
 #endif
 
+@available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
+func toPlatformView<T: View>(_ view: T) -> _PlatformBaseView {
+    _PlatformHostringController(rootView: view).view
+}

@@ -12,7 +12,8 @@ public struct LazyImage: View {
     @State private var loadedSource: ImageRequestConvertible?
 
     // Options
-    private var placeholder: AnyView?
+    private var placeholderView: AnyView?
+    private var failureView: AnyView?
     private var priority: ImageRequest.Priority?
     private var pipeline: ImagePipeline = .shared
     private var onStarted: ((_ task: ImageTask) -> Void)?
@@ -24,9 +25,14 @@ public struct LazyImage: View {
 
     // MARK: Placeholder
 
-    /// Displayed while the image is loading.
-    public func placeholder<Placeholder: View>(@ViewBuilder content: () -> Placeholder?) -> Self {
-        map { $0.placeholder = AnyView(content()) }
+    /// An image to be shown while the request is in progress.
+    public func placeholder<Placeholder: View>(@ViewBuilder _ content: () -> Placeholder?) -> Self {
+        map { $0.placeholderView = AnyView(content()) }
+    }
+
+    /// A view to be shown if the request fails.
+    public func failure<Failure: View>(@ViewBuilder _ content: () -> Failure?) -> Self {
+        map { $0.failureView = AnyView(content()) }
     }
 
     // MARK: Managing Image Tasks
@@ -85,11 +91,8 @@ public struct LazyImage: View {
     private func configure(_ view: LazyImageView) {
         onImageViewCreated?(view)
 
-        #if os(macOS)
-        view.placeholderView = placeholder.map(NSHostingController.init(rootView:))?.view
-        #else
-        view.placeholderView = placeholder.map(UIHostingController.init(rootView:))?.view
-        #endif
+        view.placeholderView = placeholderView.map(toPlatformView)
+        view.failureView = failureView.map(toPlatformView)
         view.priority = priority
         view.pipeline = pipeline
         view.onStarted = onStarted
