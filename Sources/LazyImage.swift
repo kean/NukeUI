@@ -57,6 +57,6 @@ private struct LazyImageViewWrapper: UIViewRepresentable {
     }
 
     func updateUIView(_ imageView: LazyImageView, context: Context) {
-        imageView.load(source)
+        imageView.source = source
     }
 }

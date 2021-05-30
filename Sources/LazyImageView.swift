@@ -85,7 +85,14 @@ public final class LazyImageView: _PlatformBaseView {
     public lazy var animatedImageView = GIFImageView()
     #endif
 
-    #warning("add callbacks")
+    /// Gets called when the request is started.
+    public var onStarted: ((_ task: ImageTask) -> Void)?
+
+    /// Gets called when the request progress is updated.
+    public var onProgress: ((_ response: ImageResponse?, _ completed: Int64, _ total: Int64) -> Void)?
+
+    /// Gets called when the request is completed.
+    public var onFinished: ((_ result: Result<ImageResponse, ImagePipeline.Error>) -> Void)?
 
     #warning("other options like managing priority and auto-retrying")
 
@@ -112,19 +119,7 @@ public final class LazyImageView: _PlatformBaseView {
     }
 
     /// Loads an image with the given request.
-    public func load(
-        _ request: ImageRequestConvertible?,
-        completion: @escaping ((_ result: Result<ImageResponse, ImagePipeline.Error>) -> Void)
-    ) {
-        load(request, progress: nil, completion: completion)
-    }
-
-    /// Loads an image with the given request.
-    public func load(
-        _ request: ImageRequestConvertible?,
-        progress: ((_ response: ImageResponse?, _ completed: Int64, _ total: Int64) -> Void)? = nil,
-        completion: ((_ result: Result<ImageResponse, ImagePipeline.Error>) -> Void)? = nil
-    ) {
+    private func load(_ request: ImageRequestConvertible?) {
         assert(Thread.isMainThread, "Must be called from the main thread")
 
         cancel()
@@ -134,12 +129,20 @@ public final class LazyImageView: _PlatformBaseView {
             return
         }
 
-        imageTask = pipeline.loadImage(with: request, queue: .main, progress: { response, completedCount, totalCount in
-            progress?(response, completedCount, totalCount)
-        }, completion: { [weak self] result in
-            self?.handle(result, isFromMemory: false)
-            completion?(result)
-        })
+
+        let task = pipeline.loadImage(
+            with: request,
+            queue: .main,
+            progress: { [weak self] response, completedCount, totalCount in
+                self?.onProgress?(response, completedCount, totalCount)
+            },
+            completion: { [weak self] result in
+                self?.handle(result, isFromMemory: false)
+                self?.onFinished?(result)
+            }
+        )
+        imageTask = task
+        onStarted?(task)
     }
 
     public func cancel() {
