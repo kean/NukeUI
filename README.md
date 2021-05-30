@@ -2,7 +2,7 @@
 
 A comprehensive solution for displaying lazily loaded images on Apple platforms. 
 
-It uses [Nuke](https://github.com/kean/Nuke) for loading images and has all customization options you can possibly imagine. It also supports animated GIFs rendering thanks to [Gifu](https://github.com/kaishin/Gifu) and caching and displayng short videos as a more efficient alternative to GIF.
+It uses [Nuke](https://github.com/kean/Nuke) for loading images and has all customization options you can possibly imagine. It also supports animated GIFs rendering thanks to [Gifu](https://github.com/kaishin/Gifu).
 
 The library contains two types:
 
