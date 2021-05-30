@@ -94,6 +94,16 @@ public final class LazyImageView: _PlatformBaseView {
     /// Gets called when the request is completed.
     public var onFinished: ((_ result: Result<ImageResponse, ImagePipeline.Error>) -> Void)?
 
+    /// Sets the priority of the image task. The priorit can be changed
+    /// dynamically. `nil` by default.
+    public var priority: ImageRequest.Priority? {
+        didSet {
+            if let priority = self.priority {
+                imageTask?.priority = priority
+            }
+        }
+    }
+
     #warning("other options like managing priority and auto-retrying")
 
     public override init(frame: CGRect) {
@@ -124,11 +134,14 @@ public final class LazyImageView: _PlatformBaseView {
 
         cancel()
 
-        guard let request = request?.asImageRequest() else {
+        guard var request = request?.asImageRequest() else {
             // TODO: handle as failure
             return
         }
 
+        if let priority = self.priority {
+            request.priority = priority
+        }
 
         let task = pipeline.loadImage(
             with: request,

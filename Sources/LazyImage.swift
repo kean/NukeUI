@@ -9,12 +9,15 @@ import SwiftUI
 @available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
 public struct LazyImage: View {
     private let source: ImageRequestConvertible?
-    private var placeholder: AnyView?
     @State private var loadedSource: ImageRequestConvertible?
+
+    // Options
+    private var placeholder: AnyView?
     private var onImageViewCreated: ((LazyImageView) -> Void)?
     private var onStarted: ((_ task: ImageTask) -> Void)?
     private var onProgress: ((_ response: ImageResponse?, _ completed: Int64, _ total: Int64) -> Void)?
     private var onFinished: ((_ result: Result<ImageResponse, ImagePipeline.Error>) -> Void)?
+    private var priority: ImageRequest.Priority?
 
     public init(source: ImageRequestConvertible?) {
         self.source = source
@@ -24,6 +27,10 @@ public struct LazyImage: View {
     /// Displayed while the image is loading.
     public func placeholder<Placeholder: View>(_ view: Placeholder?) -> Self {
         map { $0.placeholder = placeholder }
+    }
+
+    public func priority(_ priority: ImageRequest.Priority?) -> Self {
+        map { $0.priority = priority }
     }
 
     /// Gets called when the request is started.
@@ -49,15 +56,15 @@ public struct LazyImage: View {
         map { $0.onImageViewCreated = configure }
     }
 
+    public var body: some View {
+        LazyImageViewWrapper(source: $loadedSource, configure: configure)
+            .onAppear { loadedSource = source }
+    }
+
     private func map(_ closure: (inout LazyImage) -> Void) -> Self {
         var copy = self
         closure(&copy)
         return copy
-    }
-
-    public var body: some View {
-        LazyImageViewWrapper(source: $loadedSource, configure: configure)
-            .onAppear { loadedSource = source }
     }
 
     private func configure(_ view: LazyImageView) {
@@ -66,6 +73,7 @@ public struct LazyImage: View {
         view.onStarted = onStarted
         view.onProgress = onProgress
         view.onFinished = onFinished
+        view.priority = priority
     }
 }
 
