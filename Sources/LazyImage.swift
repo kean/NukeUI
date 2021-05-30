@@ -141,10 +141,12 @@ public struct LazyImage: View {
     private func configure(_ view: LazyImageView) {
         onImageViewCreated?(view)
 
+        #if os(iOS) || os(tvOS)
         if let contentMode = contentMode {
             view.imageView.contentMode = .init(contentMode)
             view.animatedImageView.contentMode = .init(contentMode)
         }
+        #endif
         view.placeholderView = placeholderView.map(toPlatformView)
         view.failureView = failureView.map(toPlatformView)
         view.transition = transition.map(LazyImageView.Transition.init)
@@ -158,6 +160,23 @@ public struct LazyImage: View {
 
 #warning("add onSuccess/onFailure callbacks")
 
+#if os(macOS)
+@available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
+private struct LazyImageViewWrapper: NSViewRepresentable {
+    @Binding var source: ImageRequestConvertible?
+    var configure: ((LazyImageView) -> Void)?
+
+    func makeNSView(context: Context) -> LazyImageView {
+        let view = LazyImageView()
+        configure?(view)
+        return view
+    }
+
+    func updateNSView(_ imageView: LazyImageView, context: Context) {
+        imageView.source = source
+    }
+}
+#else
 @available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
 private struct LazyImageViewWrapper: UIViewRepresentable {
     @Binding var source: ImageRequestConvertible?
@@ -173,3 +192,4 @@ private struct LazyImageViewWrapper: UIViewRepresentable {
         imageView.source = source
     }
 }
+#endif

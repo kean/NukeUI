@@ -59,6 +59,15 @@ extension _PlatformBaseView {
     }
 }
 
+#if os(macOS)
+extension NSView {
+    func setNeedsUpdateConstraints() {
+        needsUpdateConstraints = true
+    }
+}
+#endif
+
+#if os(iOS) || os(tvOS)
 @available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
 extension UIView.ContentMode {
     init(_ contentMode: LazyImage.ContentMode) {
@@ -70,3 +79,4 @@ extension UIView.ContentMode {
         }
     }
 }
+#endif

@@ -50,7 +50,7 @@ public final class LazyImageView: _PlatformBaseView {
 
     #if os(macOS)
     /// An image to be shown if the request fails.
-    public var failureImage: NSImage? { didSet { setFailureImage(failureView) } }
+    public var failureImage: NSImage? { didSet { setFailureImage(failureImage) } }
 
     /// A view to be shown if the request fails.
     public var failureView: NSView? { didSet { setFailureView(failureView) } }
@@ -128,7 +128,7 @@ public final class LazyImageView: _PlatformBaseView {
     public let imageView = UIImageView()
     #endif
 
-    #if canImport(Gifu)
+    #if os(iOS) || os(tvOS)
     /// Returns an underlying animated image view used for rendering animated images.
     public var animatedImageView: GIFImageView {
         if let animatedImageView = _animatedImageView {
@@ -212,17 +212,30 @@ public final class LazyImageView: _PlatformBaseView {
         updateFailureViewConstraints()
     }
 
+    #if os(iOS) || os(tvOS)
     /// Cancels current request and prepares the view for reuse.
     public func prepareForReuse() {
+        _prepareForReuse()
+    }
+    #else
+    /// Cancels current request and prepares the view for reuse.
+    public override func prepareForReuse() {
+        _prepareForReuse()
+    }
+    #endif
+
+    private func _prepareForReuse() {
         cancel()
 
         placeholderView?.isHidden = true
         failureView?.isHidden = true
         imageView.isHidden = true
-        _animatedImageView?.isHidden = true
-
-        _animatedImageView?.image = nil
         imageView.image = nil
+
+        #if os(iOS) || os(tvOS)
+        _animatedImageView?.isHidden = true
+        _animatedImageView?.image = nil
+        #endif
     }
 
     /// Cancels current request.
@@ -301,7 +314,7 @@ public final class LazyImageView: _PlatformBaseView {
 
     private func display(_ container: Nuke.ImageContainer, isFromMemory: Bool) {
         // TODO: Add support for animated transitions and other options
-        #if canImport(Gifu)
+        #if os(iOS) || os(tvOS)
         if isAnimatedImageRenderingEnabled, let data = container.data, container.type == .gif {
             if animatedImageView.superview == nil {
                 insertSubview(animatedImageView, belowSubview: imageView)
@@ -327,12 +340,12 @@ public final class LazyImageView: _PlatformBaseView {
             switch visibleView {
             case .regular:
                 imageView.isHidden = false
-                #if canImport(Gifu)
+                #if os(iOS) || os(tvOS)
                 animatedImageView.isHidden = true
                 #endif
             case .animated:
                 imageView.isHidden = true
-                #if canImport(Gifu)
+                #if os(iOS) || os(tvOS)
                 animatedImageView.isHidden = false
                 #endif
             }
@@ -445,8 +458,10 @@ public final class LazyImageView: _PlatformBaseView {
         animation.duration = params.duration
         animation.fromValue = 0
         animation.toValue = 1
+        #if os(iOS) || os(tvOS)
         imageView?.layer?.add(animation, forKey: "imageTransition")
         _animatedImageView?.layer?.add(animation, forKey: "imageTransition")
+        #endif
     }
 
     #endif
