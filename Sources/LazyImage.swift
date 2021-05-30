@@ -18,7 +18,7 @@ public typealias ImagePipeline = Nuke.ImagePipeline
 @available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
 public struct LazyImage: View {
     private let source: ImageRequest?
-    @State private var loadedSource: ImageRequest?
+    @State private var proxy = LazyImageViewProxy()
 
     // Options
     private var placeholderView: AnyView?
@@ -136,8 +136,9 @@ public struct LazyImage: View {
     }
 
     public var body: some View {
-        LazyImageViewWrapper(source: $loadedSource, configure: configure)
-            .onAppear { loadedSource = source }
+        LazyImageViewWrapper(onCreated: onCreated)
+            .onAppear { proxy.load(source) }
+            .onDisappear(perform: proxy.reset)
             // Making sure it reload if the source changes
             .id(source.map(ImageRequest.ID.init))
     }
@@ -148,7 +149,8 @@ public struct LazyImage: View {
         return copy
     }
 
-    private func configure(_ view: LazyImageView) {
+    private func onCreated(_ view: LazyImageView) {
+        proxy.imageView = view
         onImageViewCreated?(view)
 
         #if os(iOS) || os(tvOS)
@@ -183,36 +185,46 @@ private extension ImageRequest {
     }
 }
 
+private final class LazyImageViewProxy {
+    var imageView: LazyImageView?
+
+    func load(_ request: ImageRequest?) {
+        imageView?.source = request
+    }
+
+    func reset() {
+        imageView?.reset()
+    }
+}
+
 #if os(macOS)
 @available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
 private struct LazyImageViewWrapper: NSViewRepresentable {
-    @Binding var source: ImageRequestConvertible?
-    var configure: ((LazyImageView) -> Void)?
+    var onCreated: (LazyImageView) -> Void
 
     func makeNSView(context: Context) -> LazyImageView {
         let view = LazyImageView()
-        configure?(view)
+        onCreated(view)
         return view
     }
 
     func updateNSView(_ imageView: LazyImageView, context: Context) {
-        imageView.source = source
+        // Do nothing
     }
 }
 #else
 @available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
 private struct LazyImageViewWrapper: UIViewRepresentable {
-    @Binding var source: ImageRequest?
-    var configure: ((LazyImageView) -> Void)?
+    var onCreated: (LazyImageView) -> Void
 
     func makeUIView(context: Context) -> LazyImageView {
         let view = LazyImageView()
-        configure?(view)
+        onCreated(view)
         return view
     }
 
     func updateUIView(_ imageView: LazyImageView, context: Context) {
-        imageView.source = source
+        // Do nothing
     }
 }
 #endif
