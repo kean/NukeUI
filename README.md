@@ -1,4 +1,4 @@
-![image](https://user-images.githubusercontent.com/1567433/120118387-46931e80-c160-11eb-9f85-d8cee978ad30.png)
+![image-3](https://user-images.githubusercontent.com/1567433/120118417-6fb3af00-c160-11eb-879f-5f9474bc3ed7.png)
 
 A comprehensive solution for displaying lazily loaded images on Apple platforms. 
 
