@@ -4,6 +4,8 @@
 
 import Foundation
 
+#if !os(watchOS)
+
 #if os(macOS)
 import AppKit
 #else
@@ -82,20 +84,6 @@ extension UIView.ContentMode {
 }
 #endif
 
-extension ImageRequest {
-    struct ID: Hashable {
-        let imageId: String?
-        let priority: ImageRequest.Priority
-        let options: ImageRequest.Options
-
-        init(_ request: ImageRequest) {
-            self.imageId = request.imageId
-            self.priority = request.priority
-            self.options = request.options
-        }
-    }
-}
-
 // AVPlayer doesn't support playing videos from memory
 final class TempVideoStorage {
     private let path: URL
@@ -173,6 +161,22 @@ extension ImageDecoders {
                 }
                 return MP4()
             }
+        }
+    }
+}
+
+#endif
+
+extension ImageRequest {
+    struct ID: Hashable {
+        let imageId: String?
+        let priority: ImageRequest.Priority
+        let options: ImageRequest.Options
+
+        init(_ request: ImageRequest) {
+            self.imageId = request.imageId
+            self.priority = request.priority
+            self.options = request.options
         }
     }
 }
