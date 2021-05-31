@@ -97,7 +97,7 @@ LazyImage(source: "https://example.com/image.jpeg")
 
 | Nuke          | Swift           | Xcode           | Platforms                                         |
 |---------------|-----------------|-----------------|---------------------------------------------------|
-| NUkeUI Beta   | Swift 5.3       | Xcode 12.0      | iOS 11.0 / watchOS 4.0 / macOS 10.13 / tvOS 11.0  |
+| NukeUI Beta   | Swift 5.3       | Xcode 12.0      | iOS 11.0 / watchOS 4.0 / macOS 10.13 / tvOS 11.0  |
 
 > `LazyImage` is available on the following platforms: iOS 13.0 / watchOS 5.0 / macOS 10.15 / tvOS 13.0
 
