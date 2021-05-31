@@ -17,6 +17,8 @@ import UIKit
 import Gifu
 #endif
 
+import AVKit
+
 /// Lazily loads and displays an image with the given source.
 public final class LazyImageView: _PlatformBaseView {
 
@@ -201,7 +203,22 @@ public final class LazyImageView: _PlatformBaseView {
     /// new download is started.
     public var isPrepareForReuseEnabled = true
 
+    // MARK: Short Videos
+
+    /// Set to `true` to enable video support. `false` by default.
+    public var isExperimentalVideoSupportEnabled = false
+
+    private var videoURL: URL?
+    private var videoPreprocessId = 0
+    private var player: AVPlayer?
+    private var playerLayer: AVPlayerLayer?
+    private var playerLooper: AnyObject?
+
     // MARK: Initializers
+
+    deinit {
+        reset()
+    }
 
     public override init(frame: CGRect) {
         super.init(frame: frame)
@@ -245,12 +262,20 @@ public final class LazyImageView: _PlatformBaseView {
         _animatedImageView?.isHidden = true
         _animatedImageView?.image = nil
         #endif
+
+        videoURL.map(TempVideoStorage.shared.removeData(for:))
+        videoURL = nil
+        playerLayer?.removeFromSuperlayer()
+        playerLayer = nil
+        player = nil
     }
 
     /// Cancels current request.
     public func cancel() {
         imageTask?.cancel()
         imageTask = nil
+
+        videoPreprocessId = 0
     }
 
     // MARK: Loading
@@ -258,6 +283,10 @@ public final class LazyImageView: _PlatformBaseView {
     /// Loads an image with the given request.
     private func load(_ request: ImageRequestConvertible?) {
         assert(Thread.isMainThread, "Must be called from the main thread")
+
+        if isExperimentalVideoSupportEnabled {
+            ImageDecoders.MP4.register()
+        }
 
         cancel()
 
@@ -343,6 +372,8 @@ public final class LazyImageView: _PlatformBaseView {
             }
             animatedImageView.animate(withGIFData: data)
             visibleView = .animated
+        } else if isExperimentalVideoSupportEnabled, let data = container.data, container.type == .mp4 {
+            playVideo(data)
         } else {
             imageView.image = container.image
             visibleView = .regular
@@ -488,7 +519,34 @@ public final class LazyImageView: _PlatformBaseView {
     }
 
     #endif
-}
 
+    // MARK: Private (Video)
+
+    private func playVideo(_ data: Data) {
+        self.videoPreprocessId += 1
+        let requestId = self.videoPreprocessId
+
+        // TODO: figure out how to optimize it
+        TempVideoStorage.shared.storeData(data) { [weak self] url in
+            guard self?.videoPreprocessId == requestId else { return }
+            self?._playVideoAtURL(url)
+        }
+    }
+
+    private func _playVideoAtURL(_ url: URL) {
+        let playerItem = AVPlayerItem(url: url)
+        let player = AVQueuePlayer(playerItem: playerItem)
+        let playerLayer = AVPlayerLayer(player: player)
+        self.playerLooper = AVPlayerLooper(player: player, templateItem: playerItem)
+
+        layer.addSublayer(playerLayer)
+        playerLayer.frame = bounds
+
+        player.play()
+
+        self.player = player
+        self.playerLayer = playerLayer
+    }
+}
 
 #endif
