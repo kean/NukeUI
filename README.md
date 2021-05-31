@@ -1,15 +1,13 @@
 # NukeUI
 
-A comprehensive solution for displaying lazily loaded images on Apple platforms. 
-
-It uses [Nuke](https://github.com/kean/Nuke) for loading images and has all customization options you can possibly imagine. It also supports animated GIFs rendering thanks to [Gifu](https://github.com/kaishin/Gifu).
-
-The library contains two types:
+A comprehensive solution for displaying lazily loaded images on Apple platforms.  The library contains two types:
 
 - `LazyImage` for SwiftUI
 - `LazyImageView` for UIKit and AppKit
 
 Both views have an equivalent sets of APIs.
+
+The library uses [Nuke](https://github.com/kean/Nuke) for loading images and has many customization options. It also supports GIF rendering thanks to [Gifu](https://github.com/kaishin/Gifu). GIF is [not the most](https://web.dev/replace-gifs-with-videos/) efficient format, so NukeUI also supports playing short videos out of the box.
 
 ## Usage
 
@@ -22,6 +20,8 @@ struct ContainerView: View {
     }
 }
 ```
+
+The view is called "lazy" because it loads.
 
 The source can be anything from a `String` to a full `ImageRequest`.
 
@@ -81,23 +81,22 @@ LazyImage(source: "https://example.com/image.jpeg")
     .onCompletion { ... }
 ```
 
-And if some API isn't exposed yet, you can always get access to the underlying `LazyImageView` instance:
+And if some API isn't exposed yet, you can always get access to the underlying `LazyImageView` instance. For example, you are currently going to need to access the underlying view to enable experimental video playback support:
 
 ```swift
 LazyImage(source: "https://example.com/image.jpeg")
     .onImageViewCreated { view in 
-        // ...
+        view.isExperimentalVideoSupportEnabled = true
     }
 ```
 
-`LazyImageView` is a `LazyImage` counterpart for UIKit and AppKit with the equivalent set of APIs. 
-
+`LazyImageView` is a `LazyImage` counterpart for UIKit and AppKit with the equivalent set of APIs.
 
 ## Minimum Requirements
 
 | Nuke          | Swift           | Xcode           | Platforms                                         |
 |---------------|-----------------|-----------------|---------------------------------------------------|
-| NukeUI Beta   | Swift 5.3       | Xcode 12.0      | iOS 11.0 / watchOS 4.0 / macOS 10.13 / tvOS 11.0  |
+| NukeUI 0.1.0   | Swift 5.3       | Xcode 12.0      | iOS 11.0 / watchOS 4.0 / macOS 10.13 / tvOS 11.0  |
 
 > `LazyImage` is available on the following platforms: iOS 13.0 / watchOS 5.0 / macOS 10.15 / tvOS 13.0
 
