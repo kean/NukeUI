@@ -23,7 +23,7 @@ struct ContainerView: View {
 }
 ```
 
-The source can be anything from `URL` to a full `ImageRequest`.
+The source can be anything from a `String` to a full `ImageRequest`.
 
 ```swift
 LazyImage(source: "https://example.com/image.jpeg")
