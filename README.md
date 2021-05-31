@@ -92,6 +92,15 @@ LazyImage(source: "https://example.com/image.jpeg")
 
 `LazyImageView` is a `LazyImage` counterpart for UIKit and AppKit with the equivalent set of APIs. 
 
+
+## Minimum Requirements
+
+| Nuke          | Swift           | Xcode           | Platforms                                         |
+|---------------|-----------------|-----------------|---------------------------------------------------|
+| NUkeUI Beta   | Swift 5.3       | Xcode 12.0      | iOS 11.0 / watchOS 4.0 / macOS 10.13 / tvOS 11.0  |
+
+> `LazyImage` is available on the following platforms: iOS 13.0 / watchOS 5.0 / macOS 10.15 / tvOS 13.0
+
 ## License
 
 NukeUI is available under the MIT license. See the LICENSE file for more info.
