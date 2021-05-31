@@ -7,7 +7,7 @@ A comprehensive solution for displaying lazily loaded images on Apple platforms.
 
 Both views have an equivalent sets of APIs.
 
-The library uses [Nuke](https://github.com/kean/Nuke) for loading images and has many customization options. It also supports GIF rendering thanks to [Gifu](https://github.com/kaishin/Gifu). GIF is [not the most](https://web.dev/replace-gifs-with-videos/) efficient format, so NukeUI also supports playing short videos out of the box.
+The library uses [Nuke](https://github.com/kean/Nuke) for loading images and has many customization options. It also supports GIF rendering thanks to [Gifu](https://github.com/kaishin/Gifu). But GIF is [not the most](https://web.dev/replace-gifs-with-videos/) efficient format, so NukeUI also supports playing short videos out of the box.
 
 ## Usage
 
@@ -21,7 +21,7 @@ struct ContainerView: View {
 }
 ```
 
-The view is called "lazy" because it loads.
+The view is called "lazy" because it loads the image from the source only when the view appears on the screen. And when the view disappears (or is deallocated), the current request automatically gets canceled. When the view reappears, the download picks up where it left off thanks to [resumable downloads](https://kean.blog/post/resumable-downloads). 
 
 The source can be anything from a `String` to a full `ImageRequest`.
 
