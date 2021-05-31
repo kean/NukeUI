@@ -11,10 +11,10 @@ public typealias ImagePipeline = Nuke.ImagePipeline
 
 /// Lazily loads and displays an image with the given source.
 ///
-/// Because the view is lazy, the image view doesn't know its size before the
-/// image is downloaded. The user must specify the size for the view and the
-/// image will take all of the available space. By default, it fills the space,
-/// but you can change the content mode.
+/// The image view is lazy and doesn't know the size of the image before it is
+/// downloaded. You must specify the size for the view before loading the image.
+/// By default, the image will resize to fill the available space but preserve
+/// the aspect ratio. You can change this behavior by passing a different content mode.
 @available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
 public struct LazyImage: View {
     private let source: ImageRequest?
@@ -27,7 +27,7 @@ public struct LazyImage: View {
     private var transition: Transition?
     private var priority: ImageRequest.Priority?
     private var pipeline: ImagePipeline = .shared
-    private var onStarted: ((_ task: ImageTask) -> Void)?
+    private var onStart: ((_ task: ImageTask) -> Void)?
     private var onProgress: ((_ response: ImageResponse?, _ completed: Int64, _ total: Int64) -> Void)?
     private var onSuccess: ((_ response: ImageResponse) -> Void)?
     private var onFailure: ((_ response: ImagePipeline.Error) -> Void)?
@@ -107,8 +107,8 @@ public struct LazyImage: View {
     // MARK: Callbacks
 
     /// Gets called when the request is started.
-    public func onStarted(_ closure: @escaping (_ task: ImageTask) -> Void) -> Self {
-        map { $0.onStarted = closure }
+    public func onStart(_ closure: @escaping (_ task: ImageTask) -> Void) -> Self {
+        map { $0.onStart = closure }
     }
 
     /// Gets called when the request progress is updated.
@@ -175,7 +175,7 @@ public struct LazyImage: View {
         view.processors = processors
         view.priority = priority
         view.pipeline = pipeline
-        view.onStarted = onStarted
+        view.onStart = onStart
         view.onProgress = onProgress
         view.onSuccess = onSuccess
         view.onFailure = onFailure

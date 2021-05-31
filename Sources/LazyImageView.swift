@@ -175,7 +175,7 @@ public final class LazyImageView: _PlatformBaseView {
     // MARK: Callbacks
 
     /// Gets called when the request is started.
-    public var onStarted: ((_ task: ImageTask) -> Void)?
+    public var onStart: ((_ task: ImageTask) -> Void)?
 
     /// Gets called when the request progress is updated.
     public var onProgress: ((_ response: ImageResponse?, _ completed: Int64, _ total: Int64) -> Void)?
@@ -307,7 +307,7 @@ public final class LazyImageView: _PlatformBaseView {
             }
         )
         imageTask = task
-        onStarted?(task)
+        onStart?(task)
     }
 
     // MARK: Handling Responses
