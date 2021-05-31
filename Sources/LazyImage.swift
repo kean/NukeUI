@@ -34,7 +34,7 @@ public struct LazyImage: View {
     private var onSuccess: ((_ response: ImageResponse) -> Void)?
     private var onFailure: ((_ response: ImagePipeline.Error) -> Void)?
     private var onCompletion: ((_ result: Result<ImageResponse, ImagePipeline.Error>) -> Void)?
-    private var onImageViewCreated: ((LazyImageView) -> Void)?
+    private var onCreated: ((LazyImageView) -> Void)?
     private var contentMode: ContentMode?
 
     // MARK: Content Mode
@@ -138,7 +138,7 @@ public struct LazyImage: View {
     /// - parameter configure: A closure that gets called once when the view is
     /// created and allows you to configure it based on your needs.
     public func onImageViewCreated(_ configure: ((LazyImageView) -> Void)?) -> Self {
-        map { $0.onImageViewCreated = configure }
+        map { $0.onCreated = configure }
     }
 
     // MARK: Initializers
@@ -163,7 +163,7 @@ public struct LazyImage: View {
 
     private func onCreated(_ view: LazyImageView) {
         proxy.imageView = view
-        onImageViewCreated?(view)
+        onCreated?(view)
 
         #if os(iOS) || os(tvOS)
         if let contentMode = contentMode {
