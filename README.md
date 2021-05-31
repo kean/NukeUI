@@ -92,6 +92,12 @@ LazyImage(source: "https://example.com/image.jpeg")
 
 `LazyImageView` is a `LazyImage` counterpart for UIKit and AppKit with the equivalent set of APIs.
 
+## Limitations
+
+- GIF support is currently limited to iOS and tvOS
+- The support for watchOS is there but is currently limited
+- Video playback currently requires a temporary disk storage
+
 ## Minimum Requirements
 
 | Nuke          | Swift           | Xcode           | Platforms                                         |
