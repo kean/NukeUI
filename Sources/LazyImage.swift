@@ -171,6 +171,7 @@ public struct LazyImage: View {
             view.animatedImageView.contentMode = .init(contentMode)
         }
         #endif
+
         view.placeholderView = placeholderView.map(toPlatformView)
         view.failureView = failureView.map(toPlatformView)
         view.transition = transition.map(LazyImageView.Transition.init)

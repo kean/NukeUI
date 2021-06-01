@@ -377,15 +377,16 @@ public final class LazyImageView: _PlatformBaseView {
                 animatedImageView.pinToSuperview()
             }
             animatedImageView.animate(withGIFData: data)
-            visibleView = .animated
+            animatedImageView.isHidden = false
         } else if isExperimentalVideoSupportEnabled, let data = container.data, container.type == .mp4 {
             playVideo(data)
         } else {
             imageView.image = container.image
-            visibleView = .regular
+            imageView.isHidden = false
         }
         #else
         imageView.image = container.image
+        imageView.isHidden = false
         #endif
 
         if !isFromMemory, let transition = transition {
@@ -393,27 +394,6 @@ public final class LazyImageView: _PlatformBaseView {
         }
 
         isDisplayingContent = true // Order important
-    }
-
-    var visibleView: ContentViewType = .regular {
-        didSet {
-            switch visibleView {
-            case .regular:
-                imageView.isHidden = false
-                #if os(iOS) || os(tvOS)
-                animatedImageView.isHidden = true
-                #endif
-            case .animated:
-                imageView.isHidden = true
-                #if os(iOS) || os(tvOS)
-                animatedImageView.isHidden = false
-                #endif
-            }
-        }
-    }
-
-    enum ContentViewType {
-        case regular, animated
     }
 
     public enum SubviewPosition {
