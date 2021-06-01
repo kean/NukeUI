@@ -198,8 +198,9 @@ public final class LazyImageView: _PlatformBaseView {
     public var isAnimatedImageRenderingEnabled = true
 
     /// `true` by default. If enabled, the image view will be cleared before the
-    /// new download is started.
-    public var isPrepareForReuseEnabled = true
+    /// new download is started. You can disable it if you want to keep the
+    /// previous content while the new download is in progress.
+    public var isResetEnabled = true
 
     // MARK: Short Videos
 
@@ -212,6 +213,7 @@ public final class LazyImageView: _PlatformBaseView {
     private var playerLayer: AVPlayerLayer?
     private var playerLooper: AnyObject?
 
+    private var isResetNeeded = false
     private var isDisplayingContent = false
 
     // MARK: Initializers
@@ -290,13 +292,15 @@ public final class LazyImageView: _PlatformBaseView {
         assert(Thread.isMainThread, "Must be called from the main thread")
 
         if isExperimentalVideoSupportEnabled {
-            ImageDecoders.MP4.register()
+            ImageDecoders.MP4.register() // TODO: Can the codec also pull the first frame?
         }
 
         cancel()
 
-        if isPrepareForReuseEnabled {
+        if isResetEnabled {
             reset()
+        } else {
+            isResetNeeded = true
         }
 
         guard var request = request?.asImageRequest() else {
@@ -366,12 +370,15 @@ public final class LazyImageView: _PlatformBaseView {
         onCompletion?(result)
     }
 
-
     private func display(_ container: Nuke.ImageContainer, isFromMemory: Bool) {
+        if isResetNeeded {
+            reset()
+            isResetNeeded = false
+        }
         #if os(iOS) || os(tvOS)
         if isAnimatedImageRenderingEnabled, let data = container.data, container.type == .gif {
             if animatedImageView.superview == nil {
-                insertSubview(animatedImageView, belowSubview: imageView)
+                insertSubview(animatedImageView, belowSubview: imageView) // Below placeholders
                 animatedImageView.pinToSuperview()
             }
             animatedImageView.animate(withGIFData: data)
