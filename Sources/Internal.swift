@@ -68,6 +68,10 @@ extension _PlatformBaseView {
         case .fill: return pinToSuperview()
         }
     }
+
+    func getLayer() -> CALayer? {
+        layer // Optional on macOS but not on iOS
+    }
 }
 
 extension CALayer {

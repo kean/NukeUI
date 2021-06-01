@@ -500,7 +500,9 @@ public final class LazyImageView: _PlatformBaseView {
         self.videoPreprocessId += 1
         let requestId = self.videoPreprocessId
 
-        // TODO: figure out how to optimize it
+        // TODO: Figure out how to optimize it. There should be a way to play
+        // a video from memory. If there is none, we should optimize how we work
+        // with a file storage.
         TempVideoStorage.shared.storeData(data) { [weak self] url in
             guard self?.videoPreprocessId == requestId else { return }
             self?._playVideoAtURL(url)
@@ -513,13 +515,7 @@ public final class LazyImageView: _PlatformBaseView {
         let playerLayer = AVPlayerLayer(player: player)
         self.playerLooper = AVPlayerLooper(player: player, templateItem: playerItem)
 
-        #if os(macOS)
-        layer?.addSublayer(playerLayer)
-        #else
-        layer.addSublayer(playerLayer)
-        #endif
-        playerLayer.frame = bounds
-
+        getLayer()?.addSublayer(playerLayer)
         player.play()
 
         self.player = player
