@@ -111,6 +111,7 @@ extension UIView.ContentMode {
 import Foundation
 import AVFoundation
 
+// This allows LazyImage to play video from memory.
 final class DataAssetResourceLoader: NSObject, AVAssetResourceLoaderDelegate {
     private let data: Data
     private let contentType: String
