@@ -11,6 +11,8 @@ Both views have equivalent APIs.
 
 It uses [Nuke](https://github.com/kean/Nuke) for loading images and has many customization options. It also supports GIF rendering thanks to [Gifu](https://github.com/kaishin/Gifu). But GIF is [not the most](https://web.dev/replace-gifs-with-videos/) efficient format, so NukeUI also supports playing short videos out of the box.
 
+> **WARNING**. It's work-in-progress. Feel free to try it at your own risk by installing the package from the `main` branch.
+
 ## Usage
 
 The view is instantiated with a source.
