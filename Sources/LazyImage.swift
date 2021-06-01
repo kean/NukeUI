@@ -137,7 +137,7 @@ public struct LazyImage: View {
     ///
     /// - parameter configure: A closure that gets called once when the view is
     /// created and allows you to configure it based on your needs.
-    public func configure(_ configure: ((LazyImageView) -> Void)?) -> Self {
+    public func onCreated(_ configure: ((LazyImageView) -> Void)?) -> Self {
         map { $0.onCreated = configure }
     }
 
