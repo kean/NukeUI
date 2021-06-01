@@ -9,7 +9,7 @@ The library provides two components:
 
 Both views have equivalent APIs.
 
-The library uses [Nuke](https://github.com/kean/Nuke) for loading images and has many customization options. It also supports GIF rendering thanks to [Gifu](https://github.com/kaishin/Gifu). But GIF is [not the most](https://web.dev/replace-gifs-with-videos/) efficient format, so NukeUI also supports playing short videos out of the box.
+It uses [Nuke](https://github.com/kean/Nuke) for loading images and has many customization options. It also supports GIF rendering thanks to [Gifu](https://github.com/kaishin/Gifu). But GIF is [not the most](https://web.dev/replace-gifs-with-videos/) efficient format, so NukeUI also supports playing short videos out of the box.
 
 ## Usage
 
