@@ -514,6 +514,7 @@ public final class LazyImageView: _PlatformBaseView {
         self.playerLooper = AVPlayerLooper(player: player, templateItem: playerItem)
 
         getLayer()?.addSublayer(playerLayer)
+        playerLayer.frame = bounds
         player.play()
 
         self.player = player
