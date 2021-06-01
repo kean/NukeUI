@@ -33,7 +33,12 @@ The source can be anything from a `String` to a full `ImageRequest`.
 LazyImage(source: "https://example.com/image.jpeg")
 LazyImage(source: URL(string: "https://example.com/image.jpeg"))
 LazyImage(source: URLRequest(url: URL(string: "https://example.com/image.jpeg")!))
-LazyImage(source: ImageRequest(url: URL(string: "https://example.com/image.jpeg"), processors: [ImageProcessors.Resize(width: 44)]))
+
+let request = ImageRequest(
+    url: URL(string: "https://example.com/image.jpeg"),
+    processors: [ImageProcessors.Resize(width: 44)]
+)
+LazyImage(source: request)
 ```
 
 > Learn more about customizing image requests in ["Image Requests."](https://kean.blog/nuke/guides/customizing-requests)
