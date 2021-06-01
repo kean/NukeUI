@@ -49,7 +49,7 @@ LazyImage(source: "https://example.com/image.jpeg")
 }
 ```
 
-The image view is lazy and doesn't know the size of the image before it downloads it. Thus, you must specify the view size before loading the image. By default, the image will resize to fill the available space but preserve the aspect ratio. You can change this behavior by passing a different content mode.
+The image view is lazy and doesn't know the size of the image before it downloads it. Thus, you must specify the view size before loading the image. By default, the image will resize preserving the aspect ratio to fill the available space. You can change this behavior by passing a different content mode.
 
 ```swift
 LazyImage(source: "https://example.com/image.jpeg")
