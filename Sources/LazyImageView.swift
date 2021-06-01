@@ -19,6 +19,8 @@ import Gifu
 
 import AVKit
 
+public typealias AnimatedImageView = Gifu.GIFImageView
+
 /// Lazily loads and displays an image with the given source.
 public final class LazyImageView: _PlatformBaseView {
 
@@ -137,18 +139,18 @@ public final class LazyImageView: _PlatformBaseView {
 
     #if os(iOS) || os(tvOS)
     /// Returns an underlying animated image view used for rendering animated images.
-    public var animatedImageView: GIFImageView {
+    public var animatedImageView: AnimatedImageView {
         if let animatedImageView = _animatedImageView {
             return animatedImageView
         }
-        let animatedImageView = GIFImageView()
+        let animatedImageView = AnimatedImageView()
         animatedImageView.contentMode = .scaleAspectFill
         animatedImageView.clipsToBounds = true
         _animatedImageView = animatedImageView
         return animatedImageView
     }
 
-    private var _animatedImageView: GIFImageView?
+    private var _animatedImageView: AnimatedImageView?
     #endif
 
     // MARK: Managing Image Tasks
@@ -207,11 +209,13 @@ public final class LazyImageView: _PlatformBaseView {
     /// Set to `true` to enable video support. `false` by default.
     public var isExperimentalVideoSupportEnabled = false
 
-    private var videoURL: URL?
-    private var videoPreprocessId = 0
+    /// `.resizeAspectFill` by default.
+    public var videoGravity: AVLayerVideoGravity = .resizeAspectFill
+
     private var player: AVPlayer?
     private var playerLayer: AVPlayerLayer?
     private var playerLooper: AnyObject?
+    private var assetResourceLoader: DataAssetResourceLoader?
 
     private var isResetNeeded = false
     private var isDisplayingContent = false
@@ -247,6 +251,12 @@ public final class LazyImageView: _PlatformBaseView {
         didSet { load(source) }
     }
 
+    public override func layoutSubviews() {
+        super.layoutSubviews()
+
+        playerLayer?.frame = bounds
+    }
+
     public override func updateConstraints() {
         super.updateConstraints()
 
@@ -268,11 +278,11 @@ public final class LazyImageView: _PlatformBaseView {
         _animatedImageView?.image = nil
         #endif
 
-        videoURL.map(TempVideoStorage.shared.removeData(for:))
-        videoURL = nil
         playerLayer?.removeFromSuperlayer()
         playerLayer = nil
+        player?.pause()
         player = nil
+        assetResourceLoader = nil
 
         isDisplayingContent = false
     }
@@ -281,8 +291,6 @@ public final class LazyImageView: _PlatformBaseView {
     public func cancel() {
         imageTask?.cancel()
         imageTask = nil
-
-        videoPreprocessId = 0
     }
 
     // MARK: Loading
@@ -492,22 +500,17 @@ public final class LazyImageView: _PlatformBaseView {
     // MARK: Private (Video)
 
     private func playVideo(_ data: Data) {
-        self.videoPreprocessId += 1
-        let requestId = self.videoPreprocessId
+        let loader = DataAssetResourceLoader(data: data, contentType: AVFileType.mp4.rawValue)
+        self.assetResourceLoader = loader
+        let url = URL(string: "in-memory-data://\(UUID().uuidString)") ?? URL(fileURLWithPath: "/dev/null")
+        let asset = AVURLAsset(url: url)
 
-        // TODO: Figure out how to optimize it. There should be a way to play
-        // a video from memory. If there is none, we should optimize how we work
-        // with a file storage.
-        TempVideoStorage.shared.storeData(data) { [weak self] url in
-            guard self?.videoPreprocessId == requestId else { return }
-            self?._playVideoAtURL(url)
-        }
-    }
+        asset.resourceLoader.setDelegate(loader, queue: .global())
 
-    private func _playVideoAtURL(_ url: URL) {
-        let playerItem = AVPlayerItem(url: url)
+        let playerItem = AVPlayerItem(asset: asset)
         let player = AVQueuePlayer(playerItem: playerItem)
         let playerLayer = AVPlayerLayer(player: player)
+        playerLayer.videoGravity = videoGravity
         self.playerLooper = AVPlayerLooper(player: player, templateItem: playerItem)
 
         getLayer()?.addSublayer(playerLayer)

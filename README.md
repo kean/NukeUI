@@ -115,7 +115,6 @@ imageView.source = "https://example.com/image.jpeg"
 
 - GIF support is currently limited to iOS and tvOS
 - The support for watchOS is there but is currently limited
-- Video playback currently requires a temporary disk storage
 
 ## Minimum Requirements
 

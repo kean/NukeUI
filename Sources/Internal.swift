@@ -106,47 +106,39 @@ extension UIView.ContentMode {
 }
 #endif
 
-// AVPlayer doesn't support playing videos from memory
-final class TempVideoStorage {
-    private let path: URL
-    private let _queue = DispatchQueue(label: "com.github.kean.Nuke.TempVideoStorage.Queue")
+// MARK: Video (Private)
 
-    // Ignoring error handling for simplicity.
-    static let shared = TempVideoStorage()
+import Foundation
+import AVFoundation
 
-    init() {
-        guard let root = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else {
-            self.path = URL(fileURLWithPath: "/dev/null") // Should never happen
-            return
-        }
-        self.path = root.appendingPathComponent("com.github.kean.NukeUI.TemporaryVideoStorage", isDirectory: true)
-        // Clear the contents that could potentially was left from the previous session.
-        try? FileManager.default.removeItem(at: path)
-        try? FileManager.default.createDirectory(at: path, withIntermediateDirectories: true, attributes: nil)
+final class DataAssetResourceLoader: NSObject, AVAssetResourceLoaderDelegate {
+    private let data: Data
+    private let contentType: String
+
+    init(data: Data, contentType: String) {
+        self.data = data
+        self.contentType = contentType
     }
 
-    func storeData(_ data: Data, _ completion: @escaping (URL) -> Void) {
-        _queue.async {
-            let url = self.path.appendingPathComponent(UUID().uuidString).appendingPathExtension("mp4")
-            try? data.write(to: url) // Ignore that write may fail in some cases
-            DispatchQueue.main.async {
-                completion(url)
+    func resourceLoader(_ resourceLoader: AVAssetResourceLoader, shouldWaitForLoadingOfRequestedResource loadingRequest: AVAssetResourceLoadingRequest) -> Bool {
+        if let contentRequest = loadingRequest.contentInformationRequest {
+            contentRequest.contentType = contentType
+            contentRequest.contentLength = Int64(data.count)
+            contentRequest.isByteRangeAccessSupported = true
+        }
+
+        if let dataRequest = loadingRequest.dataRequest {
+            if dataRequest.requestsAllDataToEndOfResource {
+                dataRequest.respond(with: data[dataRequest.requestedOffset...])
+            } else {
+                let range = dataRequest.requestedOffset..<(dataRequest.requestedOffset + Int64(dataRequest.requestedLength))
+                dataRequest.respond(with: data[range])
             }
         }
-    }
 
-    func removeData(for url: URL) {
-        _queue.async {
-            try? FileManager.default.removeItem(at: url)
-        }
-    }
+        loadingRequest.finishLoading()
 
-    func removeAll() {
-        _queue.async {
-            // Clear the contents that could potentially was left from the previous session.
-            try? FileManager.default.removeItem(at: self.path)
-            try? FileManager.default.createDirectory(at: self.path, withIntermediateDirectories: true, attributes: nil)
-        }
+        return true
     }
 }
 
