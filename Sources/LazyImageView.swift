@@ -100,21 +100,19 @@ public final class LazyImageView: _PlatformBaseView {
         }
 
         #if os(iOS) || os(tvOS)
-        /// Fade-in transition (cross-fade in case the image view is already
-        /// displaying an image).
+        /// Fade-in transition.
         public static func fadeIn(duration: TimeInterval, options: UIView.AnimationOptions = .allowUserInteraction) -> Transition {
             Transition(style: .fadeIn(parameters: Parameters(duration: duration, options: options)))
         }
         #else
-        /// Fade-in transition (cross-fade in case the image view is already
-        /// displaying an image).
+        /// Fade-in transition.
         public static func fadeIn(duration: TimeInterval) -> Transition {
             Transition(style: .fadeIn(parameters: Parameters(duration: duration)))
         }
         #endif
 
-        /// Fade-in transition (cross-fade in case the image view is already
-        /// displaying an image).
+        /// A custom image view transition. The closure will get called after
+        /// the image is already displayed.
         public static func custom(_ closure: @escaping (LazyImageView, Nuke.ImageContainer) -> Void) -> Transition {
             Transition(style: .custom(closure: closure))
         }
