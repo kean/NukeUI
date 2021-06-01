@@ -112,7 +112,7 @@ imageView.source = "https://example.com/image.jpeg"
 
 ## Minimum Requirements
 
-| Nuke          | Swift           | Xcode           | Platforms                                         |
+| NukeUI          | Swift           | Xcode           | Platforms                                         |
 |---------------|-----------------|-----------------|---------------------------------------------------|
 | main branch   | Swift 5.3       | Xcode 12.0      | iOS 11.0 / watchOS 5.0 / macOS 10.13 / tvOS 11.0  |
 
