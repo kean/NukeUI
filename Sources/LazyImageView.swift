@@ -402,14 +402,6 @@ public final class LazyImageView: _PlatformBaseView {
         isDisplayingContent = true
     }
 
-    public enum SubviewPosition {
-        /// Center in the superview.
-        case center
-
-        /// Fill the superview.
-        case fill
-    }
-
     // MARK: Private (Placeholder View)
 
     private func setPlaceholderImage(_ placeholderImage: _PlatformImage?) {
@@ -524,6 +516,16 @@ public final class LazyImageView: _PlatformBaseView {
 
         self.player = player
         self.playerLayer = playerLayer
+    }
+
+    // MARK: Misc
+
+    public enum SubviewPosition {
+        /// Center in the superview.
+        case center
+
+        /// Fill the superview.
+        case fill
     }
 }
 
