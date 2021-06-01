@@ -62,6 +62,16 @@ extension _PlatformBaseView {
     }
 }
 
+extension CALayer {
+    func animateOpacity(duration: CFTimeInterval) {
+        let animation = CABasicAnimation(keyPath: "opacity")
+        animation.duration = duration
+        animation.fromValue = 0
+        animation.toValue = 1
+        add(animation, forKey: "imageTransition")
+    }
+}
+
 #if os(macOS)
 extension NSView {
     func setNeedsUpdateConstraints() {

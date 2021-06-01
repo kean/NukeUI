@@ -232,9 +232,12 @@ public final class LazyImageView: _PlatformBaseView {
 
     private func didInit() {
         addSubview(imageView)
+        imageView.pinToSuperview()
+
+        #if !os(macOS)
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
-        imageView.pinToSuperview()
+        #endif
     }
 
     /// Sets the given source and immediately starts the download.
@@ -363,7 +366,6 @@ public final class LazyImageView: _PlatformBaseView {
 
 
     private func display(_ container: Nuke.ImageContainer, isFromMemory: Bool) {
-        // TODO: Add support for animated transitions and other options
         #if os(iOS) || os(tvOS)
         if isAnimatedImageRenderingEnabled, let data = container.data, container.type == .gif {
             if animatedImageView.superview == nil {
@@ -508,14 +510,7 @@ public final class LazyImageView: _PlatformBaseView {
     #elseif os(macOS)
 
     private func runFadeInTransition(params: Transition.Parameters) {
-        let animation = CABasicAnimation(keyPath: "opacity")
-        animation.duration = params.duration
-        animation.fromValue = 0
-        animation.toValue = 1
-        #if os(iOS) || os(tvOS)
-        imageView?.layer?.add(animation, forKey: "imageTransition")
-        _animatedImageView?.layer?.add(animation, forKey: "imageTransition")
-        #endif
+        imageView.layer?.animateOpacity(duration: params.duration)
     }
 
     #endif
@@ -539,7 +534,11 @@ public final class LazyImageView: _PlatformBaseView {
         let playerLayer = AVPlayerLayer(player: player)
         self.playerLooper = AVPlayerLooper(player: player, templateItem: playerItem)
 
+        #if os(macOS)
+        layer?.addSublayer(playerLayer)
+        #else
         layer.addSublayer(playerLayer)
+        #endif
         playerLayer.frame = bounds
 
         player.play()
