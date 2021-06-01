@@ -339,7 +339,9 @@ public final class LazyImageView: _PlatformBaseView {
             },
             completion: { [weak self] result in
                 guard let self = self else { return }
-                self.handle(result, isFromMemory: false)
+                DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(2)) {
+                    self.handle(result, isFromMemory: false)
+                }
             }
         )
         imageTask = task
@@ -393,7 +395,8 @@ public final class LazyImageView: _PlatformBaseView {
             runTransition(transition, container)
         }
 
-        isDisplayingContent = true // Order important
+        // It's used to determine when to perform certain transitions
+        isDisplayingContent = true
     }
 
     public enum SubviewPosition {
@@ -431,13 +434,7 @@ public final class LazyImageView: _PlatformBaseView {
 
     private func updatePlaceholderViewConstraints() {
         NSLayoutConstraint.deactivate(placeholderViewConstraints)
-
-        if let placeholderView = self.placeholderView {
-            switch placeholderViewPosition {
-            case .center: placeholderViewConstraints = placeholderView.centerInSuperview()
-            case .fill: placeholderViewConstraints = placeholderView.pinToSuperview()
-            }
-        }
+        placeholderViewConstraints = placeholderView?.layout(with: placeholderViewPosition) ?? []
     }
 
     // MARK: Private (Failure View)
@@ -462,13 +459,7 @@ public final class LazyImageView: _PlatformBaseView {
 
     private func updateFailureViewConstraints() {
         NSLayoutConstraint.deactivate(failureViewConstraints)
-
-        if let failureView = self.failureView {
-            switch failureViewPosition {
-            case .center: failureViewConstraints = failureView.centerInSuperview()
-            case .fill: failureViewConstraints = failureView.pinToSuperview()
-            }
-        }
+        failureViewConstraints = failureView?.layout(with: failureViewPosition) ?? []
     }
 
     // MARK: Private (Transitions)

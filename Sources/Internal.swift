@@ -60,6 +60,14 @@ extension _PlatformBaseView {
         NSLayoutConstraint.activate(constraints)
         return constraints
     }
+
+    @discardableResult
+    func layout(with position: LazyImageView.SubviewPosition) -> [NSLayoutConstraint] {
+        switch position {
+        case .center: return centerInSuperview()
+        case .fill: return pinToSuperview()
+        }
+    }
 }
 
 extension CALayer {
