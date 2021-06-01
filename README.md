@@ -94,6 +94,16 @@ LazyImage(source: "https://example.com/image.jpeg")
 
 `LazyImageView` is a `LazyImage` counterpart for UIKit and AppKit with the equivalent set of APIs.
 
+```swift
+let imageView = LazyImageView()
+imageView.placeholderView = UIActivityIndicatorView()
+imageView.priority = .high
+imageView.pipeline = customPipeline
+imageView.onCompletion = { print("Request completed")
+
+imageView.source = "https://example.com/image.jpeg"
+````
+
 ## Limitations
 
 - GIF support is currently limited to iOS and tvOS
