@@ -29,13 +29,13 @@ public final class LazyImageView: _PlatformBaseView {
     public var placeholderImage: NSImage? { didSet { setPlaceholderImage(placeholderImage) } }
 
     /// A view to be shown while the request is in progress. For example, can be a spinner.
-    public var placeholderView: NSView? { didSet { setPlaceholderView(placeholderView) } }
+    public var placeholderView: NSView? { didSet { setPlaceholderView(oldValue, placeholderView) } }
     #else
     /// An image to be shown while the request is in progress.
     public var placeholderImage: UIImage? { didSet { setPlaceholderImage(placeholderImage) } }
 
     /// A view to be shown while the request is in progress. For example, can be a spinner.
-    public var placeholderView: UIView? { didSet { setPlaceholderView(placeholderView) } }
+    public var placeholderView: UIView? { didSet { setPlaceholderView(oldValue, placeholderView) } }
     #endif
 
     /// `.fill` by default.
@@ -55,13 +55,13 @@ public final class LazyImageView: _PlatformBaseView {
     public var failureImage: NSImage? { didSet { setFailureImage(failureImage) } }
 
     /// A view to be shown if the request fails.
-    public var failureView: NSView? { didSet { setFailureView(failureView) } }
+    public var failureView: NSView? { didSet { setFailureView(oldValue, failureView) } }
     #else
     /// An image to be shown if the request fails.
     public var failureImage: UIImage? { didSet { setFailureImage(failureImage) } }
 
     /// A view to be shown if the request fails.
-    public var failureView: UIView? { didSet { setFailureView(failureView) } }
+    public var failureView: UIView? { didSet { setFailureView(oldValue, failureView) } }
     #endif
 
     /// `.fill` by default.
@@ -339,9 +339,7 @@ public final class LazyImageView: _PlatformBaseView {
             },
             completion: { [weak self] result in
                 guard let self = self else { return }
-                DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(2)) {
-                    self.handle(result, isFromMemory: false)
-                }
+                self.handle(result, isFromMemory: false)
             }
         )
         imageTask = task
@@ -417,11 +415,11 @@ public final class LazyImageView: _PlatformBaseView {
         placeholderView = _PlatformImageView(image: placeholderImage)
     }
 
-    private func setPlaceholderView(_ view: _PlatformBaseView?) {
-        if let previousView = placeholderView {
-            previousView.removeFromSuperview()
+    private func setPlaceholderView(_ oldView: _PlatformBaseView?, _ newView: _PlatformBaseView?) {
+        if let oldView = oldView {
+            oldView.removeFromSuperview()
         }
-        if let newView = view {
+        if let newView = newView {
             addSubview(newView)
             setNeedsUpdateConstraints()
             #if os(iOS) || os(tvOS)
@@ -447,11 +445,11 @@ public final class LazyImageView: _PlatformBaseView {
         failureView = _PlatformImageView(image: failureImage)
     }
 
-    private func setFailureView(_ view: _PlatformBaseView?) {
-        if let previousView = failureView {
-            previousView.removeFromSuperview()
+    private func setFailureView(_ oldView: _PlatformBaseView?, _ newView: _PlatformBaseView?) {
+        if let oldView = oldView {
+            oldView.removeFromSuperview()
         }
-        if let newView = view {
+        if let newView = newView {
             addSubview(newView)
             setNeedsUpdateConstraints()
         }
