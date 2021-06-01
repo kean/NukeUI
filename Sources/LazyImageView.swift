@@ -214,6 +214,8 @@ public final class LazyImageView: _PlatformBaseView {
     private var playerLayer: AVPlayerLayer?
     private var playerLooper: AnyObject?
 
+    private var isDisplayingContent = false
+
     // MARK: Initializers
 
     deinit {
@@ -271,6 +273,8 @@ public final class LazyImageView: _PlatformBaseView {
         playerLayer?.removeFromSuperlayer()
         playerLayer = nil
         player = nil
+
+        isDisplayingContent = false
     }
 
     /// Cancels current request.
@@ -387,6 +391,8 @@ public final class LazyImageView: _PlatformBaseView {
         if !isFromMemory, let transition = transition {
             runTransition(transition, container)
         }
+
+        isDisplayingContent = true // Order important
     }
 
     var visibleView: ContentViewType = .regular {
@@ -499,6 +505,7 @@ public final class LazyImageView: _PlatformBaseView {
     #if os(iOS) || os(tvOS)
 
     private func runFadeInTransition(params: Transition.Parameters) {
+        guard !isDisplayingContent else { return }
         imageView.alpha = 0
         _animatedImageView?.alpha = 0
         UIView.animate(withDuration: params.duration, delay: 0, options: params.options) {
@@ -510,6 +517,7 @@ public final class LazyImageView: _PlatformBaseView {
     #elseif os(macOS)
 
     private func runFadeInTransition(params: Transition.Parameters) {
+        guard !isDisplayingContent else { return }
         imageView.layer?.animateOpacity(duration: params.duration)
     }
 
