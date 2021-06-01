@@ -172,6 +172,8 @@ public struct LazyImage: View {
         }
         #endif
 
+        // TODO: This conversion is most likely expensive, display placeholder
+        // and failure view natively
         view.placeholderView = placeholderView.map(toPlatformView)
         view.failureView = failureView.map(toPlatformView)
         view.transition = transition.map(LazyImageView.Transition.init)
