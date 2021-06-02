@@ -160,7 +160,7 @@ extension ImageDecoders {
                 // ftypisom - ISO Base Media file (MPEG-4) v1
                 // There are a bunch of other ways to create MP4
                 // https://www.garykessler.net/library/file_sigs.html
-                guard _match($0.data, offset: 4, [0x66, 0x74, 0x79, 0x70, 0x69, 0x73, 0x6F, 0x6D]) else {
+                guard _match($0.data, offset: 4, [0x66, 0x74, 0x79, 0x70]) else {
                     return nil
                 }
                 return MP4()
