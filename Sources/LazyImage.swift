@@ -33,6 +33,7 @@ public struct LazyImage: View {
     private var transition: Transition?
     private var priority: ImageRequest.Priority?
     private var pipeline: ImagePipeline = .shared
+    private var onDisappearBehavior: DisappearBehavior? = .reset
     private var onStart: ((_ task: ImageTask) -> Void)?
     private var onProgress: ((_ response: ImageResponse?, _ completed: Int64, _ total: Int64) -> Void)?
     private var onSuccess: ((_ response: ImageResponse) -> Void)?
@@ -137,6 +138,20 @@ public struct LazyImage: View {
         map { $0.pipeline = pipeline }
     }
 
+    public enum DisappearBehavior {
+        /// Resets the image clearing all the used memory along with the
+        /// presentation state.
+        case reset
+        /// Cancels the current request but keeps the presentation state of
+        /// the already displayed image.
+        case cancel
+    }
+
+    /// Override the behavior on disappear. By default, the view is reset.
+    public func onDisappear(_ behavior: DisappearBehavior?) -> Self {
+        map { $0.onDisappearBehavior = behavior }
+    }
+
     // MARK: Callbacks
 
     /// Gets called when the request is started.
@@ -200,7 +215,12 @@ public struct LazyImage: View {
     }
 
     private func onDisappear() {
-        proxy.imageView?.reset()
+        guard let behavior = onDisappearBehavior,
+              let imageView = proxy.imageView else { return }
+        switch behavior {
+        case .reset: imageView.reset()
+        case .cancel: imageView.cancel()
+        }
     }
 
     // MARK: Private
