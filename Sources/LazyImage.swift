@@ -218,7 +218,6 @@ public struct LazyImage: View {
 
     private func onCreated(_ view: LazyImageView) {
         proxy.imageView = view
-        onCreated?(view)
 
         #if os(iOS) || os(tvOS)
         if let contentMode = contentMode {
@@ -240,6 +239,8 @@ public struct LazyImage: View {
 
         view.onPlaceholdeViewHiddenUpdated = { isPlaceholderHidden = $0 }
         view.onFailureViewHiddenUpdated = { isFailureViewHidden = $0 }
+
+        onCreated?(view)
     }
 }
 
