@@ -53,20 +53,20 @@ public struct LazyImage: View {
     /// Supports platform images (`UIImage`) and `ImageContainer`. Use `ImageContainer`
     /// if you need to pass additional parameters alongside the image, like
     /// original image data for GIF rendering.
-    public init(image: ImageContainer?) {
+    public init(image: ImageContainer) {
         self.source = nil
         self.image = image
     }
 
     #if os(macOS)
     /// Initializes the image with the given image to be displayed immediately.
-    public init(image: NSImage?) {
-        self.init(image: image.map { ImageContainer(image: $0) })
+    public init(image: NSImage) {
+        self.init(image: ImageContainer(image: image))
     }
     #else
     /// Initializes the image with the given image to be displayed immediately.
-    public init(image: UIImage?) {
-        self.init(image: image.map { ImageContainer(image: $0) })
+    public init(image: UIImage) {
+        self.init(image: ImageContainer(image: image))
     }
     #endif
 
@@ -197,6 +197,18 @@ public struct LazyImage: View {
         .id(source.map(ImageRequest.ID.init))
     }
 
+    private func onAppear() {
+        if let image = self.image {
+            proxy.imageView?.imageContainer = image
+        } else {
+            proxy.load(source)
+        }
+    }
+
+    private func onDisappear() {
+        proxy.reset()
+    }
+
     private func map(_ closure: (inout LazyImage) -> Void) -> Self {
         var copy = self
         closure(&copy)
@@ -227,10 +239,6 @@ public struct LazyImage: View {
 
         view.onPlaceholdeViewHiddenUpdated = { isPlaceholderHidden = $0 }
         view.onFailureViewHiddenUpdated = { isFailureViewHidden = $0 }
-
-        if let image = self.image {
-            view.imageContainer = image
-        }
     }
 }
 

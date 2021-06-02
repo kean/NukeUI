@@ -261,14 +261,18 @@ public final class LazyImageView: _PlatformBaseView {
     /// if you need to pass additional parameters alongside the image, like
     /// original image data for GIF rendering.
     public var imageContainer: Nuke.ImageContainer? {
-        didSet {
-            if let imageContainer = imageContainer {
+        get { _imageContainer }
+        set {
+            _imageContainer = newValue
+            if let imageContainer = newValue {
                 display(imageContainer, isFromMemory: true)
             } else {
                 reset()
             }
         }
     }
+
+    var _imageContainer: Nuke.ImageContainer?
 
     #if os(macOS)
     public var image: NSImage? {
@@ -306,6 +310,8 @@ public final class LazyImageView: _PlatformBaseView {
     /// Cancels current request and prepares the view for reuse.
     public func reset() {
         cancel()
+
+        _imageContainer = nil
 
         setPlaceholderViewHidden(true)
         setFailureViewHidden(true)
@@ -447,6 +453,7 @@ public final class LazyImageView: _PlatformBaseView {
 
         // It's used to determine when to perform certain transitions
         isDisplayingContent = true
+        _imageContainer = container
     }
 
     // MARK: Private (Placeholder View)
