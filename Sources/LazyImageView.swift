@@ -191,6 +191,10 @@ public final class LazyImageView: _PlatformBaseView {
     /// Gets called when the request is completed.
     public var onCompletion: ((_ result: Result<ImageResponse, ImagePipeline.Error>) -> Void)?
 
+    var onPlaceholdeViewHiddenUpdated: ((_ isHidden: Bool) -> Void)?
+
+    var onFailureViewHiddenUpdated: ((_ isHidden: Bool) -> Void)?
+
     // MARK: Other Options
 
     /// `true` by default. If disabled, progressive image scans will be ignored.
@@ -223,7 +227,7 @@ public final class LazyImageView: _PlatformBaseView {
     // MARK: Initializers
 
     deinit {
-        reset()
+        cancel()
     }
 
     public override init(frame: CGRect) {
@@ -268,8 +272,9 @@ public final class LazyImageView: _PlatformBaseView {
     public func reset() {
         cancel()
 
-        placeholderView?.isHidden = true
-        failureView?.isHidden = true
+        setPlaceholderViewHidden(true)
+        setFailureViewHidden(true)
+
         imageView.isHidden = true
         imageView.image = nil
 
@@ -280,7 +285,6 @@ public final class LazyImageView: _PlatformBaseView {
 
         playerLayer?.removeFromSuperlayer()
         playerLayer = nil
-        player?.pause()
         player = nil
         assetResourceLoader = nil
 
@@ -334,7 +338,7 @@ public final class LazyImageView: _PlatformBaseView {
             request.priority = priority
         }
 
-        placeholderView?.isHidden = false
+        setPlaceholderViewHidden(false)
 
         let task = pipeline.loadImage(
             with: request,
@@ -342,7 +346,7 @@ public final class LazyImageView: _PlatformBaseView {
             progress: { [weak self] response, completedCount, totalCount in
                 guard let self = self else { return }
                 if self.isProgressiveImageRenderingEnabled, let response = response {
-                    self.placeholderView?.isHidden = true
+                    self.setPlaceholderViewHidden(true)
                     self.display(response.container, isFromMemory: false)
                 }
                 self.onProgress?(response, completedCount, totalCount)
@@ -359,12 +363,12 @@ public final class LazyImageView: _PlatformBaseView {
     // MARK: Handling Responses
 
     private func handle(_ result: Result<ImageResponse, ImagePipeline.Error>, isFromMemory: Bool) {
-        placeholderView?.isHidden = true
+        setPlaceholderViewHidden(true)
         switch result {
         case let .success(response):
             display(response.container, isFromMemory: isFromMemory)
         case .failure:
-            failureView?.isHidden = false
+            setFailureViewHidden(false)
         }
         self.imageTask = nil
         self.didComplete(result)
@@ -412,6 +416,11 @@ public final class LazyImageView: _PlatformBaseView {
 
     // MARK: Private (Placeholder View)
 
+    private func setPlaceholderViewHidden(_ isHidden: Bool) {
+        placeholderView?.isHidden = isHidden
+        onPlaceholdeViewHiddenUpdated?(isHidden)
+    }
+
     private func setPlaceholderImage(_ placeholderImage: _PlatformImage?) {
         guard let placeholderImage = placeholderImage else {
             placeholderView = nil
@@ -441,6 +450,11 @@ public final class LazyImageView: _PlatformBaseView {
     }
 
     // MARK: Private (Failure View)
+
+    private func setFailureViewHidden(_ isHidden: Bool) {
+        failureView?.isHidden = isHidden
+        onFailureViewHiddenUpdated?(isHidden)
+    }
 
     private func setFailureImage(_ failureImage: _PlatformImage?) {
         guard let failureImage = failureImage else {

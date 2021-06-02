@@ -21,6 +21,8 @@ public typealias ImagePipeline = Nuke.ImagePipeline
 public struct LazyImage: View {
     private let source: ImageRequest?
     @State private var proxy = LazyImageViewProxy()
+    @State private var isPlaceholderHidden = true
+    @State private var isFailureViewHidden = true
 
     // Options
     private var placeholderView: AnyView?
@@ -148,11 +150,19 @@ public struct LazyImage: View {
     }
 
     public var body: some View {
-        LazyImageViewWrapper(onCreated: onCreated)
-            .onAppear { proxy.load(source) }
-            .onDisappear(perform: proxy.reset)
-            // Making sure it reload if the source changes
-            .id(source.map(ImageRequest.ID.init))
+        ZStack {
+            if !isPlaceholderHidden {
+                placeholderView
+            }
+            if !isFailureViewHidden {
+                failureView
+            }
+            LazyImageViewWrapper(onCreated: onCreated)
+        }
+        .onAppear { proxy.load(source) }
+        .onDisappear(perform: proxy.reset)
+        // Making sure it reload if the source changes
+        .id(source.map(ImageRequest.ID.init))
     }
 
     private func map(_ closure: (inout LazyImage) -> Void) -> Self {
@@ -172,10 +182,6 @@ public struct LazyImage: View {
         }
         #endif
 
-        // TODO: This conversion is most likely expensive, display placeholder
-        // and failure view natively
-        view.placeholderView = placeholderView.map(toPlatformView)
-        view.failureView = failureView.map(toPlatformView)
         view.transition = transition.map(LazyImageView.Transition.init)
         view.processors = processors
         view.priority = priority
@@ -185,6 +191,9 @@ public struct LazyImage: View {
         view.onSuccess = onSuccess
         view.onFailure = onFailure
         view.onCompletion = onCompletion
+        
+        view.onPlaceholdeViewHiddenUpdated = { isPlaceholderHidden = $0 }
+        view.onFailureViewHiddenUpdated = { isFailureViewHidden = $0 }
     }
 }
 

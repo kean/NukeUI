@@ -19,22 +19,11 @@ import Nuke
 public typealias _PlatformBaseView = NSView
 typealias _PlatformImage = NSImage
 typealias _PlatformImageView = NSImageView
-
-@available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
-typealias _PlatformHostingController<T: View> = NSHostingController<T>
 #else
 public typealias _PlatformBaseView = UIView
 typealias _PlatformImage = UIImage
 typealias _PlatformImageView = UIImageView
-
-@available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
-typealias _PlatformHostingController<T: View> = UIHostingController<T>
 #endif
-
-@available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
-func toPlatformView<T: View>(_ view: T) -> _PlatformBaseView {
-    _PlatformHostingController(rootView: view).view
-}
 
 extension _PlatformBaseView {
     @discardableResult
