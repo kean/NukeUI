@@ -191,9 +191,10 @@ public struct LazyImage: View {
             }
             LazyImageViewWrapper(onCreated: onCreated)
         }
-        .onAppear { proxy.load(source) }
-        .onDisappear(perform: proxy.reset)
-        // Making sure it reloads if the source changes
+        .onAppear(perform: onAppear)
+        .onDisappear(perform: onDisappear)
+        // Making sure it reloads and onAppear/onDisappear callbacks are called
+        // when the source changes
         .id(source.map(ImageRequest.ID.init))
     }
 
