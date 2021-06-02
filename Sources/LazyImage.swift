@@ -17,7 +17,7 @@ public typealias ImagePipeline = Nuke.ImagePipeline
 /// downloaded. You must specify the size for the view before loading the image.
 /// By default, the image will resize to fill the available space but preserve
 /// the aspect ratio. You can change this behavior by passing a different content mode.
-@available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
+@available(iOS 13.0, tvOS 13.0, macOS 10.15, *)
 public struct LazyImage: View {
     private let source: ImageRequest?
     @State private var proxy = LazyImageViewProxy()
@@ -216,7 +216,7 @@ private final class LazyImageViewProxy {
 }
 
 #if os(macOS)
-@available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
+@available(iOS 13.0, tvOS 13.0, macOS 10.15, *)
 private struct LazyImageViewWrapper: NSViewRepresentable {
     var onCreated: (LazyImageView) -> Void
 
@@ -231,7 +231,7 @@ private struct LazyImageViewWrapper: NSViewRepresentable {
     }
 }
 #else
-@available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
+@available(iOS 13.0, tvOS 13.0, macOS 10.15, *)
 private struct LazyImageViewWrapper: UIViewRepresentable {
     var onCreated: (LazyImageView) -> Void
 
@@ -254,7 +254,7 @@ private struct LazyImageViewWrapper: UIViewRepresentable {
 /// downloaded. You must specify the size for the view before loading the image.
 /// By default, the image will resize to fill the available space but preserve
 /// the aspect ratio. You can change this behavior by passing a different content mode.
-@available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
+@available(watchOS 6.0, *)
 public struct LazyImage: View {
     // This component offers a limited watchOS support.
     // Eventually the "main" LazyImage should probably also be writetn
