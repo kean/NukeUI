@@ -156,6 +156,9 @@ public final class LazyImageView: _PlatformBaseView {
     // MARK: Managing Image Tasks
 
     /// Processors to be applied to the image. `nil` by default.
+    ///
+    /// If you pass an image requests with a non-empty list of processors as
+    /// a source, your processors will be applied instead.
     public var processors: [ImageProcessing]?
 
     /// Sets the priority of the image task. The priorit can be changed

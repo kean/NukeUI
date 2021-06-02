@@ -132,10 +132,15 @@ public struct LazyImage: View {
 
     // MARK: Managing Image Tasks
 
+    /// Sets processors to be applied to the image.
+    ///
+    /// If you pass an image requests with a non-empty list of processors as
+    /// a source, your processors will be applied instead.
     public func processors(_ processors: [ImageProcessing]?) -> Self {
         map { $0.processors = processors }
     }
 
+    /// Sets the priority of the requests.
     public func priority(_ priority: ImageRequest.Priority?) -> Self {
         map { $0.priority = priority }
     }
@@ -210,6 +215,8 @@ public struct LazyImage: View {
     private func onDisappear() {
         proxy.imageView?.reset()
     }
+
+    // MARK: Private
 
     private func map(_ closure: (inout LazyImage) -> Void) -> Self {
         var copy = self
