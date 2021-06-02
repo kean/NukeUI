@@ -260,15 +260,27 @@ public final class LazyImageView: _PlatformBaseView {
     /// Supports platform images (`UIImage`) and `ImageContainer`. Use `ImageContainer`
     /// if you need to pass additional parameters alongside the image, like
     /// original image data for GIF rendering.
-    public var image: ImageContainerConvertible? {
+    public var imageContainer: Nuke.ImageContainer? {
         didSet {
-            if let image = image?.asImageContainer() {
-                display(image, isFromMemory: true)
+            if let imageContainer = imageContainer {
+                display(imageContainer, isFromMemory: true)
             } else {
                 reset()
             }
         }
     }
+
+    #if os(macOS)
+    public var image: NSImage? {
+        get { imageContainer?.image }
+        set { imageContainer = newValue.map { Nuke.ImageContainer(image: $0) } }
+    }
+    #else
+    public var image: UIImage? {
+        get { imageContainer?.image }
+        set { imageContainer = newValue.map { Nuke.ImageContainer(image: $0) } }
+    }
+    #endif
 
     #if os(macOS)
     public override func layout() {

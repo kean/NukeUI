@@ -53,10 +53,22 @@ public struct LazyImage: View {
     /// Supports platform images (`UIImage`) and `ImageContainer`. Use `ImageContainer`
     /// if you need to pass additional parameters alongside the image, like
     /// original image data for GIF rendering.
-    public init(image: ImageContainerConvertible?) {
+    public init(image: ImageContainer?) {
         self.source = nil
-        self.image = image?.asImageContainer()
+        self.image = image
     }
+
+    #if os(macOS)
+    /// Initializes the image with the given image to be displayed immediately.
+    public init(image: NSImage?) {
+        self.init(image: image.map { ImageContainer(image: $0) })
+    }
+    #else
+    /// Initializes the image with the given image to be displayed immediately.
+    public init(image: UIImage?) {
+        self.init(image: image.map { ImageContainer(image: $0) })
+    }
+    #endif
 
     // MARK: Content Mode
 
@@ -217,7 +229,7 @@ public struct LazyImage: View {
         view.onFailureViewHiddenUpdated = { isFailureViewHidden = $0 }
 
         if let image = self.image {
-            view.image = image
+            view.imageContainer = image
         }
     }
 }
