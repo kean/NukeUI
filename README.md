@@ -123,7 +123,8 @@ imageView.source = "https://example.com/image.jpeg"
 
 ## Limitations
 
-- GIF support is currently limited to iOS and tvOS
+- GIF support is currently limited to iOS and tvOS (macOS support in progress)
+- There is a known race condition in Gifu with an outsdanting PR with a fix https://github.com/kaishin/Gifu/pull/176
 - The support for watchOS is there but is currently limited
 
 ## Minimum Requirements
