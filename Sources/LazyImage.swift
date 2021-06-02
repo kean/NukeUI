@@ -191,7 +191,7 @@ public struct LazyImage: View {
         view.onSuccess = onSuccess
         view.onFailure = onFailure
         view.onCompletion = onCompletion
-        
+
         view.onPlaceholdeViewHiddenUpdated = { isPlaceholderHidden = $0 }
         view.onFailureViewHiddenUpdated = { isFailureViewHidden = $0 }
     }
@@ -255,14 +255,28 @@ public struct LazyImage: View {
     // using jus Swift.
 
     private let request: ImageRequest?
+    private var placeholderView: AnyView?
+    private var failureView: AnyView?
     @StateObject private var image = FetchImage()
 
     public init(source: ImageRequestConvertible?) {
         self.request = source?.asImageRequest()
     }
 
+    private func map(_ closure: (inout LazyImage) -> Void) -> Self {
+        var copy = self
+        closure(&copy)
+        return copy
+    }
+
     public var body: some View {
         ZStack {
+            if image.isLoading {
+                placeholderView
+            }
+            if let result = image.result, case .failure = result, !image.isLoading {
+                failureView
+            }
             image.view?
                 .resizable()
                 .aspectRatio(contentMode: .fill)
@@ -272,6 +286,20 @@ public struct LazyImage: View {
         .onDisappear(perform: image.reset)
         // Making sure it reload if the source changes
         .id(request.map(ImageRequest.ID.init))
+    }
+
+    // MARK: Placeholder View
+
+    /// An image to be shown while the request is in progress.
+    public func placeholder<Placeholder: View>(@ViewBuilder _ content: () -> Placeholder?) -> Self {
+        map { $0.placeholderView = AnyView(content()) }
+    }
+
+    // MARK: Failure View
+
+    /// A view to be shown if the request fails.
+    public func failure<Failure: View>(@ViewBuilder _ content: () -> Failure?) -> Self {
+        map { $0.failureView = AnyView(content()) }
     }
 }
 #endif
