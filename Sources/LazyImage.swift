@@ -21,7 +21,8 @@ public typealias ImagePipeline = Nuke.ImagePipeline
 public struct LazyImage: View {
     private let source: ImageRequest?
     private let image: ImageContainer?
-    @State private var proxy = LazyImageViewProxy()
+    private var imageView: LazyImageView?
+    private var proxy = LazyImageViewProxy()
     @State private var isPlaceholderHidden = true
     @State private var isFailureViewHidden = true
 
@@ -202,12 +203,12 @@ public struct LazyImage: View {
         if let image = self.image {
             proxy.imageView?.imageContainer = image
         } else {
-            proxy.load(source)
+            proxy.imageView?.source = source
         }
     }
 
     private func onDisappear() {
-        proxy.reset()
+        proxy.imageView?.reset()
     }
 
     private func map(_ closure: (inout LazyImage) -> Void) -> Self {
@@ -246,14 +247,6 @@ public struct LazyImage: View {
 
 private final class LazyImageViewProxy {
     var imageView: LazyImageView?
-
-    func load(_ request: ImageRequest?) {
-        imageView?.source = request
-    }
-
-    func reset() {
-        imageView?.reset()
-    }
 }
 
 #if os(macOS)
