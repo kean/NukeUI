@@ -41,6 +41,7 @@ public struct LazyImage: View {
 
     // MARK: Content Mode
 
+    #if os(iOS) || os(tvOS)
     /// Sets the content mode for all types of media displayed by the view.
     ///
     /// To change content mode for individual image types, access the underlying
@@ -48,6 +49,7 @@ public struct LazyImage: View {
     public func contentMode(_ contentMode: ContentMode?) -> Self {
         map { $0.contentMode = contentMode }
     }
+    #endif
 
     public enum ContentMode {
         case aspectFit
