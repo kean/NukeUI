@@ -61,6 +61,7 @@ The image view is lazy and doesn't know the size of the image before it download
 ```swift
 LazyImage(source: "https://example.com/image.jpeg")
     .contentMode(.center) // .aspectFit, .aspectFill, .center, .fill
+    .frame(height: 300)
 ```
 
 When the image is loaded, you can add an optional transition.

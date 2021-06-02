@@ -41,7 +41,10 @@ public struct LazyImage: View {
 
     // MARK: Content Mode
 
-    /// Sets the displayed image content mode.
+    /// Sets the content mode for all types of media displayed by the view.
+    ///
+    /// To change content mode for individual image types, access the underlying
+    /// `LazyImageView` instance and update the respective view.
     public func contentMode(_ contentMode: ContentMode?) -> Self {
         map { $0.contentMode = contentMode }
     }
@@ -179,6 +182,7 @@ public struct LazyImage: View {
         if let contentMode = contentMode {
             view.imageView.contentMode = .init(contentMode)
             view.animatedImageView.contentMode = .init(contentMode)
+            view.videoGravity = .init(contentMode)
         }
         #endif
 

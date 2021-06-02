@@ -169,6 +169,18 @@ extension ImageDecoders {
     }
 }
 
+extension AVLayerVideoGravity {
+    @available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
+    init(_ contentMode: LazyImage.ContentMode) {
+        switch contentMode {
+        case .aspectFit: self = .resizeAspect
+        case .aspectFill: self = .resizeAspectFill
+        case .center: self = .resizeAspect
+        case .fill: self = .resize
+        }
+    }
+}
+
 #endif
 
 extension ImageRequest {
