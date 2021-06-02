@@ -15,11 +15,11 @@ import UIKit
 
 #if canImport(Gifu)
 import Gifu
+
+public typealias AnimatedImageView = Gifu.GIFImageView
 #endif
 
 import AVKit
-
-public typealias AnimatedImageView = Gifu.GIFImageView
 
 /// Lazily loads and displays an image with the given source.
 public final class LazyImageView: _PlatformBaseView {
@@ -255,11 +255,19 @@ public final class LazyImageView: _PlatformBaseView {
         didSet { load(source) }
     }
 
+    #if os(macOS)
+    public override func layout() {
+        super.layout()
+
+        playerLayer?.frame = bounds
+    }
+    #else
     public override func layoutSubviews() {
         super.layoutSubviews()
 
         playerLayer?.frame = bounds
     }
+    #endif
 
     public override func updateConstraints() {
         super.updateConstraints()
