@@ -111,23 +111,10 @@ public struct LazyImage: View {
         map { $0.transition = transition }
     }
 
-    /// An animated image transition.
-    public struct Transition {
-        var style: Style
-
-        enum Style { // internal representation
-            case fadeIn(parameters: Parameters)
-        }
-
-        struct Parameters { // internal representation
-            let duration: TimeInterval
-        }
-
-        /// Fade-in transition (cross-fade in case the image view is already
-        /// displaying an image).
-        public static func fadeIn(duration: TimeInterval) -> Transition {
-            Transition(style: .fadeIn(parameters: Parameters(duration: duration)))
-        }
+    /// An animated transition.
+    public enum Transition {
+        /// Fade-in transition.
+        case fadeIn(duration: TimeInterval)
     }
 
     // MARK: Managing Image Tasks

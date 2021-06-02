@@ -107,47 +107,19 @@ public final class LazyImageView: _PlatformBaseView {
     public var transition: Transition?
 
     /// An animated transition.
-    public struct Transition {
-        var style: Style
-
-        init(style: Style) {
-            self.style = style
-        }
-
-        enum Style { // internal representation
-            case fadeIn(parameters: Parameters)
-            case custom(closure: (LazyImageView, Nuke.ImageContainer) -> Void)
-        }
-
-        struct Parameters { // internal representation
-            let duration: TimeInterval
-            #if os(iOS) || os(tvOS)
-            let options: UIView.AnimationOptions
-            #endif
-        }
-
-        #if os(iOS) || os(tvOS)
+    public enum Transition {
         /// Fade-in transition.
-        public static func fadeIn(duration: TimeInterval, options: UIView.AnimationOptions = .allowUserInteraction) -> Transition {
-            Transition(style: .fadeIn(parameters: Parameters(duration: duration, options: options)))
-        }
-        #else
-        /// Fade-in transition.
-        public static func fadeIn(duration: TimeInterval) -> Transition {
-            Transition(style: .fadeIn(parameters: Parameters(duration: duration)))
-        }
-        #endif
-
-        /// A custom image view transition. The closure will get called after
-        /// the image is already displayed.
-        public static func custom(_ closure: @escaping (LazyImageView, Nuke.ImageContainer) -> Void) -> Transition {
-            Transition(style: .custom(closure: closure))
-        }
+        case fadeIn(duration: TimeInterval)
+        /// A custom image view transition.
+        ///
+        /// The closure will get called after the image is already displayed but
+        /// before `imageContainer` value is updated.
+        case custom(closure: (LazyImageView, Nuke.ImageContainer) -> Void)
 
         @available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
         init(_ transition: LazyImage.Transition) {
-            switch transition.style {
-            case .fadeIn(let parameters): self = .fadeIn(duration: parameters.duration)
+            switch transition {
+            case .fadeIn(let duration): self = .fadeIn(duration: duration)
             }
         }
     }
@@ -554,9 +526,9 @@ public final class LazyImageView: _PlatformBaseView {
     // MARK: Private (Transitions)
 
     private func runTransition(_ transition: Transition, _ image: Nuke.ImageContainer) {
-        switch transition.style {
-        case .fadeIn(let parameters):
-            runFadeInTransition(params: parameters)
+        switch transition {
+        case .fadeIn(let duration):
+            runFadeInTransition(duration: duration)
         case .custom(let closure):
             closure(self, image)
         }
@@ -564,11 +536,11 @@ public final class LazyImageView: _PlatformBaseView {
 
     #if os(iOS) || os(tvOS)
 
-    private func runFadeInTransition(params: Transition.Parameters) {
+    private func runFadeInTransition(duration: TimeInterval) {
         guard !isDisplayingContent else { return }
         imageView.alpha = 0
         _animatedImageView?.alpha = 0
-        UIView.animate(withDuration: params.duration, delay: 0, options: params.options) {
+        UIView.animate(withDuration: duration, delay: 0, options: []) {
             self.imageView.alpha = 1
             self._animatedImageView?.alpha = 1
         }
@@ -576,9 +548,9 @@ public final class LazyImageView: _PlatformBaseView {
 
     #elseif os(macOS)
 
-    private func runFadeInTransition(params: Transition.Parameters) {
+    private func runFadeInTransition(duration: TimeInterval) {
         guard !isDisplayingContent else { return }
-        imageView.layer?.animateOpacity(duration: params.duration)
+        imageView.layer?.animateOpacity(duration: duration)
     }
 
     #endif
