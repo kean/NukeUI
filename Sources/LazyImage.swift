@@ -11,7 +11,7 @@ public typealias ImagePipeline = Nuke.ImagePipeline
 
 #if !os(watchOS)
 
-/// Lazily loads and displays an image with the given source.
+/// Lazily loads and displays images.
 ///
 /// The image view is lazy and doesn't know the size of the image before it is
 /// downloaded. You must specify the size for the view before loading the image.

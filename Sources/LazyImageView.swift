@@ -21,29 +21,42 @@ public typealias AnimatedImageView = Gifu.GIFImageView
 
 import AVKit
 
-/// Lazily loads and displays an image with the given source.
+/// Lazily loads and displays images.
 public final class LazyImageView: _PlatformBaseView {
 
     // MARK: Placeholder View
 
     #if os(macOS)
     /// An image to be shown while the request is in progress.
-    public var placeholderImage: NSImage? { didSet { setPlaceholderImage(placeholderImage) } }
+    public var placeholderImage: NSImage? {
+        didSet { setPlaceholderImage(placeholderImage) }
+    }
 
-    /// A view to be shown while the request is in progress. For example, can be a spinner.
-    public var placeholderView: NSView? { didSet { setPlaceholderView(oldValue, placeholderView) } }
+    /// A view to be shown while the request is in progress. For example,
+    /// a spinner.
+    public var placeholderView: NSView? {
+        didSet { setPlaceholderView(oldValue, placeholderView) }
+    }
     #else
     /// An image to be shown while the request is in progress.
-    public var placeholderImage: UIImage? { didSet { setPlaceholderImage(placeholderImage) } }
+    public var placeholderImage: UIImage? {
+        didSet { setPlaceholderImage(placeholderImage) }
+    }
 
-    /// A view to be shown while the request is in progress. For example, can be a spinner.
-    public var placeholderView: UIView? { didSet { setPlaceholderView(oldValue, placeholderView) } }
+    /// A view to be shown while the request is in progress. For example,
+    /// a spinner.
+    public var placeholderView: UIView? {
+        didSet { setPlaceholderView(oldValue, placeholderView) }
+    }
     #endif
 
-    /// `.fill` by default.
+    /// The position of the placeholder. `.fill` by default.
+    ///
+    /// It also affects `placeholderImage` because it gets converted to a view.
     public var placeholderViewPosition: SubviewPosition = .fill {
         didSet {
-            guard oldValue != placeholderViewPosition, placeholderView != nil else { return }
+            guard oldValue != placeholderViewPosition,
+                  placeholderView != nil else { return }
             setNeedsUpdateConstraints()
         }
     }
@@ -54,22 +67,33 @@ public final class LazyImageView: _PlatformBaseView {
 
     #if os(macOS)
     /// An image to be shown if the request fails.
-    public var failureImage: NSImage? { didSet { setFailureImage(failureImage) } }
+    public var failureImage: NSImage? {
+        didSet { setFailureImage(failureImage) }
+    }
 
     /// A view to be shown if the request fails.
-    public var failureView: NSView? { didSet { setFailureView(oldValue, failureView) } }
+    public var failureView: NSView? {
+        didSet { setFailureView(oldValue, failureView) }
+    }
     #else
     /// An image to be shown if the request fails.
-    public var failureImage: UIImage? { didSet { setFailureImage(failureImage) } }
+    public var failureImage: UIImage? {
+        didSet { setFailureImage(failureImage) }
+    }
 
     /// A view to be shown if the request fails.
-    public var failureView: UIView? { didSet { setFailureView(oldValue, failureView) } }
+    public var failureView: UIView? {
+        didSet { setFailureView(oldValue, failureView) }
+    }
     #endif
 
-    /// `.fill` by default.
+    /// The position of the failure vuew. `.fill` by default.
+    ///
+    /// It also affects `failureImage` because it gets converted to a view.
     public var failureViewPosition: SubviewPosition = .fill {
         didSet {
-            guard oldValue != failureViewPosition, failureView != nil else { return }
+            guard oldValue != failureViewPosition,
+                  failureView != nil else { return }
             setNeedsUpdateConstraints()
         }
     }
@@ -78,10 +102,11 @@ public final class LazyImageView: _PlatformBaseView {
 
     // MARK: Transition
 
+    /// A animated transition to be performed when displaying a loaded image
     /// `nil` by default.
     public var transition: Transition?
 
-    /// An animated image transition.
+    /// An animated transition.
     public struct Transition {
         var style: Style
 
