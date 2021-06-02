@@ -254,7 +254,7 @@ private struct LazyImageViewWrapper: UIViewRepresentable {
 /// downloaded. You must specify the size for the view before loading the image.
 /// By default, the image will resize to fill the available space but preserve
 /// the aspect ratio. You can change this behavior by passing a different content mode.
-@available(watchOS 6.0, *)
+@available(watchOS 7.0, *)
 public struct LazyImage: View {
     // This component offers a limited watchOS support.
     // Eventually the "main" LazyImage should probably also be writetn
