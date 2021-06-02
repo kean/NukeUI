@@ -41,6 +41,16 @@ LazyImage(source: request)
 
 > Learn more about customizing image requests in ["Image Requests."](https://kean.blog/nuke/guides/customizing-requests)
 
+If you already have an image ready to be displayed, use a dedicated initializer.
+
+```swift
+// Display a regular image
+LazyImage(image: UIImage("my-image"))
+
+// Display an animated GIF
+LazyImage(image: ImageContainer(image: UIImage(), type: .gif, data: data))
+```
+
 `LazyImage` is highly customizable. For example, it allows you to display a placeholder while the image is loading and display a custom view on failure.
 
 ```swift

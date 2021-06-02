@@ -133,7 +133,7 @@ final class DataAssetResourceLoader: NSObject, AVAssetResourceLoaderDelegate {
 }
 
 extension ImageType {
-    static let mp4: ImageType = "public.mp4"
+    public static let mp4: ImageType = "public.mp4"
 }
 
 extension ImageDecoders {
@@ -196,3 +196,29 @@ extension ImageRequest {
         }
     }
 }
+
+// MARK: ImageContainerConvertible
+
+public protocol ImageContainerConvertible {
+    func asImageContainer() -> ImageContainer
+}
+
+extension ImageContainer: ImageContainerConvertible {
+    public func asImageContainer() -> ImageContainer {
+        self
+    }
+}
+
+#if os(macOS)
+extension NSImage: ImageContainerConvertible {
+    public func asImageContainer() -> ImageContainer {
+        ImageContainer(image: self)
+    }
+}
+#else
+extension UIImage: ImageContainerConvertible {
+    public func asImageContainer() -> ImageContainer {
+        ImageContainer(image: self)
+    }
+}
+#endif

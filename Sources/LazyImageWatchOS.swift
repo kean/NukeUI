@@ -15,8 +15,8 @@ import Nuke
 @available(watchOS 7.0, *)
 public struct LazyImage: View {
     // This component offers a limited watchOS support.
-    // Eventually the "main" LazyImage should probably also be writetn
-    // using jus Swift.
+    // Eventually the "main" LazyImage should probably also be written
+    // using only SwiftUI.
 
     private let request: ImageRequest?
     private var placeholderView: AnyView?

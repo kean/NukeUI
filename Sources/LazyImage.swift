@@ -20,6 +20,7 @@ public typealias ImagePipeline = Nuke.ImagePipeline
 @available(iOS 13.0, tvOS 13.0, macOS 10.15, *)
 public struct LazyImage: View {
     private let source: ImageRequest?
+    private let image: ImageContainer?
     @State private var proxy = LazyImageViewProxy()
     @State private var isPlaceholderHidden = true
     @State private var isFailureViewHidden = true
@@ -38,6 +39,24 @@ public struct LazyImage: View {
     private var onCompletion: ((_ result: Result<ImageResponse, ImagePipeline.Error>) -> Void)?
     private var onCreated: ((LazyImageView) -> Void)?
     private var contentMode: ContentMode?
+
+    // MARK: Initializers
+
+    /// Initializes the image with the given source to be displayed later.
+    public init(source: ImageRequestConvertible?) {
+        self.source = source?.asImageRequest()
+        self.image = nil
+    }
+
+    /// Initializes the image with the given image to be displayed immediately.
+    ///
+    /// Supports platform images (`UIImage`) and `ImageContainer`. Use `ImageContainer`
+    /// if you need to pass additional parameters alongside the image, like
+    /// original image data for GIF rendering.
+    public init(image: ImageContainerConvertible?) {
+        self.source = nil
+        self.image = image?.asImageContainer()
+    }
 
     // MARK: Content Mode
 
@@ -148,11 +167,7 @@ public struct LazyImage: View {
         map { $0.onCreated = configure }
     }
 
-    // MARK: Initializers
-
-    public init(source: ImageRequestConvertible?) {
-        self.source = source?.asImageRequest()
-    }
+    // MARK: View
 
     public var body: some View {
         ZStack {
@@ -200,6 +215,10 @@ public struct LazyImage: View {
 
         view.onPlaceholdeViewHiddenUpdated = { isPlaceholderHidden = $0 }
         view.onFailureViewHiddenUpdated = { isFailureViewHidden = $0 }
+
+        if let image = self.image {
+            view.image = image
+        }
     }
 }
 

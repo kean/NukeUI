@@ -255,6 +255,21 @@ public final class LazyImageView: _PlatformBaseView {
         didSet { load(source) }
     }
 
+    /// Displays the given image.
+    ///
+    /// Supports platform images (`UIImage`) and `ImageContainer`. Use `ImageContainer`
+    /// if you need to pass additional parameters alongside the image, like
+    /// original image data for GIF rendering.
+    public var image: ImageContainerConvertible? {
+        didSet {
+            if let image = image?.asImageContainer() {
+                display(image, isFromMemory: true)
+            } else {
+                reset()
+            }
+        }
+    }
+
     #if os(macOS)
     public override func layout() {
         super.layout()
@@ -442,6 +457,7 @@ public final class LazyImageView: _PlatformBaseView {
             oldView.removeFromSuperview()
         }
         if let newView = newView {
+            newView.isHidden = true
             addSubview(newView)
             setNeedsUpdateConstraints()
             #if os(iOS) || os(tvOS)
@@ -477,6 +493,7 @@ public final class LazyImageView: _PlatformBaseView {
             oldView.removeFromSuperview()
         }
         if let newView = newView {
+            newView.isHidden = true
             addSubview(newView)
             setNeedsUpdateConstraints()
         }
