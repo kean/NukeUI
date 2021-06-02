@@ -166,7 +166,7 @@ public struct LazyImage: View {
         }
         .onAppear { proxy.load(source) }
         .onDisappear(perform: proxy.reset)
-        // Making sure it reload if the source changes
+        // Making sure it reloads if the source changes
         .id(source.map(ImageRequest.ID.init))
     }
 
