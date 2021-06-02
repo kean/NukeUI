@@ -1,13 +1,11 @@
 # NukeUI
 
-A comprehensive solution for displaying lazily loaded images on Apple platforms. 
+A missing piece in SwiftUI that provides lazy image loading on Apple platforms. 
 
-The library provides two components:
+The library provides two components with equivalent APIs:
 
 - `LazyImage` for SwiftUI
 - `LazyImageView` for UIKit and AppKit
-
-Both views have equivalent APIs.
 
 It uses [Nuke](https://github.com/kean/Nuke) for loading images and has many customization options. It also supports GIF rendering thanks to [Gifu](https://github.com/kaishin/Gifu). But GIF is [not the most](https://web.dev/replace-gifs-with-videos/) efficient format, so NukeUI also supports playing short videos out of the box.
 
