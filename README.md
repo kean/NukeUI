@@ -2,8 +2,6 @@
 
 A missing piece in SwiftUI that provides lazy image loading.
 
-The library provides two components with equivalent APIs:
-
 - `LazyImage` for SwiftUI
 - `LazyImageView` for UIKit and AppKit
 
