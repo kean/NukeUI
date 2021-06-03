@@ -137,16 +137,23 @@ extension ImageType {
 }
 
 extension ImageDecoders {
-    struct MP4: ImageDecoding {
-        func decode(_ data: Data) -> ImageContainer? {
-            ImageContainer(image: _PlatformImage(), type: .mp4, data: data)
+    final class Video: ImageDecoding, ImageDecoderRegistering {
+        init?(data: Data, context: ImageDecodingContext) {
+            guard Video.isVideo(data) else {
+                return nil
+            }
         }
 
-        private static func _match(_ data: Data, offset: Int = 0, _ numbers: [UInt8]) -> Bool {
-            guard data.count >= numbers.count + offset else { return false }
-            return !zip(numbers.indices, numbers).contains { (index, number) in
-                data[index + offset] != number
-            }
+        init?(partiallyDownloadedData data: Data, context: ImageDecodingContext) {
+            return nil
+        }
+
+        static func isVideo(_ data: Data) -> Bool {
+            match(data, offset: 4, [0x66, 0x74, 0x79, 0x70])
+        }
+
+        func decode(_ data: Data) -> ImageContainer? {
+            ImageContainer(image: _PlatformImage(), type: .mp4, data: data)
         }
 
         private static var isRegistered: Bool = false
@@ -155,17 +162,19 @@ extension ImageDecoders {
             guard !isRegistered else { return }
             isRegistered = true
 
-            ImageDecoderRegistry.shared.register {
-                // TODO: extened support for other image formats
-                // ftypisom - ISO Base Media file (MPEG-4) v1
-                // There are a bunch of other ways to create MP4
-                // https://www.garykessler.net/library/file_sigs.html
-                guard _match($0.data, offset: 4, [0x66, 0x74, 0x79, 0x70]) else {
-                    return nil
-                }
-                return MP4()
-            }
+            ImageDecoderRegistry.shared.register(ImageDecoders.Video.self)
         }
+    }
+}
+
+// TODO: extened support for other image formats
+// ftypisom - ISO Base Media file (MPEG-4) v1
+// There are a bunch of other ways to create MP4
+// https://www.garykessler.net/library/file_sigs.html
+private func match(_ data: Data, offset: Int = 0, _ numbers: [UInt8]) -> Bool {
+    guard data.count >= numbers.count + offset else { return false }
+    return !zip(numbers.indices, numbers).contains { (index, number) in
+        data[index + offset] != number
     }
 }
 

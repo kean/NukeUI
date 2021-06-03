@@ -345,7 +345,7 @@ public final class LazyImageView: _PlatformBaseView {
         assert(Thread.isMainThread, "Must be called from the main thread")
 
         if isExperimentalVideoSupportEnabled {
-            ImageDecoders.MP4.register() // TODO: Can the codec also pull the first frame?
+            ImageDecoders.Video.register() // TODO: Can the codec also pull the first frame?
         }
 
         cancel()
