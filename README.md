@@ -129,7 +129,7 @@ imageView.source = "https://example.com/image.jpeg"
 
 | NukeUI          | Swift           | Xcode           | Platforms                                         |
 |---------------|-----------------|-----------------|---------------------------------------------------|
-| main branch   | Swift 5.3       | Xcode 12.0      | iOS 11.0 / watchOS 5.0 / macOS 10.13 / tvOS 11.0  |
+| NukeUI 0.1    | Swift 5.3       | Xcode 12.0      | iOS 11.0 / watchOS 5.0 / macOS 10.13 / tvOS 11.0  |
 
 > `LazyImage` is available on the following platforms: iOS 13.0 / watchOS 7.0 / macOS 10.15 / tvOS 13.0
 
