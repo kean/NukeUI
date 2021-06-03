@@ -198,6 +198,8 @@ public final class LazyImageView: _PlatformBaseView {
     // MARK: Other Options
 
     /// `true` by default. If disabled, progressive image scans will be ignored.
+    ///
+    /// This option also affects the previews for animated images or videos.
     public var isProgressiveImageRenderingEnabled = true
 
     /// `true` by default. If disabled, animated image rendering will be disabled.
