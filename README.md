@@ -124,7 +124,7 @@ imageView.source = "https://example.com/image.jpeg"
 - GIF support is currently limited to iOS and tvOS (macOS support in progress)
 - There is a known race condition in Gifu with an outsdanting PR with a fix https://github.com/kaishin/Gifu/pull/176
 - The support for watchOS is there but is currently limited
-- More improvements to video support are comming. For example, generating and displaying a preview for a first frame before the entire video is loaded. 
+- More improvements to video are coming. For example, generating and displaying a preview for a first frame before the entire video is loaded. 
 
 ## Minimum Requirements
 
