@@ -152,16 +152,16 @@ extension ImageDecoders {
     final class Video: ImageDecoding, ImageDecoderRegistering {
         private var didProducePreview = false
 
+        var isAsynchronous: Bool {
+            false
+        }
+
         init?(data: Data, context: ImageDecodingContext) {
-            guard Video.isVideo(data) else {
-                return nil
-            }
+            guard Video.isVideo(data) else { return nil }
         }
 
         init?(partiallyDownloadedData data: Data, context: ImageDecodingContext) {
-            guard Video.isVideo(data) else {
-                return nil
-            }
+            guard Video.isVideo(data) else { return nil }
         }
 
         static func isVideo(_ data: Data) -> Bool {
