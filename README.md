@@ -1,6 +1,6 @@
 # NukeUI
 
-A missing piece in SwiftUI that provides lazy image loading on Apple platforms. 
+A missing piece in SwiftUI that provides lazy image loading.
 
 The library provides two components with equivalent APIs:
 
