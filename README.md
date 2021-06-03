@@ -102,7 +102,6 @@ And if some API isn't exposed yet, you can always access the underlying `LazyIma
 ```swift
 LazyImage(source: "https://example.com/image.jpeg")
     .onCreated { view in 
-        view.isExperimentalVideoSupportEnabled = true
         view.videoGravity = .resizeAspect
     }
 ```

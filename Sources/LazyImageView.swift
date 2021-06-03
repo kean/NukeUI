@@ -211,7 +211,7 @@ public final class LazyImageView: _PlatformBaseView {
     // MARK: Short Videos
 
     /// Set to `true` to enable video support. `false` by default.
-    public var isExperimentalVideoSupportEnabled = false
+    public var isVideoRenderingEnabled = false
 
     /// `.resizeAspectFill` by default.
     public var videoGravity: AVLayerVideoGravity = .resizeAspectFill
@@ -344,7 +344,7 @@ public final class LazyImageView: _PlatformBaseView {
     private func load(_ request: ImageRequestConvertible?) {
         assert(Thread.isMainThread, "Must be called from the main thread")
 
-        if isExperimentalVideoSupportEnabled {
+        if isVideoRenderingEnabled {
             ImageDecoders.Video.register() // TODO: Can the codec also pull the first frame?
         }
 
@@ -436,7 +436,7 @@ public final class LazyImageView: _PlatformBaseView {
             }
             animatedImageView.animate(withGIFData: data)
             animatedImageView.isHidden = false
-        } else if isExperimentalVideoSupportEnabled, let data = container.data, container.type == .mp4 {
+        } else if isVideoRenderingEnabled, let data = container.data, container.type == .mp4 {
             playVideo(data)
         } else {
             imageView.image = container.image
