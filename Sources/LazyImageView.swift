@@ -558,13 +558,8 @@ public final class LazyImageView: _PlatformBaseView {
     // MARK: Private (Video)
 
     private func playVideo(_ data: Data) {
-        let loader = DataAssetResourceLoader(data: data, contentType: AVFileType.mp4.rawValue)
+        let (asset, loader) = makeAVAsset(with: data)
         self.assetResourceLoader = loader
-        // The URL is irrelevant
-        let url = URL(string: "in-memory-data://\(UUID().uuidString)") ?? URL(fileURLWithPath: "/dev/null")
-        let asset = AVURLAsset(url: url)
-
-        asset.resourceLoader.setDelegate(loader, queue: .global())
 
         let playerItem = AVPlayerItem(asset: asset)
         let player = AVQueuePlayer(playerItem: playerItem)

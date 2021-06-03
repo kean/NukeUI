@@ -132,12 +132,26 @@ final class DataAssetResourceLoader: NSObject, AVAssetResourceLoaderDelegate {
     }
 }
 
+/// You must hold a strong reference to the returned loader.
+func makeAVAsset(with data: Data) -> (AVAsset, DataAssetResourceLoader) {
+    let loader = DataAssetResourceLoader(data: data, contentType: AVFileType.mp4.rawValue)
+    // The URL is irrelevant
+    let url = URL(string: "in-memory-data://\(UUID().uuidString)") ?? URL(fileURLWithPath: "/dev/null")
+    let asset = AVURLAsset(url: url)
+    asset.resourceLoader.setDelegate(loader, queue: .global())
+    return (asset, loader)
+}
+
+/// MARK: - ImageDecoders.Video
+
 extension ImageType {
     public static let mp4: ImageType = "public.mp4"
 }
 
 extension ImageDecoders {
     final class Video: ImageDecoding, ImageDecoderRegistering {
+        private var didProducePreview = false
+
         init?(data: Data, context: ImageDecodingContext) {
             guard Video.isVideo(data) else {
                 return nil
@@ -145,7 +159,9 @@ extension ImageDecoders {
         }
 
         init?(partiallyDownloadedData data: Data, context: ImageDecodingContext) {
-            return nil
+            guard Video.isVideo(data) else {
+                return nil
+            }
         }
 
         static func isVideo(_ data: Data) -> Bool {
@@ -154,6 +170,17 @@ extension ImageDecoders {
 
         func decode(_ data: Data) -> ImageContainer? {
             ImageContainer(image: _PlatformImage(), type: .mp4, data: data)
+        }
+
+        func decodePartiallyDownloadedData(_ data: Data) -> ImageContainer? {
+            guard !didProducePreview else {
+                return nil // We only need one preview
+            }
+            guard let preview = makePreview(for: data) else {
+                return nil
+            }
+            didProducePreview = true
+            return ImageContainer(image: preview, type: .mp4, isPreview: true, data: data)
         }
 
         private static var isRegistered: Bool = false
@@ -165,6 +192,16 @@ extension ImageDecoders {
             ImageDecoderRegistry.shared.register(ImageDecoders.Video.self)
         }
     }
+}
+
+private func makePreview(for data: Data) -> _PlatformImage? {
+    let (asset, loader) = makeAVAsset(with: data)
+    let generator = AVAssetImageGenerator(asset: asset)
+    guard let cgImage = try? generator.copyCGImage(at: CMTime(value: 0, timescale: 1), actualTime: nil) else {
+        return nil
+    }
+    _ = loader // Retain loader until preview is generated.
+    return _PlatformImage(cgImage: cgImage)
 }
 
 // TODO: extened support for other image formats
