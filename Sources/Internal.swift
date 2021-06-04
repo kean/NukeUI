@@ -197,7 +197,11 @@ private func makePreview(for data: Data) -> _PlatformImage? {
         return nil
     }
     _ = loader // Retain loader until preview is generated.
+    #if os(macOS)
+    return _PlatformImage(cgImage: cgImage, size: .zero)
+    #else
     return _PlatformImage(cgImage: cgImage)
+    #endif
 }
 
 // TODO: extened support for other image formats
@@ -224,6 +228,7 @@ extension AVLayerVideoGravity {
 }
 
 final class PlayerView: _PlatformBaseView {
+    #if !os(macOS)
     override class var layerClass: AnyClass {
         AVPlayerLayer.self
     }
@@ -231,6 +236,31 @@ final class PlayerView: _PlatformBaseView {
     var playerLayer: AVPlayerLayer? {
         layer as? AVPlayerLayer
     }
+    #else
+    var playerLayer: AVPlayerLayer?
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+
+        // Creating a view backed by a custom layer on macOS is ... hard
+        let playerLayer = AVPlayerLayer()
+        wantsLayer = true
+        layer?.addSublayer(playerLayer)
+        playerLayer.frame = bounds
+        self.playerLayer = playerLayer
+    }
+
+    override func layout() {
+        super.layout()
+
+        playerLayer?.frame = bounds
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    #endif
 }
 
 #endif

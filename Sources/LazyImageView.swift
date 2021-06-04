@@ -440,8 +440,12 @@ public final class LazyImageView: _PlatformBaseView {
             imageView.isHidden = false
         }
         #else
-        imageView.image = container.image
-        imageView.isHidden = false
+        if isVideoRenderingEnabled, let data = container.data, container.type == .mp4 {
+           playVideo(data)
+        } else {
+            imageView.image = container.image
+            imageView.isHidden = false
+        }
         #endif
 
         if !isFromMemory, let transition = transition {
