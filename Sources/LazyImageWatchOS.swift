@@ -2,10 +2,11 @@
 //
 // Copyright (c) 2015-2021 Alexander Grebenyuk (github.com/kean).
 
+#if os(watchOS)
+
 import SwiftUI
 import Nuke
 
-#if os(watchOS)
 /// Lazily loads and displays an image with the given source.
 ///
 /// The image view is lazy and doesn't know the size of the image before it is
@@ -66,4 +67,5 @@ public struct LazyImage: View {
         map { $0.failureView = AnyView(content()) }
     }
 }
+
 #endif
