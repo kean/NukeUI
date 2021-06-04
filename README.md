@@ -139,7 +139,8 @@ There is nothing you need to do to enable video playback. It does the right thin
 
 - GIF support is currently limited to iOS and tvOS (macOS support in progress)
 - There is a known race condition in Gifu with an outsdanting PR with a fix https://github.com/kaishin/Gifu/pull/176
-- The support for watchOS is there but is currently limited 
+- The support for watchOS is there but is currently limited
+- You might notice some scrolling hiccups when debugger is attached that are completely gone without it (investigating) 
 
 ## Minimum Requirements
 
