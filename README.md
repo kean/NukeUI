@@ -5,7 +5,7 @@ A missing piece in SwiftUI that provides lazy image loading.
 - `LazyImage` for SwiftUI
 - `LazyImageView` for UIKit and AppKit
 
-It uses [Nuke](https://github.com/kean/Nuke) for loading images and has many customization options. It also supports GIF rendering thanks to [Gifu](https://github.com/kaishin/Gifu). But GIF is [not the most](https://web.dev/replace-gifs-with-videos/) efficient format, so NukeUI also supports playing short videos out of the box.
+`LazyImage` uses [Nuke](https://github.com/kean/Nuke) for loading images and has many customization options. But it's not just that. It also supports progressive images, it has GIF support powered by [Gifu](https://github.com/kaishin/Gifu) and can even play short videos, which is [a much more efficient](https://web.dev/replace-gifs-with-videos/).
 
 > **WARNING**. It's work-in-progress. Feel free to try it at your own risk or wait for 1.x.
 
@@ -118,9 +118,13 @@ imageView.onCompletion = { print("Request completed")
 imageView.source = "https://example.com/image.jpeg"
 ````
 
+## Animated Images
+
+Both `LazyImage` and `LazyImageView` support GIF playback powered by [Gifu](https://github.com/kaishin/Gifu) rendering engine. Please keep in mind that GIF rendering is expensive and can result in high CPU, battery, and memory usage. A best practice is to [replace GIF with video](https://web.dev/replace-gifs-with-videos/).
+
 ## Video
 
-Both `LazyImage` and `LazyImageView` support video playback out of the box. It's aimed to be a replacement for GIF, which is [extremely inefficient](https://web.dev/replace-gifs-with-videos/). With video, you get an order of magnitude smaller files and hardware-accelerated playback. In practice, it means that instead of a 20 MB GIF you can now download a 1 MB video of comparable quality. And instead of 80% CPU usage, you'll see 0%.
+Both `LazyImage` and `LazyImageView` support video playback. It's aimed to be a replacement for GIF, which is [inefficient](https://web.dev/replace-gifs-with-videos/). With video, you get an order of magnitude smaller files and hardware-accelerated playback. In practice, it means that instead of a 20 MB GIF you can now download a 1 MB video of comparable quality. And instead of 80% CPU usage, you'll see 0%.
 
 There is nothing you need to do to enable video playback. It does the right thing by default:
 
