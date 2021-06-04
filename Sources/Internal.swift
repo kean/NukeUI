@@ -228,6 +228,15 @@ extension AVLayerVideoGravity {
 }
 
 public final class VideoPlayerView: _PlatformBaseView {
+    // MARK: Configuration
+
+    /// `.resizeAspectFill` by default.
+    public var videoGravity: AVLayerVideoGravity {
+        get { playerLayer.videoGravity }
+        set { playerLayer.videoGravity = newValue }
+    }
+
+    // MARK: Initialization
     #if !os(macOS)
     public override class var layerClass: AnyClass {
         AVPlayerLayer.self
@@ -260,10 +269,38 @@ public final class VideoPlayerView: _PlatformBaseView {
     }
     #endif
 
-    /// `.resizeAspectFill` by default.
-    public var videoGravity: AVLayerVideoGravity {
-        get { playerLayer.videoGravity }
-        set { playerLayer.videoGravity = newValue }
+    // MARK: Private
+
+    private var player: AVPlayer?
+    private var playerLooper: AnyObject?
+    private var assetResourceLoader: DataAssetResourceLoader?
+    private var playerObserver: AnyObject?
+
+    func reset() {
+        playerLayer.player = nil
+        player = nil
+        assetResourceLoader = nil
+        playerObserver = nil
+    }
+
+    func playVideo(_ data: Data) {
+        let (asset, loader) = makeAVAsset(with: data)
+        self.assetResourceLoader = loader
+
+        let playerItem = AVPlayerItem(asset: asset)
+        let player = AVQueuePlayer(playerItem: playerItem)
+        player.isMuted = true
+        player.preventsDisplaySleepDuringVideoPlayback = false
+        self.playerLooper = AVPlayerLooper(player: player, templateItem: playerItem)
+        self.player = player
+
+        playerLayer.player = player
+
+        playerObserver = player.observe(\.status, options: [.new, .initial]) { player, change in
+            if player.status == .readyToPlay {
+                player.play()
+            }
+        }
     }
 }
 

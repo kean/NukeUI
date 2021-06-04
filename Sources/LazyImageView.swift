@@ -245,11 +245,6 @@ public final class LazyImageView: _PlatformBaseView {
     var onPlaceholdeViewHiddenUpdated: ((_ isHidden: Bool) -> Void)?
     var onFailureViewHiddenUpdated: ((_ isHidden: Bool) -> Void)?
 
-    // Video rendering
-    private var player: AVPlayer?
-    private var playerLooper: AnyObject?
-    private var assetResourceLoader: DataAssetResourceLoader?
-
     private var isResetNeeded = false
     private var isDisplayingContent = false
 
@@ -344,10 +339,7 @@ public final class LazyImageView: _PlatformBaseView {
         #endif
 
         _videoPlayerView?.isHidden = true
-        _videoPlayerView?.playerLayer.player = nil
-        player = nil
-        assetResourceLoader = nil
-        playerObserver = nil
+        _videoPlayerView?.reset()
 
         isDisplayingContent = false
         isResetNeeded = false
@@ -454,14 +446,16 @@ public final class LazyImageView: _PlatformBaseView {
             animatedImageView.animate(withGIFData: data)
             animatedImageView.isHidden = false
         } else if isVideoRenderingEnabled, let data = container.data, container.type == .mp4 {
-            playVideo(data)
+            videoPlayerView.isHidden = false
+            videoPlayerView.playVideo(data)
         } else {
             imageView.image = container.image
             imageView.isHidden = false
         }
         #else
         if isVideoRenderingEnabled, let data = container.data, container.type == .mp4 {
-           playVideo(data)
+            videoPlayerView.isHidden = false
+            videoPlayerView.playVideo(data)
         } else {
             imageView.image = container.image
             imageView.isHidden = false
@@ -574,32 +568,6 @@ public final class LazyImageView: _PlatformBaseView {
     }
 
     #endif
-
-    // MARK: Private (Video)
-
-    private var playerObserver: AnyObject?
-
-    private func playVideo(_ data: Data) {
-        videoPlayerView.isHidden = false
-
-        let (asset, loader) = makeAVAsset(with: data)
-        self.assetResourceLoader = loader
-
-        let playerItem = AVPlayerItem(asset: asset)
-        let player = AVQueuePlayer(playerItem: playerItem)
-        player.isMuted = true
-        player.preventsDisplaySleepDuringVideoPlayback = false
-        self.playerLooper = AVPlayerLooper(player: player, templateItem: playerItem)
-        self.player = player
-
-        videoPlayerView.playerLayer.player = player
-
-        playerObserver = player.observe(\.status, options: [.new, .initial]) { player, change in
-            if player.status == .readyToPlay {
-                player.play()
-            }
-        }
-    }
 
     // MARK: Misc
 
