@@ -97,7 +97,7 @@ LazyImage(source: "https://example.com/image.jpeg")
     .onCompletion { ... }
 ```
 
-And if some API isn't exposed yet, you can always access the underlying `LazyImageView` instance. For example, you are currently going to need to access the underlying view to enable experimental video playback support:
+And if some API isn't exposed yet, you can always access the underlying `LazyImageView` instance.
 
 ```swift
 LazyImage(source: "https://example.com/image.jpeg")
@@ -118,12 +118,23 @@ imageView.onCompletion = { print("Request completed")
 imageView.source = "https://example.com/image.jpeg"
 ````
 
+## Video
+
+Both `LazyImage` and `LazyImageView` support video playback out of the box. It's aimed to be a replacement for GIF, which is [extremely inefficient](https://web.dev/replace-gifs-with-videos/). With video, you get an order of magnitude smaller files and hardware-accelerated playback. In practice, it means that instead of a 20 MB GIF you can now download a 1 MB video of comparable quality. And instead of 80% CPU usage, you'll see 0%.
+
+There is nothing you need to do to enable video playback. It does the right thing by default:
+
+- It plays automatically
+- It doesn't show any controls
+- It loops continuously
+- It's always silent
+- It doesn't prevent the display from sleeping
+
 ## Limitations
 
 - GIF support is currently limited to iOS and tvOS (macOS support in progress)
 - There is a known race condition in Gifu with an outsdanting PR with a fix https://github.com/kaishin/Gifu/pull/176
-- The support for watchOS is there but is currently limited
-- More improvements to video are coming. For example, generating and displaying a preview for a first frame before the entire video is loaded. 
+- The support for watchOS is there but is currently limited 
 
 ## Minimum Requirements
 
