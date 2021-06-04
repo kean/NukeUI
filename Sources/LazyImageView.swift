@@ -325,6 +325,7 @@ public final class LazyImageView: _PlatformBaseView {
         _playerView?.playerLayer?.player = nil
         player = nil
         assetResourceLoader = nil
+        playerObserver = nil
 
         isDisplayingContent = false
     }
@@ -558,6 +559,8 @@ public final class LazyImageView: _PlatformBaseView {
 
     // MARK: Private (Video)
 
+    private var playerObserver: AnyObject?
+
     private func playVideo(_ data: Data) {
         if playerView.superview == nil {
             addSubview(playerView)
@@ -581,7 +584,13 @@ public final class LazyImageView: _PlatformBaseView {
         self.player = player
 
         playerLayer.player = player
-        player.play()
+//        player.play()
+
+        playerObserver = player.observe(\.status, options: [.new, .initial]) { player, change in
+            if player.status == .readyToPlay {
+                player.play()
+            }
+        }
     }
 
     // MARK: Misc
