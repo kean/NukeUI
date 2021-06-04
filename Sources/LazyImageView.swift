@@ -271,6 +271,10 @@ public final class LazyImageView: _PlatformBaseView {
         #if !os(macOS)
         clipsToBounds = true
         imageView.contentMode = .scaleAspectFill
+        #else
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
+        imageView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         #endif
     }
 
