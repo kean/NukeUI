@@ -16,6 +16,9 @@ public final class VideoPlayerView: _PlatformBaseView {
         set { playerLayer.videoGravity = newValue }
     }
 
+    /// `true` by default. If disabled, will only play a video once.
+    public var isLooping = true
+
     // MARK: Initialization
     #if !os(macOS)
     public override class var layerClass: AnyClass {
@@ -70,7 +73,9 @@ public final class VideoPlayerView: _PlatformBaseView {
         let player = AVQueuePlayer(playerItem: playerItem)
         player.isMuted = true
         player.preventsDisplaySleepDuringVideoPlayback = false
-        self.playerLooper = AVPlayerLooper(player: player, templateItem: playerItem)
+        if isLooping {
+            self.playerLooper = AVPlayerLooper(player: player, templateItem: playerItem)
+        }
         self.player = player
 
         playerLayer.player = player
