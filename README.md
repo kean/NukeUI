@@ -129,6 +129,7 @@ There is nothing you need to do to enable video playback. It does the right thin
 - It loops continuously
 - It's always silent
 - It doesn't prevent the display from sleeping
+- It displays a preview until the video is downloaded
 
 ## Limitations
 
