@@ -1,6 +1,8 @@
 
 # NukeUI 0.x
 
+## NukeUI 0.3.0
+
 *Jun 4, 2021*
 
 - Allow user interaction during animated transitions
@@ -9,7 +11,7 @@
 - Add `isLooping` property to `VideoPlayerView` which is `true` by default
 - Add `contentView` where all content views (both images and video) are displayed. It simplified animations.
 
-## Nuke 0.2.0
+## NukeUI 0.2.0
 
 *Jun 3, 2021*
 
@@ -19,7 +21,7 @@
 - Add video support on macOS
 - Optimize performance during scrolling
 
-## Nuke 0.1.0
+## NukeUI 0.1.0
 
 *Jun 1, 2021*
 
