@@ -124,7 +124,7 @@ Both `LazyImage` and `LazyImageView` support GIF playback powered by [Gifu](http
 
 ## Video
 
-Both `LazyImage` and `LazyImageView` support video playback. It's aimed to be a replacement for GIF, which is [inefficient](https://web.dev/replace-gifs-with-videos/). With video, you get an order of magnitude smaller files and hardware-accelerated playback. In practice, it means that instead of a 20 MB GIF you can now download a 1 MB video of comparable quality. And instead of 80% CPU usage, you'll see 0%.
+Both `LazyImage` and `LazyImageView` support video playback. It's aimed to be a replacement for GIF, which is [inefficient](https://web.dev/replace-gifs-with-videos/). With video, you get an order of magnitude smaller files and hardware-accelerated playback. In practice, it means that instead of a 20 MB GIF you can now download a ~2 MB video of comparable quality. And instead of 60% CPU usage and high energy impact, you'll see 0%.
 
 There is nothing you need to do to enable video playback. It does the right thing by default:
 
