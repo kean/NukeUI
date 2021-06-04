@@ -238,7 +238,7 @@ public struct LazyImage: View {
         if let contentMode = contentMode {
             view.imageView.contentMode = .init(contentMode)
             view.animatedImageView.contentMode = .init(contentMode)
-            view.videoGravity = .init(contentMode)
+            view.videoPlayerView.videoGravity = .init(contentMode)
         }
         #endif
 

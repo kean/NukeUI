@@ -127,9 +127,15 @@ public final class LazyImageView: _PlatformBaseView {
     // MARK: Underlying Views
 
     #if os(macOS)
+    /// This is where all content views (images, video, etc) are displayed.
+    public let contentView = NSView()
+
     /// Returns an underlying image view.
     public let imageView = NSImageView()
     #else
+    /// This is where all content views (images, video, etc) are displayed.
+    public let contentView = UIView()
+
     /// Returns an underlying image view.
     public let imageView = UIImageView()
     #endif
@@ -137,18 +143,42 @@ public final class LazyImageView: _PlatformBaseView {
     #if os(iOS) || os(tvOS)
     /// Returns an underlying animated image view used for rendering animated images.
     public var animatedImageView: AnimatedImageView {
-        if let animatedImageView = _animatedImageView {
-            return animatedImageView
+        if let view = _animatedImageView {
+            return view
         }
-        let animatedImageView = AnimatedImageView()
-        animatedImageView.contentMode = .scaleAspectFill
-        animatedImageView.clipsToBounds = true
-        _animatedImageView = animatedImageView
-        return animatedImageView
+        let view = makeAnimatedImageView()
+        addContentView(view)
+        _animatedImageView = view
+        return view
+    }
+
+    private func makeAnimatedImageView() -> AnimatedImageView {
+        let view = AnimatedImageView()
+        view.contentMode = .scaleAspectFill
+        return view
     }
 
     private var _animatedImageView: AnimatedImageView?
     #endif
+
+    /// Returns an underlying video player view.
+    public var videoPlayerView: VideoPlayerView {
+        if let view = _videoPlayerView {
+            return view
+        }
+        let view = makeVideoPlayerView()
+        addContentView(view)
+        _videoPlayerView = view
+        return view
+    }
+
+    private func makeVideoPlayerView() -> VideoPlayerView {
+        let view = VideoPlayerView()
+        view.videoGravity = .resizeAspectFill
+        return view
+    }
+
+    private var _videoPlayerView: VideoPlayerView?
 
     // MARK: Managing Image Tasks
 
@@ -191,10 +221,6 @@ public final class LazyImageView: _PlatformBaseView {
     /// Gets called when the request is completed.
     public var onCompletion: ((_ result: Result<ImageResponse, ImagePipeline.Error>) -> Void)?
 
-    var onPlaceholdeViewHiddenUpdated: ((_ isHidden: Bool) -> Void)?
-
-    var onFailureViewHiddenUpdated: ((_ isHidden: Bool) -> Void)?
-
     // MARK: Other Options
 
     /// `true` by default. If disabled, progressive image scans will be ignored.
@@ -205,32 +231,24 @@ public final class LazyImageView: _PlatformBaseView {
     /// `true` by default. If disabled, animated image rendering will be disabled.
     public var isAnimatedImageRenderingEnabled = true
 
+    /// Set to `true` to enable video support. `false` by default.
+    public var isVideoRenderingEnabled = false
+
     /// `true` by default. If enabled, the image view will be cleared before the
     /// new download is started. You can disable it if you want to keep the
     /// previous content while the new download is in progress.
     public var isResetEnabled = true
 
-    // MARK: Short Videos
+    // MARK: Private
 
-    /// Set to `true` to enable video support. `false` by default.
-    public var isVideoRenderingEnabled = false
+    // Hooks for LazyImage (SwiftUI)
+    var onPlaceholdeViewHiddenUpdated: ((_ isHidden: Bool) -> Void)?
+    var onFailureViewHiddenUpdated: ((_ isHidden: Bool) -> Void)?
 
-    /// `.resizeAspectFill` by default.
-    public var videoGravity: AVLayerVideoGravity = .resizeAspectFill
-
+    // Video rendering
     private var player: AVPlayer?
     private var playerLooper: AnyObject?
     private var assetResourceLoader: DataAssetResourceLoader?
-
-    var playerView: PlayerView {
-        if let playerView = _playerView {
-            return playerView
-        }
-        let playerView = PlayerView()
-        _playerView = playerView
-        return playerView
-    }
-    private var _playerView: PlayerView?
 
     private var isResetNeeded = false
     private var isDisplayingContent = false
@@ -252,12 +270,14 @@ public final class LazyImageView: _PlatformBaseView {
     }
 
     private func didInit() {
-        addSubview(imageView)
-        imageView.pinToSuperview()
+        addSubview(contentView)
+        contentView.pinToSuperview()
+
+        addContentView(imageView)
 
         #if !os(macOS)
+        clipsToBounds = true
         imageView.contentMode = .scaleAspectFill
-        imageView.clipsToBounds = true
         #endif
     }
 
@@ -310,6 +330,8 @@ public final class LazyImageView: _PlatformBaseView {
 
         _imageContainer = nil
 
+        contentView.isHidden = true
+
         setPlaceholderViewHidden(true)
         setFailureViewHidden(true)
 
@@ -321,13 +343,14 @@ public final class LazyImageView: _PlatformBaseView {
         _animatedImageView?.image = nil
         #endif
 
-        _playerView?.isHidden = true
-        _playerView?.playerLayer?.player = nil
+        _videoPlayerView?.isHidden = true
+        _videoPlayerView?.playerLayer.player = nil
         player = nil
         assetResourceLoader = nil
         playerObserver = nil
 
         isDisplayingContent = false
+        isResetNeeded = false
     }
 
     /// Cancels current request.
@@ -428,10 +451,6 @@ public final class LazyImageView: _PlatformBaseView {
         }
         #if os(iOS) || os(tvOS)
         if isAnimatedImageRenderingEnabled, let data = container.data, container.type == .gif {
-            if animatedImageView.superview == nil {
-                insertSubview(animatedImageView, belowSubview: imageView) // Below placeholders
-                animatedImageView.pinToSuperview()
-            }
             animatedImageView.animate(withGIFData: data)
             animatedImageView.isHidden = false
         } else if isVideoRenderingEnabled, let data = container.data, container.type == .mp4 {
@@ -448,6 +467,7 @@ public final class LazyImageView: _PlatformBaseView {
             imageView.isHidden = false
         }
         #endif
+        contentView.isHidden = false
 
         if !isFromMemory, let transition = transition {
             runTransition(transition, container)
@@ -479,7 +499,7 @@ public final class LazyImageView: _PlatformBaseView {
         }
         if let newView = newView {
             newView.isHidden = true
-            addSubview(newView)
+            insertSubview(newView, at: 0)
             setNeedsUpdateConstraints()
             #if os(iOS) || os(tvOS)
             if let spinner = newView as? UIActivityIndicatorView {
@@ -515,7 +535,7 @@ public final class LazyImageView: _PlatformBaseView {
         }
         if let newView = newView {
             newView.isHidden = true
-            addSubview(newView)
+            insertSubview(newView, at: 0)
             setNeedsUpdateConstraints()
         }
     }
@@ -540,11 +560,9 @@ public final class LazyImageView: _PlatformBaseView {
 
     private func runFadeInTransition(duration: TimeInterval) {
         guard !isDisplayingContent else { return }
-        imageView.alpha = 0
-        _animatedImageView?.alpha = 0
-        UIView.animate(withDuration: duration, delay: 0, options: []) {
-            self.imageView.alpha = 1
-            self._animatedImageView?.alpha = 1
+        contentView.alpha = 0
+        UIView.animate(withDuration: duration, delay: 0, options: [.allowUserInteraction]) {
+            self.contentView.alpha = 1
         }
     }
 
@@ -552,7 +570,7 @@ public final class LazyImageView: _PlatformBaseView {
 
     private func runFadeInTransition(duration: TimeInterval) {
         guard !isDisplayingContent else { return }
-        imageView.layer?.animateOpacity(duration: duration)
+        contentView.layer?.animateOpacity(duration: duration)
     }
 
     #endif
@@ -562,15 +580,7 @@ public final class LazyImageView: _PlatformBaseView {
     private var playerObserver: AnyObject?
 
     private func playVideo(_ data: Data) {
-        if playerView.superview == nil {
-            addSubview(playerView)
-            playerView.pinToSuperview()
-        }
-        guard let playerLayer = playerView.playerLayer else {
-            return
-        }
-
-        playerView.isHidden = false
+        videoPlayerView.isHidden = false
 
         let (asset, loader) = makeAVAsset(with: data)
         self.assetResourceLoader = loader
@@ -579,12 +589,10 @@ public final class LazyImageView: _PlatformBaseView {
         let player = AVQueuePlayer(playerItem: playerItem)
         player.isMuted = true
         player.preventsDisplaySleepDuringVideoPlayback = false
-        playerLayer.videoGravity = videoGravity
         self.playerLooper = AVPlayerLooper(player: player, templateItem: playerItem)
         self.player = player
 
-        playerLayer.player = player
-//        player.play()
+        videoPlayerView.playerLayer.player = player
 
         playerObserver = player.observe(\.status, options: [.new, .initial]) { player, change in
             if player.status == .readyToPlay {
@@ -601,6 +609,12 @@ public final class LazyImageView: _PlatformBaseView {
 
         /// Fill the superview.
         case fill
+    }
+
+    private func addContentView(_ view: _PlatformBaseView) {
+        contentView.addSubview(view)
+        view.pinToSuperview()
+        view.isHidden = true
     }
 }
 
