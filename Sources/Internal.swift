@@ -57,10 +57,6 @@ extension _PlatformBaseView {
         case .fill: return pinToSuperview()
         }
     }
-
-    func getLayer() -> CALayer? {
-        layer // Optional on macOS but not on iOS
-    }
 }
 
 extension CALayer {
@@ -224,6 +220,16 @@ extension AVLayerVideoGravity {
         case .center: self = .resizeAspect
         case .fill: self = .resize
         }
+    }
+}
+
+final class PlayerView: _PlatformBaseView {
+    override class var layerClass: AnyClass {
+        AVPlayerLayer.self
+    }
+
+    var playerLayer: AVPlayerLayer? {
+        layer as? AVPlayerLayer
     }
 }
 

@@ -219,9 +219,18 @@ public final class LazyImageView: _PlatformBaseView {
     public var videoGravity: AVLayerVideoGravity = .resizeAspectFill
 
     private var player: AVPlayer?
-    private var playerLayer: AVPlayerLayer?
     private var playerLooper: AnyObject?
     private var assetResourceLoader: DataAssetResourceLoader?
+
+    var playerView: PlayerView {
+        if let playerView = _playerView {
+            return playerView
+        }
+        let playerView = PlayerView()
+        _playerView = playerView
+        return playerView
+    }
+    private var _playerView: PlayerView?
 
     private var isResetNeeded = false
     private var isDisplayingContent = false
@@ -288,20 +297,6 @@ public final class LazyImageView: _PlatformBaseView {
     }
     #endif
 
-    #if os(macOS)
-    public override func layout() {
-        super.layout()
-
-        playerLayer?.frame = bounds
-    }
-    #else
-    public override func layoutSubviews() {
-        super.layoutSubviews()
-
-        playerLayer?.frame = bounds
-    }
-    #endif
-
     public override func updateConstraints() {
         super.updateConstraints()
 
@@ -326,8 +321,8 @@ public final class LazyImageView: _PlatformBaseView {
         _animatedImageView?.image = nil
         #endif
 
-        playerLayer?.removeFromSuperlayer()
-        playerLayer = nil
+        _playerView?.isHidden = true
+        _playerView?.playerLayer?.player = nil
         player = nil
         assetResourceLoader = nil
 
@@ -560,6 +555,16 @@ public final class LazyImageView: _PlatformBaseView {
     // MARK: Private (Video)
 
     private func playVideo(_ data: Data) {
+        if playerView.superview == nil {
+            addSubview(playerView)
+            playerView.pinToSuperview()
+        }
+        guard let playerLayer = playerView.playerLayer else {
+            return
+        }
+
+        playerView.isHidden = false
+
         let (asset, loader) = makeAVAsset(with: data)
         self.assetResourceLoader = loader
 
@@ -567,17 +572,12 @@ public final class LazyImageView: _PlatformBaseView {
         let player = AVQueuePlayer(playerItem: playerItem)
         player.isMuted = true
         player.preventsDisplaySleepDuringVideoPlayback = false
-        player.automaticallyWaitsToMinimizeStalling = false
-        let playerLayer = AVPlayerLayer(player: player)
         playerLayer.videoGravity = videoGravity
         self.playerLooper = AVPlayerLooper(player: player, templateItem: playerItem)
-
-        getLayer()?.addSublayer(playerLayer)
-        playerLayer.frame = bounds
-        player.play()
-
         self.player = player
-        self.playerLayer = playerLayer
+
+        playerLayer.player = player
+        player.play()
     }
 
     // MARK: Misc
