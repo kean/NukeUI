@@ -19,8 +19,6 @@ import Gifu
 public typealias AnimatedImageView = Gifu.GIFImageView
 #endif
 
-import AVKit
-
 /// Lazily loads and displays images.
 public final class LazyImageView: _PlatformBaseView {
 
@@ -114,7 +112,7 @@ public final class LazyImageView: _PlatformBaseView {
         ///
         /// The closure will get called after the image is already displayed but
         /// before `imageContainer` value is updated.
-        case custom(closure: (LazyImageView, Nuke.ImageContainer) -> Void)
+        case custom(closure: (LazyImageView, ImageContainer) -> Void)
 
         @available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
         init(_ transition: LazyImage.Transition) {
@@ -286,7 +284,7 @@ public final class LazyImageView: _PlatformBaseView {
     /// Supports platform images (`UIImage`) and `ImageContainer`. Use `ImageContainer`
     /// if you need to pass additional parameters alongside the image, like
     /// original image data for GIF rendering.
-    public var imageContainer: Nuke.ImageContainer? {
+    public var imageContainer: ImageContainer? {
         get { _imageContainer }
         set {
             _imageContainer = newValue
@@ -298,17 +296,17 @@ public final class LazyImageView: _PlatformBaseView {
         }
     }
 
-    var _imageContainer: Nuke.ImageContainer?
+    var _imageContainer: ImageContainer?
 
     #if os(macOS)
     public var image: NSImage? {
         get { imageContainer?.image }
-        set { imageContainer = newValue.map { Nuke.ImageContainer(image: $0) } }
+        set { imageContainer = newValue.map { ImageContainer(image: $0) } }
     }
     #else
     public var image: UIImage? {
         get { imageContainer?.image }
-        set { imageContainer = newValue.map { Nuke.ImageContainer(image: $0) } }
+        set { imageContainer = newValue.map { ImageContainer(image: $0) } }
     }
     #endif
 
@@ -436,31 +434,13 @@ public final class LazyImageView: _PlatformBaseView {
         onCompletion?(result)
     }
 
-    private func display(_ container: Nuke.ImageContainer, isFromMemory: Bool) {
+    private func display(_ container: ImageContainer, isFromMemory: Bool) {
         if isResetNeeded {
             reset()
             isResetNeeded = false
         }
-        #if os(iOS) || os(tvOS)
-        if isAnimatedImageRenderingEnabled, let data = container.data, container.type == .gif {
-            animatedImageView.animate(withGIFData: data)
-            animatedImageView.isHidden = false
-        } else if isVideoRenderingEnabled, let data = container.data, container.type == .mp4 {
-            videoPlayerView.isHidden = false
-            videoPlayerView.playVideo(data)
-        } else {
-            imageView.image = container.image
-            imageView.isHidden = false
-        }
-        #else
-        if isVideoRenderingEnabled, let data = container.data, container.type == .mp4 {
-            videoPlayerView.isHidden = false
-            videoPlayerView.playVideo(data)
-        } else {
-            imageView.image = container.image
-            imageView.isHidden = false
-        }
-        #endif
+
+        actuallyDisplay(container)
         contentView.isHidden = false
 
         if !isFromMemory, let transition = transition {
@@ -470,6 +450,23 @@ public final class LazyImageView: _PlatformBaseView {
         // It's used to determine when to perform certain transitions
         isDisplayingContent = true
         _imageContainer = container
+    }
+
+    private func actuallyDisplay(_ container: ImageContainer) {
+        #if os(iOS) || os(tvOS)
+        if isAnimatedImageRenderingEnabled, let data = container.data, container.type == .gif {
+            animatedImageView.animate(withGIFData: data)
+            animatedImageView.isHidden = false
+            return
+        }
+        #endif
+        if isVideoRenderingEnabled, let data = container.data, container.type == .mp4 {
+            videoPlayerView.isHidden = false
+            videoPlayerView.playVideo(data)
+        } else {
+            imageView.image = container.image
+            imageView.isHidden = false
+        }
     }
 
     // MARK: Private (Placeholder View)
@@ -541,7 +538,7 @@ public final class LazyImageView: _PlatformBaseView {
 
     // MARK: Private (Transitions)
 
-    private func runTransition(_ transition: Transition, _ image: Nuke.ImageContainer) {
+    private func runTransition(_ transition: Transition, _ image: ImageContainer) {
         switch transition {
         case .fadeIn(let duration):
             runFadeInTransition(duration: duration)

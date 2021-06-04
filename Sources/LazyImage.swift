@@ -8,6 +8,7 @@ import SwiftUI
 
 public typealias ImageRequest = Nuke.ImageRequest
 public typealias ImagePipeline = Nuke.ImagePipeline
+public typealias ImageContainer = Nuke.ImageContainer
 
 #if !os(watchOS)
 
