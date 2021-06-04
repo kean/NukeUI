@@ -7,7 +7,7 @@ A missing piece in SwiftUI that provides lazy image loading.
 
 `LazyImage` uses [Nuke](https://github.com/kean/Nuke) for loading images and has many customization options. But it's not just that. It also supports progressive images, it has GIF support powered by [Gifu](https://github.com/kaishin/Gifu) and can even play short videos, which is [a much more efficient](https://web.dev/replace-gifs-with-videos/).
 
-> **WARNING**. It's work-in-progress. Feel free to try it at your own risk or wait for 1.x.
+> **WARNING**. It's in early preview. The first stable release will be available soon.
 
 ## Usage
 
