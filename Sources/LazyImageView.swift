@@ -566,6 +566,7 @@ public final class LazyImageView: _PlatformBaseView {
         let playerItem = AVPlayerItem(asset: asset)
         let player = AVQueuePlayer(playerItem: playerItem)
         player.isMuted = true
+        player.preventsDisplaySleepDuringVideoPlayback = false
         let playerLayer = AVPlayerLayer(player: player)
         playerLayer.videoGravity = videoGravity
         self.playerLooper = AVPlayerLooper(player: player, templateItem: playerItem)
