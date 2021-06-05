@@ -2,7 +2,7 @@
 //
 // Copyright (c) 2015-2021 Alexander Grebenyuk (github.com/kean).
 
-#if os(watchOS)
+#if false
 
 import SwiftUI
 import Nuke

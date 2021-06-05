@@ -10,22 +10,26 @@ public typealias ImageRequest = Nuke.ImageRequest
 public typealias ImagePipeline = Nuke.ImagePipeline
 public typealias ImageContainer = Nuke.ImageContainer
 
-#if !os(watchOS)
-
 /// Lazily loads and displays images.
 ///
 /// The image view is lazy and doesn't know the size of the image before it is
 /// downloaded. You must specify the size for the view before loading the image.
 /// By default, the image will resize to fill the available space but preserve
 /// the aspect ratio. You can change this behavior by passing a different content mode.
-@available(iOS 13.0, tvOS 13.0, macOS 10.15, *)
+@available(iOS 13.0, tvOS 13.0, watchOS 7.0, macOS 10.15, *)
 public struct LazyImage: View {
     private let source: ImageRequest?
-    private let image: ImageContainer?
+    private let imageContainer: ImageContainer?
+
+    #if os(watchOS)
+    @StateObject private var image = FetchImage()
+    #else
     private var imageView: LazyImageView?
     private var proxy = LazyImageViewProxy()
+    private var onCreated: ((LazyImageView) -> Void)?
     @State private var isPlaceholderHidden = true
     @State private var isFailureViewHidden = true
+    #endif
 
     // Options
     private var placeholderView: AnyView?
@@ -40,7 +44,6 @@ public struct LazyImage: View {
     private var onSuccess: ((_ response: ImageResponse) -> Void)?
     private var onFailure: ((_ response: ImagePipeline.Error) -> Void)?
     private var onCompletion: ((_ result: Result<ImageResponse, ImagePipeline.Error>) -> Void)?
-    private var onCreated: ((LazyImageView) -> Void)?
     private var contentMode: ContentMode?
 
     // MARK: Initializers
@@ -48,7 +51,7 @@ public struct LazyImage: View {
     /// Initializes the image with the given source to be displayed later.
     public init(source: ImageRequestConvertible?) {
         self.source = source?.asImageRequest()
-        self.image = nil
+        self.imageContainer = nil
     }
 
     /// Initializes the image with the given image to be displayed immediately.
@@ -58,7 +61,7 @@ public struct LazyImage: View {
     /// original image data for GIF rendering.
     public init(image: ImageContainer) {
         self.source = nil
-        self.image = image
+        self.imageContainer = image
     }
 
     #if os(macOS)
@@ -180,6 +183,7 @@ public struct LazyImage: View {
         map { $0.onCompletion = closure }
     }
 
+    #if !os(watchOS)
     /// Returns an underlying image view.
     ///
     /// - parameter configure: A closure that gets called once when the view is
@@ -187,8 +191,11 @@ public struct LazyImage: View {
     public func onCreated(_ configure: ((LazyImageView) -> Void)?) -> Self {
         map { $0.onCreated = configure }
     }
+    #endif
 
-    // MARK: View
+    // MARK: Body
+
+    #if !os(watchOS)
 
     public var body: some View {
         ZStack {
@@ -208,8 +215,8 @@ public struct LazyImage: View {
     }
 
     private func onAppear() {
-        if let image = self.image {
-            proxy.imageView?.imageContainer = image
+        if let container = self.imageContainer {
+            proxy.imageView?.imageContainer = container
         } else {
             proxy.imageView?.source = source
         }
@@ -224,6 +231,50 @@ public struct LazyImage: View {
         }
     }
 
+    #else
+
+    public var body: some View {
+        ZStack {
+            if image.isLoading {
+                placeholderView
+            }
+            if let result = image.result, case .failure = result, !image.isLoading {
+                failureView
+            }
+            image.view?
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .clipped()
+        }
+        .onAppear(perform: onAppear)
+        .onDisappear(perform: onDisappear)
+        // Making sure it reload if the source changes
+        .id(source.map(ImageRequest.ID.init))
+    }
+
+    private func onAppear() {
+        image.pipeline = pipeline
+
+        #warning("not implemented")
+//        if let image = self.container {
+//            proxy.imageView?.imageContainer = image
+//        } else {
+        if let source = source {
+            image.load(source)
+        }
+//        }
+    }
+
+    private func onDisappear() {
+        guard let behavior = onDisappearBehavior else { return }
+        switch behavior {
+        case .reset: image.reset()
+        case .cancel: image.cancel()
+        }
+    }
+
+    #endif
+
     // MARK: Private
 
     private func map(_ closure: (inout LazyImage) -> Void) -> Self {
@@ -231,6 +282,8 @@ public struct LazyImage: View {
         closure(&copy)
         return copy
     }
+
+    #if !os(watchOS)
 
     private func onCreated(_ view: LazyImageView) {
         proxy.imageView = view
@@ -258,7 +311,11 @@ public struct LazyImage: View {
 
         onCreated?(view)
     }
+
+    #endif
 }
+
+#if !os(watchOS)
 
 private final class LazyImageViewProxy {
     var imageView: LazyImageView?
