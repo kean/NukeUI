@@ -275,6 +275,7 @@ public final class LazyImageView: _PlatformBaseView {
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
         imageView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        imageView.animates = true // macOS supports animated images out of the box
         #endif
     }
 
@@ -334,10 +335,6 @@ public final class LazyImageView: _PlatformBaseView {
 
         imageView.isHidden = true
         imageView.image = nil
-
-        #if os(macOS)
-        imageView.animates = true
-        #endif
 
         #if os(iOS) || os(tvOS)
         _animatedImageView?.isHidden = true
