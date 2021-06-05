@@ -1,6 +1,8 @@
 
 # NukeUI 0.x
 
+- Add animated images support on macOS
+
 ## NukeUI 0.3.0
 
 *Jun 4, 2021*

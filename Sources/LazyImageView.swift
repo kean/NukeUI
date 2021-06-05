@@ -335,6 +335,10 @@ public final class LazyImageView: _PlatformBaseView {
         imageView.isHidden = true
         imageView.image = nil
 
+        #if os(macOS)
+        imageView.animates = true
+        #endif
+
         #if os(iOS) || os(tvOS)
         _animatedImageView?.isHidden = true
         _animatedImageView?.image = nil
