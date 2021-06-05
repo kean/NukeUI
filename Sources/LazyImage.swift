@@ -259,8 +259,14 @@ public struct LazyImage: View {
 //        if let image = self.container {
 //            proxy.imageView?.imageContainer = image
 //        } else {
-        if let source = source {
-            image.load(source)
+        if var request = source {
+            if let processors = self.processors, !request.processors.isEmpty {
+                request.processors = processors
+            }
+            if let priority = self.priority {
+                request.priority = priority
+            }
+            image.load(request)
         }
 //        }
     }
