@@ -172,7 +172,11 @@ public final class LazyImageView: _PlatformBaseView {
 
     private func makeVideoPlayerView() -> VideoPlayerView {
         let view = VideoPlayerView()
+        #if os(macOS)
+        view.videoGravity = .resizeAspect
+        #else
         view.videoGravity = .resizeAspectFill
+        #endif
         return view
     }
 
