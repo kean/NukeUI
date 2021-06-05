@@ -28,12 +28,6 @@ public struct LazyImage: View {
         self.request = source?.asImageRequest()
     }
 
-    private func map(_ closure: (inout LazyImage) -> Void) -> Self {
-        var copy = self
-        closure(&copy)
-        return copy
-    }
-
     public var body: some View {
         ZStack {
             if image.isLoading {
@@ -65,6 +59,14 @@ public struct LazyImage: View {
     /// A view to be shown if the request fails.
     public func failure<Failure: View>(@ViewBuilder _ content: () -> Failure?) -> Self {
         map { $0.failureView = AnyView(content()) }
+    }
+
+    // MARK: Private
+
+    private func map(_ closure: (inout LazyImage) -> Void) -> Self {
+        var copy = self
+        closure(&copy)
+        return copy
     }
 }
 
