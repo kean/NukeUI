@@ -163,8 +163,6 @@ public struct LazyImage: View {
 
     // MARK: Callbacks
 
-    #if !os(watchOS)
-
     /// Gets called when the request is started.
     public func onStart(_ closure: @escaping (_ task: ImageTask) -> Void) -> Self {
         map { $0.onStart = closure }
@@ -189,6 +187,8 @@ public struct LazyImage: View {
     public func onCompletion(_ closure: @escaping (_ result: Result<ImageResponse, ImagePipeline.Error>) -> Void) -> Self {
         map { $0.onCompletion = closure }
     }
+
+    #if !os(watchOS)
 
     /// Returns an underlying image view.
     ///
@@ -267,6 +267,11 @@ public struct LazyImage: View {
         } else {
             if let processors = processors { image.processors = processors }
             if let priority = priority { image.priority = priority }
+            image.onStart = onStart
+            image.onProgress = onProgress
+            image.onSuccess = onSuccess
+            image.onFailure = onFailure
+            image.onCompletion = onCompletion
             image.load(source)
         }
     }
