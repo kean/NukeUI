@@ -424,6 +424,7 @@ public final class LazyImageView: _PlatformBaseView {
     // MARK: Handling Responses
 
     private func handle(_ result: Result<ImageResponse, ImagePipeline.Error>, isFromMemory: Bool) {
+        resetIfNeeded()
         setPlaceholderViewHidden(true)
         switch result {
         case let .success(response):
@@ -444,10 +445,7 @@ public final class LazyImageView: _PlatformBaseView {
     }
 
     private func display(_ container: ImageContainer, isFromMemory: Bool) {
-        if isResetNeeded {
-            reset()
-            isResetNeeded = false
-        }
+        resetIfNeeded()
 
         actuallyDisplay(container)
         contentView.isHidden = false
@@ -589,6 +587,13 @@ public final class LazyImageView: _PlatformBaseView {
         contentView.addSubview(view)
         view.pinToSuperview()
         view.isHidden = true
+    }
+
+    private func resetIfNeeded() {
+        if isResetNeeded {
+            reset()
+            isResetNeeded = false
+        }
     }
 }
 
