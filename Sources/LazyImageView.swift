@@ -358,7 +358,7 @@ public final class LazyImageView: _PlatformBaseView {
         imageTask = nil
     }
 
-    // MARK: Loading
+    // MARK: Load (ImageRequestConvertible)
 
     /// Loads an image with the given request.
     private func load(_ request: ImageRequestConvertible?) {
@@ -377,26 +377,26 @@ public final class LazyImageView: _PlatformBaseView {
         }
 
         guard var request = request?.asImageRequest() else {
-            let result: Result<ImageResponse, ImagePipeline.Error> = .failure(.dataLoadingFailed(URLError(.unknown)))
-            handle(result, isFromMemory: true)
+            handle(result: .failure(.dataLoadingFailed(URLError(.unknown))), isSync: true)
             return
         }
 
-        if let processors = self.processors, !request.processors.isEmpty {
+        if let processors = self.processors, !processors.isEmpty, !request.processors.isEmpty {
             request.processors = processors
         }
-
-        // Quick synchronous memory cache lookup.
-        if let image = pipeline.cache[request] {
-            display(image, isFromMemory: true)
-            if !image.isPreview { // Final image was downloaded
-                didComplete(.success(ImageResponse(container: image, cacheType: .memory)))
-                return
-            }
-        }
-
         if let priority = self.priority {
             request.priority = priority
+        }
+
+        // Quick synchronous memory cache lookup
+        if let image = pipeline.cache[request] {
+            if image.isPreview {
+                display(image, isFromMemory: true) // Display progressive preview
+            } else {
+                let response = ImageResponse(container: image, cacheType: .memory)
+                handle(result: .success(response), isSync: true)
+                return
+            }
         }
 
         setPlaceholderViewHidden(false)
@@ -406,37 +406,39 @@ public final class LazyImageView: _PlatformBaseView {
             queue: .main,
             progress: { [weak self] response, completedCount, totalCount in
                 guard let self = self else { return }
-                if self.isProgressiveImageRenderingEnabled, let response = response {
-                    self.setPlaceholderViewHidden(true)
-                    self.display(response.container, isFromMemory: false)
+                if let response = response {
+                    self.handle(preview: response)
                 }
                 self.onProgress?(response, completedCount, totalCount)
             },
             completion: { [weak self] result in
-                guard let self = self else { return }
-                self.handle(result, isFromMemory: false)
+                self?.handle(result: result, isSync: false)
             }
         )
         imageTask = task
         onStart?(task)
     }
 
-    // MARK: Handling Responses
+    private func handle(preview: ImageResponse) {
+        guard isProgressiveImageRenderingEnabled else {
+            return
+        }
+        setPlaceholderViewHidden(true)
+        display(preview.container, isFromMemory: false)
+    }
 
-    private func handle(_ result: Result<ImageResponse, ImagePipeline.Error>, isFromMemory: Bool) {
+    private func handle(result: Result<ImageResponse, ImagePipeline.Error>, isSync: Bool) {
         resetIfNeeded()
         setPlaceholderViewHidden(true)
+
         switch result {
         case let .success(response):
-            display(response.container, isFromMemory: isFromMemory)
+            display(response.container, isFromMemory: isSync)
         case .failure:
             setFailureViewHidden(false)
         }
-        self.imageTask = nil
-        self.didComplete(result)
-    }
 
-    private func didComplete(_ result: Result<ImageResponse, ImagePipeline.Error>) {
+        imageTask = nil
         switch result {
         case .success(let response): onSuccess?(response)
         case .failure(let error): onFailure?(error)
