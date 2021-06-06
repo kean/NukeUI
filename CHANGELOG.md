@@ -1,7 +1,14 @@
 
 # NukeUI 0.x
 
+## NukeUI 0.4.0
+
+*Jun 6, 2021*
+
+- Extend watchOS support
 - Add animated images support on macOS
+- Display a GIF preview until it is ready to be played (Nuke 10.2 feature)
+- Fix how images are displayed on macOS by default
 
 ## NukeUI 0.3.0
 
