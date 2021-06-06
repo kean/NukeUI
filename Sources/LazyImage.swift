@@ -43,8 +43,8 @@ public struct LazyImage: View {
     private var onStart: ((_ task: ImageTask) -> Void)?
     private var onProgress: ((_ response: ImageResponse?, _ completed: Int64, _ total: Int64) -> Void)?
     private var onSuccess: ((_ response: ImageResponse) -> Void)?
-    private var onFailure: ((_ response: ImagePipeline.Error) -> Void)?
-    private var onCompletion: ((_ result: Result<ImageResponse, ImagePipeline.Error>) -> Void)?
+    private var onFailure: ((_ response: Error) -> Void)?
+    private var onCompletion: ((_ result: Result<ImageResponse, Error>) -> Void)?
     private var contentMode: ContentMode?
 
     // MARK: Initializers
@@ -179,12 +179,12 @@ public struct LazyImage: View {
     }
 
     /// Gets called when the requests fails.
-    public func onFailure(_ closure: @escaping (_ response: ImagePipeline.Error) -> Void) -> Self {
+    public func onFailure(_ closure: @escaping (_ response: Error) -> Void) -> Self {
         map { $0.onFailure = closure }
     }
 
     /// Gets called when the request is completed.
-    public func onCompletion(_ closure: @escaping (_ result: Result<ImageResponse, ImagePipeline.Error>) -> Void) -> Self {
+    public func onCompletion(_ closure: @escaping (_ result: Result<ImageResponse, Error>) -> Void) -> Self {
         map { $0.onCompletion = closure }
     }
 
@@ -261,9 +261,8 @@ public struct LazyImage: View {
     private func onAppear() {
         image.pipeline = pipeline
 
-        // TODO: Make sure we don't need setFailureType
         if let imageContainer = self.imageContainer {
-            image.load(Just(ImageResponse(container: imageContainer)).setFailureType(to: ImagePipeline.Error.self))
+            image.load(Just(ImageResponse(container: imageContainer)))
         } else {
             if let processors = processors { image.processors = processors }
             if let priority = priority { image.priority = priority }

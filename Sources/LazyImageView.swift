@@ -218,10 +218,10 @@ public final class LazyImageView: _PlatformBaseView {
     public var onSuccess: ((_ response: ImageResponse) -> Void)?
 
     /// Gets called when the requests fails.
-    public var onFailure: ((_ response: ImagePipeline.Error) -> Void)?
+    public var onFailure: ((_ response: Error) -> Void)?
 
     /// Gets called when the request is completed.
-    public var onCompletion: ((_ result: Result<ImageResponse, ImagePipeline.Error>) -> Void)?
+    public var onCompletion: ((_ result: Result<ImageResponse, Error>) -> Void)?
 
     // MARK: Other Options
 
@@ -377,7 +377,7 @@ public final class LazyImageView: _PlatformBaseView {
         }
 
         guard var request = request?.asImageRequest() else {
-            handle(result: .failure(.dataLoadingFailed(URLError(.unknown))), isSync: true)
+            handle(result: .failure(FetchImageError.sourceEmpty), isSync: true)
             return
         }
 
@@ -412,7 +412,7 @@ public final class LazyImageView: _PlatformBaseView {
                 self.onProgress?(response, completedCount, totalCount)
             },
             completion: { [weak self] result in
-                self?.handle(result: result, isSync: false)
+                self?.handle(result: result.mapError { $0 }, isSync: false)
             }
         )
         imageTask = task
@@ -427,7 +427,7 @@ public final class LazyImageView: _PlatformBaseView {
         display(preview.container, isFromMemory: false)
     }
 
-    private func handle(result: Result<ImageResponse, ImagePipeline.Error>, isSync: Bool) {
+    private func handle(result: Result<ImageResponse, Error>, isSync: Bool) {
         resetIfNeeded()
         setPlaceholderViewHidden(true)
 
