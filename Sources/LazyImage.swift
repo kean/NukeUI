@@ -5,6 +5,7 @@
 import Foundation
 import Nuke
 import SwiftUI
+import Combine
 
 public typealias ImageRequest = Nuke.ImageRequest
 public typealias ImagePipeline = Nuke.ImagePipeline
@@ -111,10 +112,14 @@ public struct LazyImage: View {
 
     // MARK: Transition
 
+    #if !os(watchOS)
+
     /// A transition to be run when displaying an image.
     public func transition(_ transition: Transition?) -> Self {
         map { $0.transition = transition }
     }
+
+    #endif
 
     /// An animated transition.
     public enum Transition {
@@ -158,6 +163,8 @@ public struct LazyImage: View {
 
     // MARK: Callbacks
 
+    #if !os(watchOS)
+
     /// Gets called when the request is started.
     public func onStart(_ closure: @escaping (_ task: ImageTask) -> Void) -> Self {
         map { $0.onStart = closure }
@@ -183,7 +190,6 @@ public struct LazyImage: View {
         map { $0.onCompletion = closure }
     }
 
-    #if !os(watchOS)
     /// Returns an underlying image view.
     ///
     /// - parameter configure: A closure that gets called once when the view is
@@ -255,11 +261,10 @@ public struct LazyImage: View {
     private func onAppear() {
         image.pipeline = pipeline
 
-        #warning("not implemented")
-//        if let image = self.container {
-//            proxy.imageView?.imageContainer = image
-//        } else {
-        if var request = source {
+        // TODO: Make sure we don't need setFailureType
+        if let imageContainer = self.imageContainer {
+            image.load(Just(ImageResponse(container: imageContainer)).setFailureType(to: ImagePipeline.Error.self))
+        } else if var request = source {
             if let processors = self.processors, !request.processors.isEmpty {
                 request.processors = processors
             }
@@ -268,7 +273,6 @@ public struct LazyImage: View {
             }
             image.load(request)
         }
-//        }
     }
 
     private func onDisappear() {
