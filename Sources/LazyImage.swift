@@ -264,14 +264,10 @@ public struct LazyImage: View {
         // TODO: Make sure we don't need setFailureType
         if let imageContainer = self.imageContainer {
             image.load(Just(ImageResponse(container: imageContainer)).setFailureType(to: ImagePipeline.Error.self))
-        } else if var request = source {
-            if let processors = self.processors, !request.processors.isEmpty {
-                request.processors = processors
-            }
-            if let priority = self.priority {
-                request.priority = priority
-            }
-            image.load(request)
+        } else {
+            if let processors = processors { image.processors = processors }
+            if let priority = priority { image.priority = priority }
+            image.load(source)
         }
     }
 
