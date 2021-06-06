@@ -135,6 +135,8 @@ There is nothing you need to do to enable video playback. It does the right thin
 - It doesn't prevent the display from sleeping
 - It displays a preview until the video is downloaded
 
+> **WARNING:** The number of players you can have at once on-screen is limited. The limit is not documented and depends on the platform. In general, expect to have about four players playing at once.
+
 ## Limitations
 
 - GIF support is currently limited to iOS and tvOS (macOS support in progress)
