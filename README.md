@@ -94,7 +94,7 @@ LazyImage(source: $0) { state in
         // Use `AnimatedImage` if you need support for animated images.
         image 
             .resizable()
-            .aspectRatio(1, contentMode: .fill)
+            .aspectRatio(contentMode: .fill)
     } else if state.error != nil {
         Color.red.frame(width: 128, height: 128)
     } else {

@@ -30,8 +30,6 @@ public struct LazyImage<Content: View>: View {
 
     // Options
     private var makeContent: ((LazyImageState) -> Content)?
-    private var placeholderView: AnyView? = AnyView(Rectangle().foregroundColor(Color(UIColor.secondarySystemBackground)))
-    private var failureView: AnyView?
     private var processors: [ImageProcessing]?
     private var priority: ImageRequest.Priority?
     private var pipeline: ImagePipeline = .shared
@@ -45,6 +43,7 @@ public struct LazyImage<Content: View>: View {
 
     // MARK: Initializers
 
+    #if !os(watchOS)
     /// Loads and displays an image from the given URL when the view appears on screen.
     ///
     /// - Parameters:
@@ -53,7 +52,17 @@ public struct LazyImage<Content: View>: View {
     ///   The image is resizable by default.
     public init(source: ImageRequestConvertible?, contentMode: LazyImageContentMode = .aspectFill) where Content == Image {
         self.request = source?.asImageRequest()
+        self.contentMode = contentMode
     }
+    #else
+    /// Loads and displays an image from the given URL when the view appears on screen.
+    ///
+    /// - Parameters:
+    ///   - source: The image source (`String`, `URL`, `URLRequest`, or `ImageRequest`)
+    public init(source: ImageRequestConvertible?) where Content == Image {
+        self.request = source?.asImageRequest()
+    }
+    #endif
 
     /// Loads and displays an image from the given URL when the view appears on screen.
     ///
@@ -89,7 +98,7 @@ public struct LazyImage<Content: View>: View {
     ///         // Use `AnimatedImage` if you need support for animated images.
     ///         image
     ///             .resizable()
-    ///             .aspectRatio(1, contentMode: .fill)
+    ///             .aspectRatio(contentMode: .fill)
     ///     } else if state.error != nil {
     ///         Color.red.frame(width: 128, height: 128)
     ///     } else {
@@ -100,32 +109,6 @@ public struct LazyImage<Content: View>: View {
     public init(source: ImageRequestConvertible?, @ViewBuilder content: @escaping (LazyImageState) -> Content) {
         self.request = source?.asImageRequest()
         self.makeContent = content
-    }
-
-    // MARK: Content Mode
-
-    #if os(iOS) || os(tvOS)
-    /// Sets the content mode for all types of media displayed by the view.
-    ///
-    /// To change content mode for individual image types, access the underlying
-    /// `LazyImageView` instance and update the respective view.
-    public func contentMode(_ contentMode: LazyImageContentMode?) -> Self {
-        map { $0.contentMode = contentMode }
-    }
-    #endif
-
-    // MARK: Placeholder View
-
-    /// An image to be shown while the request is in progress.
-    public func placeholder<Placeholder: View>(@ViewBuilder _ content: () -> Placeholder?) -> Self {
-        map { $0.placeholderView = AnyView(content()) }
-    }
-
-    // MARK: Failure View
-
-    /// A view to be shown if the request fails.
-    public func failure<Failure: View>(@ViewBuilder _ content: () -> Failure?) -> Self {
-        map { $0.failureView = AnyView(content()) }
     }
 
     // MARK: Managing Image Tasks
@@ -234,10 +217,8 @@ public struct LazyImage<Content: View>: View {
                     proxy.imageView?.imageContainer = $0
                 }
 #endif
-        } else if case .failure = model.result {
-            failureView
         } else {
-            placeholderView
+            Rectangle().foregroundColor(Color(UIColor.secondarySystemBackground))
         }
     }
 
@@ -350,7 +331,6 @@ public enum LazyImageContentMode {
     case aspectFit
     case aspectFill
     case center
-    case fill
 }
 
 private final class LazyImageViewProxy {
