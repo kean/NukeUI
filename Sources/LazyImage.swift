@@ -19,11 +19,10 @@ public typealias ImageContainer = Nuke.ImageContainer
 /// the aspect ratio. You can change this behavior by passing a different content mode.
 @available(iOS 13.0, tvOS 13.0, watchOS 7.0, macOS 10.15, *)
 public struct LazyImage<Content: View>: View {
-    private let source: ImageRequest?
-    private let imageContainer: ImageContainer?
-
     @StateObject private var image = FetchImage()
 
+    private let source: ImageRequest?
+    private let imageContainer: ImageContainer?
     private var makeContent: ((LazyImageState) -> Content)?
 
     #if !os(watchOS)
@@ -202,11 +201,26 @@ public struct LazyImage<Content: View>: View {
     // MARK: Body
 
     public var body: some View {
-        content
+        ContentView(AnyView(content))
             .onAppear(perform: onAppear)
             .onDisappear(perform: onDisappear)
             // Making sure it reload if the source changes
             .id(source.map(ImageRequest.ID.init))
+            .onReceive(image.$imageContainer) {
+                proxy.imageView?.imageContainer = $0
+            }
+    }
+
+    struct ContentView: View {
+        let subview: AnyView
+
+        init(_ subview: AnyView) {
+            self.subview = subview
+        }
+
+        var body: some View {
+            subview
+        }
     }
 
     @ViewBuilder private var content: some View {
@@ -257,9 +271,11 @@ public struct LazyImage<Content: View>: View {
 
     private func onDisappear() {
         guard let behavior = onDisappearBehavior else { return }
-        switch behavior {
-        case .reset: image.reset()
-        case .cancel: image.cancel()
+        withoutAnimation {
+            switch behavior {
+            case .reset: image.reset()
+            case .cancel: image.cancel()
+            }
         }
     }
 
