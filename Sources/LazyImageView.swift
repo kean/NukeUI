@@ -113,13 +113,6 @@ public final class LazyImageView: _PlatformBaseView {
         /// The closure will get called after the image is already displayed but
         /// before `imageContainer` value is updated.
         case custom(closure: (LazyImageView, ImageContainer) -> Void)
-
-        @available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
-        init<T>(_ transition: LazyImage<T>.Transition) {
-            switch transition {
-            case .fadeIn(let duration): self = .fadeIn(duration: duration)
-            }
-        }
     }
 
     // MARK: Underlying Views

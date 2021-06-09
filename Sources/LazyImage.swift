@@ -35,7 +35,6 @@ public struct LazyImage<Content: View>: View {
     private var placeholderView: AnyView?
     private var failureView: AnyView?
     private var processors: [ImageProcessing]?
-    private var transition: Transition?
     private var priority: ImageRequest.Priority?
     private var pipeline: ImagePipeline = .shared
     private var onDisappearBehavior: DisappearBehavior? = .reset
@@ -203,25 +202,22 @@ public struct LazyImage<Content: View>: View {
     }
 
     @ViewBuilder private func makeDefaultContent() -> some View {
-        ZStack {
-            if image.isLoading {
-                placeholderView
-            } else if case .failure = image.result {
-                failureView
-            }
-            #if os(watchOS)
+        if image.imageContainer != nil {
+#if os(watchOS)
             image.view?
                 .resizable()
                 .aspectRatio(contentMode: .fill)
                 .clipped()
-            #else
-            if image.imageContainer != nil {
-                LazyImageViewWrapper(onCreated: onCreated)
-                    .onReceive(image.$imageContainer) {
-                        proxy.imageView?.imageContainer = $0
-                    }
-            }
-            #endif
+#else
+            LazyImageViewWrapper(onCreated: onCreated)
+                .onReceive(image.$imageContainer) {
+                    proxy.imageView?.imageContainer = $0
+                }
+#endif
+        } else if case .failure = image.result {
+            failureView
+        } else {
+            placeholderView
         }
     }
 
