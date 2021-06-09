@@ -302,7 +302,7 @@ public final class LazyImageView: _PlatformBaseView {
         set { imageContainer = newValue.map { ImageContainer(image: $0) } }
     }
     #else
-    public var image: UIImage? {
+    public var model: UIImage? {
         get { imageContainer?.image }
         set { imageContainer = newValue.map { ImageContainer(image: $0) } }
     }
@@ -331,7 +331,7 @@ public final class LazyImageView: _PlatformBaseView {
 
         #if os(iOS) || os(tvOS)
         _animatedImageView?.isHidden = true
-        _animatedImageView?.image = nil
+        _animatedImageView?.model = nil
         #endif
 
         _videoPlayerView?.isHidden = true

@@ -38,19 +38,19 @@ public struct AnimatedImage: NSViewRepresentable {
 /// Currently supports GIF and MP4.
 @available(iOS 13.0, tvOS 13.0, *)
 public struct AnimatedImage: UIViewRepresentable {
-    private let image: ImageContainer
+    private let model: ImageContainer
 
     public init(data: Data, type: ImageType) {
-        self.image = ImageContainer(image: .init(), type: type, data: data)
+        self.model = ImageContainer(model: .init(), type: type, data: data)
     }
 
-    public init(image: ImageContainer) {
-        self.image = image
+    public init(model: ImageContainer) {
+        self.model = model
     }
 
     public func makeUIView(context: Context) -> LazyImageView {
         let view = LazyImageView()
-        view.imageContainer = image
+        view.imageContainer = model
         return view
     }
 

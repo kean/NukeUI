@@ -19,14 +19,13 @@ public typealias ImageContainer = Nuke.ImageContainer
 /// the aspect ratio. You can change this behavior by passing a different content mode.
 @available(iOS 14.0, tvOS 14.0, watchOS 7.0, macOS 10.16, *)
 public struct LazyImage<Content: View>: View {
-    @StateObject private var image = FetchImage()
+    @StateObject private var model = FetchImage()
 
     private let source: ImageRequest?
     private let imageContainer: ImageContainer?
     private var makeContent: ((LazyImageState) -> Content)?
 
     #if !os(watchOS)
-    private var imageView: LazyImageView?
     private var proxy = LazyImageViewProxy()
     private var onCreated: ((LazyImageView) -> Void)?
     #endif
@@ -188,33 +187,33 @@ public struct LazyImage<Content: View>: View {
             .onDisappear(perform: onDisappear)
             // Making sure it reload if the source changes
             .id(source.map(ImageRequest.ID.init))
-            .onReceive(image.$imageContainer) {
+            .onReceive(model.$imageContainer) {
                 proxy.imageView?.imageContainer = $0
             }
     }
 
     @ViewBuilder private var content: some View {
         if let makeContent = makeContent {
-            makeContent(LazyImageState(image))
+            makeContent(LazyImageState(model))
         } else {
             makeDefaultContent()
         }
     }
 
     @ViewBuilder private func makeDefaultContent() -> some View {
-        if image.imageContainer != nil {
+        if model.imageContainer != nil {
 #if os(watchOS)
-            image.view?
+            model.view?
                 .resizable()
                 .aspectRatio(contentMode: .fill)
                 .clipped()
 #else
             LazyImageViewWrapper(onCreated: onCreated)
-                .onReceive(image.$imageContainer) {
+                .onReceive(model.$imageContainer) {
                     proxy.imageView?.imageContainer = $0
                 }
 #endif
-        } else if case .failure = image.result {
+        } else if case .failure = model.result {
             failureView
         } else {
             placeholderView
@@ -222,19 +221,19 @@ public struct LazyImage<Content: View>: View {
     }
 
     private func onAppear() {
-        image.pipeline = pipeline
+        model.pipeline = pipeline
 
         if let imageContainer = self.imageContainer {
-            image.load(Just(ImageResponse(container: imageContainer)))
+            model.load(Just(ImageResponse(container: imageContainer)))
         } else {
-            if let processors = processors { image.processors = processors }
-            if let priority = priority { image.priority = priority }
-            image.onStart = onStart
-            image.onProgress = onProgress
-            image.onSuccess = onSuccess
-            image.onFailure = onFailure
-            image.onCompletion = onCompletion
-            image.load(source)
+            if let processors = processors { model.processors = processors }
+            if let priority = priority { model.priority = priority }
+            model.onStart = onStart
+            model.onProgress = onProgress
+            model.onSuccess = onSuccess
+            model.onFailure = onFailure
+            model.onCompletion = onCompletion
+            model.load(source)
         }
     }
 
@@ -242,8 +241,8 @@ public struct LazyImage<Content: View>: View {
         guard let behavior = onDisappearBehavior else { return }
         withoutAnimation {
             switch behavior {
-            case .reset: image.reset()
-            case .cancel: image.cancel()
+            case .reset: model.reset()
+            case .cancel: model.cancel()
             }
         }
     }
