@@ -18,18 +18,18 @@ public typealias ImageContainer = Nuke.ImageContainer
 /// By default, the image will resize to fill the available space but preserve
 /// the aspect ratio. You can change this behavior by passing a different content mode.
 @available(iOS 13.0, tvOS 13.0, watchOS 7.0, macOS 10.15, *)
-public struct LazyImage: View {
+public struct LazyImage<Content: View>: View {
     private let source: ImageRequest?
     private let imageContainer: ImageContainer?
 
-    #if os(watchOS)
     @StateObject private var image = FetchImage()
-    #else
+
+    private var makeContent: ((LazyImageState) -> Content)?
+
+    #if !os(watchOS)
     private var imageView: LazyImageView?
     private var proxy = LazyImageViewProxy()
     private var onCreated: ((LazyImageView) -> Void)?
-    @State private var isPlaceholderHidden = true
-    @State private var isFailureViewHidden = true
     #endif
 
     // Options
@@ -45,14 +45,21 @@ public struct LazyImage: View {
     private var onSuccess: ((_ response: ImageResponse) -> Void)?
     private var onFailure: ((_ response: Error) -> Void)?
     private var onCompletion: ((_ result: Result<ImageResponse, Error>) -> Void)?
-    private var contentMode: ContentMode?
+    private var contentMode: LazyImageContentMode?
 
     // MARK: Initializers
 
-    /// Initializes the image with the given source to be displayed later.
-    public init(source: ImageRequestConvertible?) {
+    /// Initializes the image with the given source to be displayed when downloaded.
+    public init(source: ImageRequestConvertible?) where Content == Image {
         self.source = source?.asImageRequest()
         self.imageContainer = nil
+    }
+
+    /// Initializes the image with the given source to be displayed when downloaded.
+    public init(source: ImageRequestConvertible?, @ViewBuilder content: @escaping (LazyImageState) -> Content) {
+        self.source = source?.asImageRequest()
+        self.imageContainer = nil
+        self.makeContent = content
     }
 
     /// Initializes the image with the given image to be displayed immediately.
@@ -84,17 +91,10 @@ public struct LazyImage: View {
     ///
     /// To change content mode for individual image types, access the underlying
     /// `LazyImageView` instance and update the respective view.
-    public func contentMode(_ contentMode: ContentMode?) -> Self {
+    public func contentMode(_ contentMode: LazyImageContentMode?) -> Self {
         map { $0.contentMode = contentMode }
     }
     #endif
-
-    public enum ContentMode {
-        case aspectFit
-        case aspectFill
-        case center
-        case fill
-    }
 
     // MARK: Placeholder View
 
@@ -201,61 +201,41 @@ public struct LazyImage: View {
 
     // MARK: Body
 
-    #if !os(watchOS)
-
     public var body: some View {
-        ZStack {
-            if !isPlaceholderHidden {
-                placeholderView
-            }
-            if !isFailureViewHidden {
-                failureView
-            }
-            LazyImageViewWrapper(onCreated: onCreated)
-        }
-        .onAppear(perform: onAppear)
-        .onDisappear(perform: onDisappear)
-        // Making sure it reloads and onAppear/onDisappear callbacks are called
-        // when the source changes
-        .id(source.map(ImageRequest.ID.init))
+        content
+            .onAppear(perform: onAppear)
+            .onDisappear(perform: onDisappear)
+            // Making sure it reload if the source changes
+            .id(source.map(ImageRequest.ID.init))
     }
 
-    private func onAppear() {
-        if let container = self.imageContainer {
-            proxy.imageView?.imageContainer = container
+    @ViewBuilder private var content: some View {
+        if let makeContent = makeContent {
+            makeContent(LazyImageState(image))
         } else {
-            proxy.imageView?.source = source
+            makeDefaultContent()
         }
     }
 
-    private func onDisappear() {
-        guard let behavior = onDisappearBehavior,
-              let imageView = proxy.imageView else { return }
-        switch behavior {
-        case .reset: imageView.reset()
-        case .cancel: imageView.cancel()
-        }
-    }
-
-    #else
-
-    public var body: some View {
+    @ViewBuilder private func makeDefaultContent() -> some View {
         ZStack {
             if image.isLoading {
                 placeholderView
-            }
-            if let result = image.result, case .failure = result, !image.isLoading {
+            } else if case .failure = image.result {
                 failureView
             }
+            #if os(watchOS)
             image.view?
                 .resizable()
                 .aspectRatio(contentMode: .fill)
                 .clipped()
+            #else
+            LazyImageViewWrapper(onCreated: onCreated)
+                .onReceive(image.$imageContainer) {
+                    proxy.imageView?.imageContainer = $0
+                }
+            #endif
         }
-        .onAppear(perform: onAppear)
-        .onDisappear(perform: onDisappear)
-        // Making sure it reload if the source changes
-        .id(source.map(ImageRequest.ID.init))
     }
 
     private func onAppear() {
@@ -283,8 +263,6 @@ public struct LazyImage: View {
         }
     }
 
-    #endif
-
     // MARK: Private
 
     private func map(_ closure: (inout LazyImage) -> Void) -> Self {
@@ -307,25 +285,70 @@ public struct LazyImage: View {
         #endif
 
         view.transition = transition.map(LazyImageView.Transition.init)
-        view.processors = processors
-        view.priority = priority
-        view.pipeline = pipeline
-        view.onStart = onStart
-        view.onProgress = onProgress
-        view.onSuccess = onSuccess
-        view.onFailure = onFailure
-        view.onCompletion = onCompletion
-
-        view.onPlaceholdeViewHiddenUpdated = { isPlaceholderHidden = $0 }
-        view.onFailureViewHiddenUpdated = { isFailureViewHidden = $0 }
-
         onCreated?(view)
     }
 
     #endif
 }
 
+@available(iOS 13.0, tvOS 13.0, watchOS 7.0, macOS 10.15, *)
+public struct LazyImageState {
+    /// Returns the current fetch result.
+    public let result: Result<ImageResponse, Error>?
+
+    /// Returns a current error.
+    public var error: Error? {
+        if case .failure(let error) = result {
+            return error
+        }
+        return nil
+    }
+
+    /// Returns the fetched image.
+    ///
+    /// - note: In case pipeline has `isProgressiveDecodingEnabled` option enabled
+    /// and the image being downloaded supports progressive decoding, the `image`
+    /// might be updated multiple times during the download.
+    public var image: PlatformImage? { imageContainer?.image }
+
+    /// Returns the fetched image.
+    ///
+    /// - note: In case pipeline has `isProgressiveDecodingEnabled` option enabled
+    /// and the image being downloaded supports progressive decoding, the `image`
+    /// might be updated multiple times during the download.
+    public let imageContainer: ImageContainer?
+
+    /// Returns `true` if the image is being loaded.
+    public let isLoading: Bool
+
+    /// The download progress.
+    public struct Progress: Equatable {
+        /// The number of bytes that the task has received.
+        public let completed: Int64
+
+        /// A best-guess upper bound on the number of bytes the client expects to send.
+        public let total: Int64
+    }
+
+    /// The progress of the image download.
+    public let progress: Progress
+
+    init(_ fetchImage: FetchImage) {
+        self.result = fetchImage.result
+        self.imageContainer = fetchImage.imageContainer
+        self.isLoading = fetchImage.isLoading
+        self.progress = Progress(completed: fetchImage.progress.completed, total: fetchImage.progress.total)
+    }
+}
+
 #if !os(watchOS)
+
+public enum LazyImageContentMode {
+    case aspectFit
+    case aspectFill
+    case center
+    case fill
+}
 
 private final class LazyImageViewProxy {
     var imageView: LazyImageView?

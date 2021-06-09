@@ -1,6 +1,27 @@
 
 # NukeUI 0.x
 
+## NukeUI 0.5.0
+
+- Rework `LazyImage` to use `FetchImage` on all platforms
+- Add new `init(source:content:)` initializer to `LazyImage`:
+
+```swift
+LazyImage(source: $0) { state in
+    if let image = state.image {
+        // Use `AnimatedImage(image:)` if you need support for animated images.
+        Image(uiImage: image)
+            .resizable()
+    } else if state.error != nil {
+        Color.red.frame(width: 128, height: 128)
+    } else {
+        Color.blue.frame(width: 128, height: 128)
+    }
+}
+```
+
+- Add `AnimatedImage` component for SwitUI for rendering animates image (currently supports GIF and MP4)
+
 ## NukeUI 0.4.0
 
 *Jun 6, 2021*

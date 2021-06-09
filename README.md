@@ -86,6 +86,23 @@ LazyImage(source: "https://example.com/image.jpeg")
     .pipeline(customPipeline)
 ```
 
+If you want to change the default presentation completely, you have an option to do that:
+
+```swift
+LazyImage(source: $0) { state in
+    if let image = state.image {
+        Image(uiImage: image) // Use `AnimatedImage` if you need support for animated images.
+            .resizable()
+    } else if state.error != nil {
+        Color.red.frame(width: 128, height: 128)
+    } else {
+        Color.blue.frame(width: 128, height: 128)
+    }
+}
+```
+
+> `LazyImage` is built on top of Nuke's [`FetchImage`](https://kean.blog/nuke/guides/swiftui#fetchimage). If you want even more control, you can use it directly instead.  
+
 You can also monitor the status of the download.
 
 ```swift

@@ -115,7 +115,7 @@ public final class LazyImageView: _PlatformBaseView {
         case custom(closure: (LazyImageView, ImageContainer) -> Void)
 
         @available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
-        init(_ transition: LazyImage.Transition) {
+        init<T>(_ transition: LazyImage<T>.Transition) {
             switch transition {
             case .fadeIn(let duration): self = .fadeIn(duration: duration)
             }
@@ -242,10 +242,6 @@ public final class LazyImageView: _PlatformBaseView {
     public var isResetEnabled = true
 
     // MARK: Private
-
-    // Hooks for LazyImage (SwiftUI)
-    var onPlaceholdeViewHiddenUpdated: ((_ isHidden: Bool) -> Void)?
-    var onFailureViewHiddenUpdated: ((_ isHidden: Bool) -> Void)?
 
     private var isResetNeeded = false
     private var isDisplayingContent = false
@@ -482,7 +478,6 @@ public final class LazyImageView: _PlatformBaseView {
 
     private func setPlaceholderViewHidden(_ isHidden: Bool) {
         placeholderView?.isHidden = isHidden
-        onPlaceholdeViewHiddenUpdated?(isHidden)
     }
 
     private func setPlaceholderImage(_ placeholderImage: _PlatformImage?) {
@@ -518,7 +513,6 @@ public final class LazyImageView: _PlatformBaseView {
 
     private func setFailureViewHidden(_ isHidden: Bool) {
         failureView?.isHidden = isHidden
-        onFailureViewHiddenUpdated?(isHidden)
     }
 
     private func setFailureImage(_ failureImage: _PlatformImage?) {
