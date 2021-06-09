@@ -213,9 +213,6 @@ public struct LazyImage<Content: View>: View {
                 .clipped()
 #else
             LazyImageViewWrapper(onCreated: onCreated)
-                .onReceive(model.$imageContainer) {
-                    proxy.imageView?.imageContainer = $0
-                }
 #endif
         } else {
             Rectangle().foregroundColor(Color(UIColor.secondarySystemBackground))

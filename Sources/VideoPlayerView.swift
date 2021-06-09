@@ -95,7 +95,6 @@ extension AVLayerVideoGravity {
         case .aspectFit: self = .resizeAspect
         case .aspectFill: self = .resizeAspectFill
         case .center: self = .resizeAspect
-        case .fill: self = .resize
         }
     }
 }
