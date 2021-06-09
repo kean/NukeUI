@@ -239,11 +239,9 @@ public struct LazyImage<Content: View>: View {
 
     private func onDisappear() {
         guard let behavior = onDisappearBehavior else { return }
-        withoutAnimation {
-            switch behavior {
-            case .reset: model.reset()
-            case .cancel: model.cancel()
-            }
+        switch behavior {
+        case .reset: model.reset()
+        case .cancel: model.cancel()
         }
     }
 
