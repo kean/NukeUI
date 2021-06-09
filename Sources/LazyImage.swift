@@ -20,11 +20,11 @@ public typealias ImageContainer = Nuke.ImageContainer
 @available(iOS 14.0, tvOS 14.0, watchOS 7.0, macOS 10.16, *)
 public struct LazyImage<Content: View>: View {
     @StateObject private var model = FetchImage()
+    @State private var image: ImageContainer?
 
     private let request: ImageRequest?
 
     #if !os(watchOS)
-    private var proxy = LazyImageViewProxy()
     private var onCreated: ((LazyImageView) -> Void)?
     #endif
 
@@ -191,9 +191,7 @@ public struct LazyImage<Content: View>: View {
             .onDisappear(perform: onDisappear)
             // Making sure it reload if the source changes
             .id(request.map(ImageRequest.ID.init))
-            .onReceive(model.$imageContainer) {
-                proxy.imageView?.imageContainer = $0
-            }
+            .onReceive(model.$imageContainer) { image = $0 }
     }
 
     @ViewBuilder private var content: some View {
@@ -212,7 +210,7 @@ public struct LazyImage<Content: View>: View {
                 .aspectRatio(contentMode: .fill)
                 .clipped()
 #else
-            LazyImageViewWrapper(onCreated: onCreated)
+            LazyImageViewWrapper(onCreated: onCreated, image: $image)
 #endif
         } else {
             Rectangle().foregroundColor(Color(UIColor.secondarySystemBackground))
@@ -254,8 +252,6 @@ public struct LazyImage<Content: View>: View {
     #if !os(watchOS)
 
     private func onCreated(_ view: LazyImageView) {
-        proxy.imageView = view
-
         #if os(iOS) || os(tvOS)
         if let contentMode = contentMode {
             view.imageView.contentMode = .init(contentMode)
@@ -330,19 +326,11 @@ public enum LazyImageContentMode {
     case center
 }
 
-private final class LazyImageViewProxy {
-    var imageView: LazyImageView?
-}
-
-private enum Source {
-    case request(ImageRequest?)
-    case image(ImageContainer)
-}
-
 #if os(macOS)
 @available(iOS 13.0, tvOS 13.0, macOS 10.15, *)
 private struct LazyImageViewWrapper: NSViewRepresentable {
     var onCreated: (LazyImageView) -> Void
+    @Binding var image: ImageContainer?
 
     func makeNSView(context: Context) -> LazyImageView {
         let view = LazyImageView()
@@ -351,13 +339,14 @@ private struct LazyImageViewWrapper: NSViewRepresentable {
     }
 
     func updateNSView(_ imageView: LazyImageView, context: Context) {
-        // Do nothing
+        imageView.imageContainer = image
     }
 }
 #else
 @available(iOS 13.0, tvOS 13.0, macOS 10.15, *)
 private struct LazyImageViewWrapper: UIViewRepresentable {
     var onCreated: (LazyImageView) -> Void
+    @Binding var image: ImageContainer?
 
     func makeUIView(context: Context) -> LazyImageView {
         let view = LazyImageView()
@@ -366,7 +355,7 @@ private struct LazyImageViewWrapper: UIViewRepresentable {
     }
 
     func updateUIView(_ imageView: LazyImageView, context: Context) {
-        // Do nothing
+        imageView.imageContainer = image
     }
 }
 #endif
