@@ -32,7 +32,7 @@ public struct LazyImage<Content: View>: View {
     #endif
 
     // Options
-    private var placeholderView: AnyView?
+    private var placeholderView: AnyView? = AnyView(Rectangle().foregroundColor(Color(UIColor.secondarySystemBackground)))
     private var failureView: AnyView?
     private var processors: [ImageProcessing]?
     private var priority: ImageRequest.Priority?

@@ -21,6 +21,7 @@ LazyImage(source: $0) { state in
 ```
 
 - Add `AnimatedImage` component for SwitUI for rendering animates image (currently supports GIF and MP4)
+- Add default placeholder (gray background)
 
 ## NukeUI 0.4.0
 
