@@ -201,7 +201,7 @@ public struct LazyImage<Content: View>: View {
     // MARK: Body
 
     public var body: some View {
-        ContentView(AnyView(content))
+        content
             .onAppear(perform: onAppear)
             .onDisappear(perform: onDisappear)
             // Making sure it reload if the source changes
@@ -209,18 +209,6 @@ public struct LazyImage<Content: View>: View {
             .onReceive(image.$imageContainer) {
                 proxy.imageView?.imageContainer = $0
             }
-    }
-
-    struct ContentView: View {
-        let subview: AnyView
-
-        init(_ subview: AnyView) {
-            self.subview = subview
-        }
-
-        var body: some View {
-            subview
-        }
     }
 
     @ViewBuilder private var content: some View {
@@ -244,10 +232,12 @@ public struct LazyImage<Content: View>: View {
                 .aspectRatio(contentMode: .fill)
                 .clipped()
             #else
-            LazyImageViewWrapper(onCreated: onCreated)
-                .onReceive(image.$imageContainer) {
-                    proxy.imageView?.imageContainer = $0
-                }
+            if image.imageContainer != nil {
+                LazyImageViewWrapper(onCreated: onCreated)
+                    .onReceive(image.$imageContainer) {
+                        proxy.imageView?.imageContainer = $0
+                    }
+            }
             #endif
         }
     }
