@@ -46,7 +46,12 @@ public struct LazyImage<Content: View>: View {
     // MARK: Initializers
 
     /// Loads and displays an image from the given URL when the view appears on screen.
-    public init(source: ImageRequestConvertible?) where Content == Image {
+    ///
+    /// - Parameters:
+    ///   - source: The image source (`String`, `URL`, `URLRequest`, or `ImageRequest`)
+    ///   - contentMode: Sets the content mode of the displayed media. By default, `aspectFill`.
+    ///   The image is resizable by default.
+    public init(source: ImageRequestConvertible?, contentMode: LazyImageContentMode = .aspectFill) where Content == Image {
         self.request = source?.asImageRequest()
     }
 
@@ -56,14 +61,13 @@ public struct LazyImage<Content: View>: View {
     /// available, the `placeholder` is shown.
     ///
     /// - Parameters:
-    ///   - url: The URL for the image to be shown.
-    ///   - scale: The scale to use for the image.
+    ///   - source: The image source (`String`, `URL`, `URLRequest`, or `ImageRequest`)
     ///   - content: The view to show when the image is loaded.
     ///   - placeholder: The view to show while the image is still loading.
     ///   - failure: The view to show when the image fails to load.
     public init<I, P, F>(source: ImageRequestConvertible?, @ViewBuilder content: @escaping (Image) -> I, @ViewBuilder placeholder: @escaping () -> P, @ViewBuilder failure: @escaping (Error) -> F) where Content == _ConditionalContent<_ConditionalContent<I, F>,  P>, I: View, P: View, F: View {
         self.init(source: source) { state in
-            if let image = state.content {
+            if let image = state.image {
                 content(image)
             } else if let error = state.error {
                 failure(error)
@@ -74,6 +78,25 @@ public struct LazyImage<Content: View>: View {
     }
 
     /// Loads and displays an image from the given URL when the view appears on screen.
+    ///
+    /// - Parameters:
+    ///   - source: The image source (`String`, `URL`, `URLRequest`, or `ImageRequest`)
+    ///   - content: The view to show for each of the image loading states.
+    ///
+    /// ```swift
+    /// LazyImage(source: $0) { state in
+    ///     if let image = state.image {
+    ///         // Use `AnimatedImage` if you need support for animated images.
+    ///         image
+    ///             .resizable()
+    ///             .aspectRatio(1, contentMode: .fill)
+    ///     } else if state.error != nil {
+    ///         Color.red.frame(width: 128, height: 128)
+    ///     } else {
+    ///         Color.blue.frame(width: 128, height: 128)
+    ///     }
+    /// }
+    /// ```
     public init(source: ImageRequestConvertible?, @ViewBuilder content: @escaping (LazyImageState) -> Content) {
         self.request = source?.asImageRequest()
         self.makeContent = content
@@ -230,7 +253,7 @@ public struct LazyImage<Content: View>: View {
         model.onSuccess = onSuccess
         model.onFailure = onFailure
         model.onCompletion = onCompletion
-        
+
         model.load(request)
     }
 
@@ -282,19 +305,12 @@ public struct LazyImageState {
         return nil
     }
 
-    /// Returns the fetched image.
-    ///
-    /// - note: In case pipeline has `isProgressiveDecodingEnabled` option enabled
-    /// and the image being downloaded supports progressive decoding, the `image`
-    /// might be updated multiple times during the download.
-    public var image: PlatformImage? { imageContainer?.image }
-
     /// Returns an image view.
-    public var content: Image? {
+    public var image: Image? {
 #if os(macOS)
-        return image.map(Image.init(nsImage:))
+        return imageContainer.map { Image(uiImage: $0.image) }
 #else
-        return image.map(Image.init(uiImage:))
+        return imageContainer.map { Image(uiImage: $0.image) }
 #endif
     }
 
