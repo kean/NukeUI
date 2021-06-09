@@ -227,6 +227,8 @@ public struct LazyImage<Content: View>: View {
 
         switch source {
         case .request(let request):
+            // Unfortunately, you can't modify @State directly in the properties
+            // that set these options.
             if let processors = processors { model.processors = processors }
             if let priority = priority { model.priority = priority }
             model.onStart = onStart
@@ -234,6 +236,7 @@ public struct LazyImage<Content: View>: View {
             model.onSuccess = onSuccess
             model.onFailure = onFailure
             model.onCompletion = onCompletion
+
             model.load(request)
         case .image(let image):
             model.load(Just(ImageResponse(container: image)))
