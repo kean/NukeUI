@@ -331,7 +331,7 @@ public final class LazyImageView: _PlatformBaseView {
 
         #if os(iOS) || os(tvOS)
         _animatedImageView?.isHidden = true
-        _animatedImageView?.model = nil
+        _animatedImageView?.image = nil
         #endif
 
         _videoPlayerView?.isHidden = true

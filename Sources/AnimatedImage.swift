@@ -41,7 +41,7 @@ public struct AnimatedImage: UIViewRepresentable {
     private let model: ImageContainer
 
     public init(data: Data, type: ImageType) {
-        self.model = ImageContainer(model: .init(), type: type, data: data)
+        self.model = ImageContainer(image: .init(), type: type, data: data)
     }
 
     public init(model: ImageContainer) {

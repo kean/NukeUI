@@ -21,8 +21,7 @@ public typealias ImageContainer = Nuke.ImageContainer
 public struct LazyImage<Content: View>: View {
     @StateObject private var model = FetchImage()
 
-    private let source: Source
-    private let sourceId: AnyHashable?
+    private let request: ImageRequest?
 
     #if !os(watchOS)
     private var proxy = LazyImageViewProxy()
@@ -46,42 +45,39 @@ public struct LazyImage<Content: View>: View {
 
     // MARK: Initializers
 
-    /// Initializes the image with the given source to be displayed when downloaded.
+    /// Loads and displays an image from the given URL when the view appears on screen.
     public init(source: ImageRequestConvertible?) where Content == Image {
-        let request = source?.asImageRequest()
-        self.source = Source.request(request)
-        self.sourceId = request.map(ImageRequest.ID.init)
+        self.request = source?.asImageRequest()
     }
 
-    /// Initializes the image with the given source to be displayed when downloaded.
+    /// Loads and displays an image from the given URL when the view appears on screen.
+    ///
+    /// When an image is loaded, the `image` content is shown; when no image is
+    /// available, the `placeholder` is shown.
+    ///
+    /// - Parameters:
+    ///   - url: The URL for the image to be shown.
+    ///   - scale: The scale to use for the image.
+    ///   - content: The view to show when the image is loaded.
+    ///   - placeholder: The view to show while the image is still loading.
+    ///   - failure: The view to show when the image fails to load.
+    public init<I, P, F>(source: ImageRequestConvertible?, @ViewBuilder content: @escaping (Image) -> I, @ViewBuilder placeholder: @escaping () -> P, @ViewBuilder failure: @escaping (Error) -> F) where Content == _ConditionalContent<_ConditionalContent<I, F>,  P>, I: View, P: View, F: View {
+        self.init(source: source) { state in
+            if let image = state.content {
+                content(image)
+            } else if let error = state.error {
+                failure(error)
+            } else {
+                placeholder()
+            }
+        }
+    }
+
+    /// Loads and displays an image from the given URL when the view appears on screen.
     public init(source: ImageRequestConvertible?, @ViewBuilder content: @escaping (LazyImageState) -> Content) {
-        let request = source?.asImageRequest()
-        self.source = Source.request(request)
-        self.sourceId = request.map(ImageRequest.ID.init)
+        self.request = source?.asImageRequest()
         self.makeContent = content
     }
-
-    /// Initializes the image with the given image to be displayed immediately.
-    ///
-    /// Supports platform images (`UIImage`) and `ImageContainer`. Use `ImageContainer`
-    /// if you need to pass additional parameters alongside the image, like
-    /// original image data for GIF rendering.
-    public init(image: ImageContainer) {
-        self.source = Source.image(image)
-        self.sourceId = ObjectIdentifier(image.image)
-    }
-
-    #if os(macOS)
-    /// Initializes the image with the given image to be displayed immediately.
-    public init(image: NSImage) {
-        self.init(image: ImageContainer(image: image))
-    }
-    #else
-    /// Initializes the image with the given image to be displayed immediately.
-    public init(image: UIImage) {
-        self.init(image: ImageContainer(image: image))
-    }
-    #endif
 
     // MARK: Content Mode
 
@@ -188,7 +184,7 @@ public struct LazyImage<Content: View>: View {
             .onAppear(perform: onAppear)
             .onDisappear(perform: onDisappear)
             // Making sure it reload if the source changes
-            .id(sourceId)
+            .id(request.map(ImageRequest.ID.init))
             .onReceive(model.$imageContainer) {
                 proxy.imageView?.imageContainer = $0
             }
@@ -203,7 +199,7 @@ public struct LazyImage<Content: View>: View {
     }
 
     @ViewBuilder private func makeDefaultContent() -> some View {
-        if model.imageContainer != nil {
+        if model.image != nil {
 #if os(watchOS)
             model.view?
                 .resizable()
@@ -225,22 +221,17 @@ public struct LazyImage<Content: View>: View {
     private func onAppear() {
         model.pipeline = pipeline
 
-        switch source {
-        case .request(let request):
-            // Unfortunately, you can't modify @State directly in the properties
-            // that set these options.
-            if let processors = processors { model.processors = processors }
-            if let priority = priority { model.priority = priority }
-            model.onStart = onStart
-            model.onProgress = onProgress
-            model.onSuccess = onSuccess
-            model.onFailure = onFailure
-            model.onCompletion = onCompletion
-
-            model.load(request)
-        case .image(let image):
-            model.load(Just(ImageResponse(container: image)))
-        }
+        // Unfortunately, you can't modify @State directly in the properties
+        // that set these options.
+        if let processors = processors { model.processors = processors }
+        if let priority = priority { model.priority = priority }
+        model.onStart = onStart
+        model.onProgress = onProgress
+        model.onSuccess = onSuccess
+        model.onFailure = onFailure
+        model.onCompletion = onCompletion
+        
+        model.load(request)
     }
 
     private func onDisappear() {
@@ -297,6 +288,15 @@ public struct LazyImageState {
     /// and the image being downloaded supports progressive decoding, the `image`
     /// might be updated multiple times during the download.
     public var image: PlatformImage? { imageContainer?.image }
+
+    /// Returns an image view.
+    public var content: Image? {
+#if os(macOS)
+        return image.map(Image.init(nsImage:))
+#else
+        return image.map(Image.init(uiImage:))
+#endif
+    }
 
     /// Returns the fetched image.
     ///
