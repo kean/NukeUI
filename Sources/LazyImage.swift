@@ -17,7 +17,7 @@ public typealias ImageContainer = Nuke.ImageContainer
 /// downloaded. You must specify the size for the view before loading the image.
 /// By default, the image will resize to fill the available space but preserve
 /// the aspect ratio. You can change this behavior by passing a different content mode.
-@available(iOS 13.0, tvOS 13.0, watchOS 7.0, macOS 10.15, *)
+@available(iOS 14.0, tvOS 14.0, watchOS 7.0, macOS 10.16, *)
 public struct LazyImage<Content: View>: View {
     @StateObject private var image = FetchImage()
 
