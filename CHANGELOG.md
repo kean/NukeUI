@@ -10,8 +10,9 @@
 LazyImage(source: $0) { state in
     if let image = state.image {
         // Use `AnimatedImage(image:)` if you need support for animated images.
-        Image(uiImage: image)
+        image
             .resizable()
+            .aspectRatio(contentMode: .fill)
     } else if state.error != nil {
         Color.red.frame(width: 128, height: 128)
     } else {
@@ -23,6 +24,8 @@ LazyImage(source: $0) { state in
 - Add `AnimatedImage` component for SwitUI for rendering animates image (currently supports GIF and MP4)
 - Add default placeholder (gray background)
 - Remove `LazyImage` initializer that take `ImageContainer` – use `AnimatedImage` instead if you need to display GIFs 
+- Temporarily increase `LazyImage` supported platforms to iOS 14.0, tvOS 14.0, watchOS 7.0, macOS 10.16
+- Add more functionality to `LazyImage` on watchOS 
 
 ## NukeUI 0.4.0
 
