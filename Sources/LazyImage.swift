@@ -21,9 +21,8 @@ public typealias ImageContainer = Nuke.ImageContainer
 public struct LazyImage<Content: View>: View {
     @StateObject private var model = FetchImage()
 
-    private let source: ImageRequest?
-    private let imageContainer: ImageContainer?
-    private var makeContent: ((LazyImageState) -> Content)?
+    private let source: Source
+    private let sourceId: AnyHashable?
 
     #if !os(watchOS)
     private var proxy = LazyImageViewProxy()
@@ -31,6 +30,7 @@ public struct LazyImage<Content: View>: View {
     #endif
 
     // Options
+    private var makeContent: ((LazyImageState) -> Content)?
     private var placeholderView: AnyView? = AnyView(Rectangle().foregroundColor(Color(UIColor.secondarySystemBackground)))
     private var failureView: AnyView?
     private var processors: [ImageProcessing]?
@@ -48,14 +48,16 @@ public struct LazyImage<Content: View>: View {
 
     /// Initializes the image with the given source to be displayed when downloaded.
     public init(source: ImageRequestConvertible?) where Content == Image {
-        self.source = source?.asImageRequest()
-        self.imageContainer = nil
+        let request = source?.asImageRequest()
+        self.source = Source.request(request)
+        self.sourceId = request.map(ImageRequest.ID.init)
     }
 
     /// Initializes the image with the given source to be displayed when downloaded.
     public init(source: ImageRequestConvertible?, @ViewBuilder content: @escaping (LazyImageState) -> Content) {
-        self.source = source?.asImageRequest()
-        self.imageContainer = nil
+        let request = source?.asImageRequest()
+        self.source = Source.request(request)
+        self.sourceId = request.map(ImageRequest.ID.init)
         self.makeContent = content
     }
 
@@ -65,8 +67,8 @@ public struct LazyImage<Content: View>: View {
     /// if you need to pass additional parameters alongside the image, like
     /// original image data for GIF rendering.
     public init(image: ImageContainer) {
-        self.source = nil
-        self.imageContainer = image
+        self.source = Source.image(image)
+        self.sourceId = ObjectIdentifier(image.image)
     }
 
     #if os(macOS)
@@ -186,7 +188,7 @@ public struct LazyImage<Content: View>: View {
             .onAppear(perform: onAppear)
             .onDisappear(perform: onDisappear)
             // Making sure it reload if the source changes
-            .id(source.map(ImageRequest.ID.init))
+            .id(sourceId)
             .onReceive(model.$imageContainer) {
                 proxy.imageView?.imageContainer = $0
             }
@@ -223,9 +225,8 @@ public struct LazyImage<Content: View>: View {
     private func onAppear() {
         model.pipeline = pipeline
 
-        if let imageContainer = self.imageContainer {
-            model.load(Just(ImageResponse(container: imageContainer)))
-        } else {
+        switch source {
+        case .request(let request):
             if let processors = processors { model.processors = processors }
             if let priority = priority { model.priority = priority }
             model.onStart = onStart
@@ -233,7 +234,9 @@ public struct LazyImage<Content: View>: View {
             model.onSuccess = onSuccess
             model.onFailure = onFailure
             model.onCompletion = onCompletion
-            model.load(source)
+            model.load(request)
+        case .image(let image):
+            model.load(Just(ImageResponse(container: image)))
         }
     }
 
@@ -333,6 +336,11 @@ public enum LazyImageContentMode {
 
 private final class LazyImageViewProxy {
     var imageView: LazyImageView?
+}
+
+private enum Source {
+    case request(ImageRequest?)
+    case image(ImageContainer)
 }
 
 #if os(macOS)
