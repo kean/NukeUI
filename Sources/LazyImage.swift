@@ -109,23 +109,6 @@ public struct LazyImage<Content: View>: View {
         map { $0.failureView = AnyView(content()) }
     }
 
-    // MARK: Transition
-
-    #if !os(watchOS)
-
-    /// A transition to be run when displaying an image.
-    public func transition(_ transition: Transition?) -> Self {
-        map { $0.transition = transition }
-    }
-
-    #endif
-
-    /// An animated transition.
-    public enum Transition {
-        /// Fade-in transition.
-        case fadeIn(duration: TimeInterval)
-    }
-
     // MARK: Managing Image Tasks
 
     /// Sets processors to be applied to the image.
@@ -290,7 +273,6 @@ public struct LazyImage<Content: View>: View {
         }
         #endif
 
-        view.transition = transition.map(LazyImageView.Transition.init)
         onCreated?(view)
     }
 
