@@ -74,17 +74,17 @@ public struct LazyImage<Content: View>: View {
     ///   - content: The view to show when the image is loaded.
     ///   - placeholder: The view to show while the image is still loading.
     ///   - failure: The view to show when the image fails to load.
-    public init<I, P, F>(source: ImageRequestConvertible?, @ViewBuilder content: @escaping (Image) -> I, @ViewBuilder placeholder: @escaping () -> P, @ViewBuilder failure: @escaping (Error) -> F) where Content == _ConditionalContent<_ConditionalContent<I, F>,  P>, I: View, P: View, F: View {
-        self.init(source: source) { state in
-            if let image = state.image {
-                content(image)
-            } else if let error = state.error {
-                failure(error)
-            } else {
-                placeholder()
-            }
-        }
-    }
+//    public init<I, P, F>(source: ImageRequestConvertible?, @ViewBuilder content: @escaping (Image) -> I, @ViewBuilder placeholder: @escaping () -> P, @ViewBuilder failure: @escaping (Error) -> F) where Content == _ConditionalContent<_ConditionalContent<I, F>,  P>, I: View, P: View, F: View {
+//        self.init(source: source) { state in
+//            if let image = state.image {
+//                content(image)
+//            } else if let error = state.error {
+//                failure(error)
+//            } else {
+//                placeholder()
+//            }
+//        }
+//    }
 
     /// Loads and displays an image from the given URL when the view appears on screen.
     ///
@@ -217,12 +217,11 @@ public struct LazyImage<Content: View>: View {
             model.view?
                 .resizable()
                 .aspectRatio(contentMode: contentMode == .aspectFit ? .fit : .fill)
-                .clipped()
             #else
             LazyImageViewWrapper(onCreated: onCreated, model: model)
             #endif
         } else {
-            Rectangle().foregroundColor(Color(UIColor.secondarySystemBackground))
+            Rectangle().foregroundColor(Color.secondary)
         }
     }
 
