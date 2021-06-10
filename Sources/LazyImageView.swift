@@ -175,6 +175,8 @@ public final class LazyImageView: _PlatformBaseView {
 
     private var _videoPlayerView: VideoPlayerView?
 
+    private var _customContentView: _PlatformBaseView?
+
     // MARK: Managing Image Tasks
 
     /// Processors to be applied to the image. `nil` by default.
@@ -337,6 +339,9 @@ public final class LazyImageView: _PlatformBaseView {
         _videoPlayerView?.isHidden = true
         _videoPlayerView?.reset()
 
+        _customContentView?.removeFromSuperview()
+        _customContentView = nil
+
         isDisplayingContent = false
         isResetNeeded = false
     }
@@ -451,6 +456,11 @@ public final class LazyImageView: _PlatformBaseView {
     }
 
     private func actuallyDisplay(_ container: ImageContainer) {
+        if let customView = makeCustomContentView(for: container) {
+            addContentView(customView)
+            customView.isHidden = false
+            return
+        }
         #if os(iOS) || os(tvOS)
         if isAnimatedImageRenderingEnabled, let data = container.data, container.type == .gif {
             animatedImageView.animate(withGIFData: data)
@@ -466,6 +476,43 @@ public final class LazyImageView: _PlatformBaseView {
             imageView.isHidden = false
         }
     }
+
+    private func makeCustomContentView(for container: ImageContainer) -> _PlatformBaseView? {
+        for closure in LazyImageView.registersContentViews {
+            if let view = closure(container) {
+                return view
+            }
+        }
+        return nil
+    }
+
+    // MARK: Extending Rendering System
+
+    #if os(iOS) || os(tvOS)
+    /// Registers a custom content view to be used for displaying the given image.
+    ///
+    /// - parameter closure: A closure to get called when the image needs to be
+    /// displayed. The view gets added to the `contentView`. You can return `nil`
+    /// if you want the default rendering to happen.
+    public static func registerContentView(_ closure: @escaping (ImageContainer) -> UIView?) {
+        registersContentViews.append(closure)
+    }
+    #else
+    /// Registers a custom content view to be used for displaying the given image.
+    ///
+    /// - parameter closure: A closure to get called when the image needs to be
+    /// displayed. The view gets added to the `contentView`. You can return `nil`
+    /// if you want the default rendering to happen.
+    public static func registerContentView(_ closure: @escaping (ImageContainer) -> NSView?) {
+        registersContentViews.append(closure)
+    }
+    #endif
+
+    public static func removeAllRegisteredContentViews() {
+        registersContentViews.removeAll()
+    }
+
+    private static var registersContentViews: [(ImageContainer) -> _PlatformBaseView?] = []
 
     // MARK: Private (Placeholder View)
 

@@ -25,7 +25,20 @@ LazyImage(source: $0) { state in
 - Add default placeholder (gray background)
 - Remove `LazyImage` initializer that take `ImageContainer` – use `AnimatedImage` instead if you need to display GIFs 
 - Temporarily increase `LazyImage` supported platforms to iOS 14.0, tvOS 14.0, watchOS 7.0, macOS 10.16
-- Add more functionality to `LazyImage` on watchOS 
+- `LazyImage` on watchOS now has an almost complete feature parity with other platforms. The main exception is the support for animated images which is currently missing.
+- Add infrastructure for registering custom rendering engines:
+
+```swift
+import SwiftSVG
+
+// Affects both all `LazyImage` and `LazyImageView` instances
+LazyImageView.registerContentView {
+    if $0.type == .svg, let string = $0.data.map( {
+        UIView(SVGData: data)
+    }
+    return nil
+}
+```
 
 ## NukeUI 0.4.0
 

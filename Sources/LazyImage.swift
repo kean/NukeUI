@@ -209,7 +209,7 @@ public struct LazyImage<Content: View>: View {
             #if os(watchOS)
             model.view?
                 .resizable()
-                .aspectRatio(contentMode: .fill)
+                .aspectRatio(contentMode: contentMode == .aspectFit ? .fit : .fill)
                 .clipped()
             #else
             LazyImageViewWrapper(onCreated: onCreated, model: model)
@@ -352,9 +352,9 @@ private struct LazyImageViewWrapper: UIViewRepresentable {
     @ObservedObject var model: FetchImage
 
     func makeUIView(context: Context) -> LazyImageView {
-        let view = LazyImageView()
-        onCreated(view)
-        return view
+        let imageView = LazyImageView()
+        onCreated(imageView)
+        return imageView
     }
 
     func updateUIView(_ imageView: LazyImageView, context: Context) {
