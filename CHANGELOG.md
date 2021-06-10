@@ -9,11 +9,11 @@
 ```swift
 LazyImage(source: $0) { state in
     if let image = state.image {
-        image // Displays the loaded image.
+        image // Displays the loaded image
     } else if state.error != nil {
-        Color.red // Indicates an error.
+        Color.red // Indicates an error
     } else {
-        Color.blue // Acts as a placeholder.
+        Color.blue // Acts as a placeholder
     }
 }
 ```
