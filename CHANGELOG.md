@@ -18,10 +18,10 @@ LazyImage(source: $0) { state in
 }
 ```
 
-- Add default placeholder to `LazyImage` (gray background)
-- Remove `LazyImage` initializer that take `ImageContainer` – use `AnimatedImage` instead if you need to display GIFs 
+- Add default placeholder to `LazyImage` (gray background) 
 - Temporarily increase `LazyImage` supported platforms to iOS 14.0, tvOS 14.0, watchOS 7.0, macOS 10.16
 - `LazyImage` on watchOS now has an almost complete feature parity with other platforms. The main exception is the support for animated images which is currently missing.
+- Remove `LazyImage` initializer that take `ImageContainer` – use `LazyImageView` directly instead
 - Add infrastructure for registering custom rendering engines:
 
 ```swift
