@@ -29,6 +29,7 @@ public struct LazyImage<Content: View>: View {
 
     // Options
     private var makeContent: ((LazyImageState) -> Content)?
+    private var animation: Animation? = .default
     private var processors: [ImageProcessing]?
     private var priority: ImageRequest.Priority?
     private var pipeline: ImagePipeline = .shared
@@ -108,6 +109,15 @@ public struct LazyImage<Content: View>: View {
     public init(source: ImageRequestConvertible?, @ViewBuilder content: @escaping (LazyImageState) -> Content) {
         self.request = source?.asImageRequest()
         self.makeContent = content
+    }
+
+    // MARK: Animation
+
+    /// Animations to be used when displaying the loaded images. By default, `.default`.
+    ///
+    /// - note: Animation isn't used when image is available in memory cache.
+    public func animation(_ animation: Animation?) -> Self {
+        map { $0.animation = animation }
     }
 
     // MARK: Managing Image Tasks
@@ -220,12 +230,12 @@ public struct LazyImage<Content: View>: View {
     }
 
     private func onAppear() {
-        model.pipeline = pipeline
-
         // Unfortunately, you can't modify @State directly in the properties
         // that set these options.
+        model.animation = animation
         if let processors = processors { model.processors = processors }
         if let priority = priority { model.priority = priority }
+        model.pipeline = pipeline
         model.onStart = onStart
         model.onProgress = onProgress
         model.onSuccess = onSuccess
