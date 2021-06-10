@@ -9,14 +9,11 @@
 ```swift
 LazyImage(source: $0) { state in
     if let image = state.image {
-        // Use `AnimatedImage(image:)` if you need support for animated images.
-        image
-            .resizable()
-            .aspectRatio(contentMode: .fill)
+        image // Displays the loaded image.
     } else if state.error != nil {
-        Color.red.frame(width: 128, height: 128)
+        Color.red // Indicates an error.
     } else {
-        Color.blue.frame(width: 128, height: 128)
+        Color.blue // Acts as a placeholder.
     }
 }
 ```
