@@ -134,6 +134,39 @@ There is nothing you need to do to enable video playback. It does the right thin
 
 > **Important:** The number of players you can have at once on-screen is limited. The limit is not documented and depends on the platform. In general, expect to have about four players playing at once.
 
+## Extending Rendering System
+
+NukeUI allows you to extend image rendering system in case you need to support additional image format. And there are only two simple steps to do that.
+
+**Step 1**. Register a custom decoder with Nuke.
+
+```swift
+ImageDecoderRegistry.shared.register { context in
+    let isSVG = context.urlResponse?.url?.absoluteString.hasSuffix(".svg") ?? false
+    return isSVG ? ImageDecoders.Empty(imageType: .svg) : nil
+}
+
+extension ImageType {
+    public static let svg: ImageType = "public.svg"
+}
+```
+
+> Learn more about the decoding infrastructure in ["Image Formats."](https://kean.blog/nuke/guides/image-formats)
+
+**Step 2**. Register a custom image view.
+
+ ```swift
+import SwiftSVG
+
+// Affects both all `LazyImage` and `LazyImageView` instances
+LazyImageView.registerContentView {
+    if $0.type == .svg, let string = $0.data.map( {
+        UIView(svgData: data)
+    }
+    return nil
+}
+```
+
 ## Minimum Requirements
 
 | NukeUI          | Swift           | Xcode           | Platforms                                         |
