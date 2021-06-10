@@ -2,10 +2,10 @@
 
 A missing piece in SwiftUI that provides lazy image loading.
 
-- `LazyImage` for SwiftUI (similar to the native [`AsyncImage`](https://developer.apple.com/documentation/SwiftUI/AsyncImage))
+- `LazyImage` for SwiftUI (similar to the native [`AsyncImage`](https://developer.apple.com/documentation/SwiftUI/AsyncImage), but better)
 - `LazyImageView` for UIKit and AppKit
 
-`LazyImage` uses [Nuke](https://github.com/kean/Nuke) for loading images and has many customization options. But it's not just that. It also supports progressive images, it has GIF support powered by [Gifu](https://github.com/kaishin/Gifu) and can even play short videos, which is [a much more efficient](https://web.dev/replace-gifs-with-videos/) to display animated images.
+`LazyImage` uses [Nuke](https://github.com/kean/Nuke) for loading images so you can take advantage of all of its advanced performance features, such as custom caches, prefetching, smart background decompression, and more. And it's not just that. NukeUI also supports progressive images, has GIF support powered by [Gifu](https://github.com/kaishin/Gifu) and can even play short videos, which is [a much more efficient](https://web.dev/replace-gifs-with-videos/) to display animated images.
 
 > **WARNING**. It's in early preview. The first stable release will be available soon.
 
@@ -39,29 +39,6 @@ LazyImage(source: request)
 
 > Learn more about customizing image requests in ["Image Requests."](https://kean.blog/nuke/guides/customizing-requests)
 
-If you already have an image ready to be displayed, use a dedicated initializer.
-
-```swift
-// Display a regular image
-LazyImage(image: UIImage("my-image"))
-
-// Display an animated GIF
-LazyImage(image: ImageContainer(image: UIImage(), type: .gif, data: data))
-```
-
-`LazyImage` is highly customizable. For example, it allows you to display a placeholder while the image is loading and display a custom view on failure.
-
-```swift
-LazyImage(source: "https://example.com/image.jpeg")
-    .placeholder {
-        Circle()
-            .foregroundColor(.blue)
-            .frame(width: 30, height: 30)
-    }
-    .failure { Image("empty") }
-}
-```
-
 The image view is lazy and doesn't know the size of the image before it downloads it. Thus, you must specify the view size before loading the image. By default, the image will resize preserving the aspect ratio to fill the available space. You can change this behavior by passing a different content mode.
 
 ```swift
@@ -70,11 +47,29 @@ LazyImage(source: "https://example.com/image.jpeg")
     .frame(height: 300)
 ```
 
-When the image is loaded, you can add an optional transition.
+> **Important**. You can’t apply image-specific modifiers, like `aspectRatio()`, directly to a `LazyImage`.
+
+Until the image loads, the view displays a standard placeholder that fills the available space. After the load completes successfully, the view updates to display the image. You can also specify a custom placeholder or a view to be displayed on failure.
+
+```swift
+LazyImage(source: $0) { state in
+    if let image = state.image {
+        image // Displays the loaded image
+    } else if state.error != nil {
+        Color.red // Indicates an error
+    } else {
+        Color.blue // Acts as a placeholder
+    }
+}
+```
+
+> **Important**. If you use `Image` for rendering, the view will no longer support animated image and video playback.
+
+When the image is loaded, it is displayed with a default animation. You can change it using a custom `animation` option.
 
 ```swift
 LazyImage(source: "https://example.com/image.jpeg")
-    .transition(.fadeIn(duration: 0.33))
+    .animation(nil) // Disable all animations
 ```
 
 You can pass a complete `ImageRequest` as a source, but you can also configure the download via convenience modifiers.
@@ -84,20 +79,6 @@ LazyImage(source: "https://example.com/image.jpeg")
     .processors([ImageProcessors.Resize(width: 44])
     .priority(.high)
     .pipeline(customPipeline)
-```
-
-If you want to change the default presentation completely, you have an option to do that:
-
-```swift
-LazyImage(source: $0) { state in
-    if let image = state.image {
-        image // Displays the loaded image.
-    } else if state.error != nil {
-        Color.red // Indicates an error.
-    } else {
-        Color.blue // Acts as a placeholder.
-    }
-}
 ```
 
 > `LazyImage` is built on top of Nuke's [`FetchImage`](https://kean.blog/nuke/guides/swiftui#fetchimage). If you want even more control, you can use it directly instead.  
@@ -159,7 +140,7 @@ There is nothing you need to do to enable video playback. It does the right thin
 |---------------|-----------------|-----------------|---------------------------------------------------|
 | NukeUI 0.1    | Swift 5.3       | Xcode 12.0      | iOS 11.0 / watchOS 5.0 / macOS 10.13 / tvOS 11.0  |
 
-> `LazyImage` is available on the following platforms: iOS 13.0 / watchOS 7.0 / macOS 10.15 / tvOS 13.0
+> `LazyImage` is available on the following platforms: iOS 14.0 / watchOS 7.0 / macOS 10.16 / tvOS 14.0
 
 ## License
 
