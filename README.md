@@ -5,7 +5,7 @@ A missing piece in SwiftUI that provides lazy image loading.
 - `LazyImage` for SwiftUI (similar to the native [`AsyncImage`](https://developer.apple.com/documentation/SwiftUI/AsyncImage), but better)
 - `LazyImageView` for UIKit and AppKit
 
-`LazyImage` uses [Nuke](https://github.com/kean/Nuke) for loading images so you can take advantage of all of its advanced performance features, such as custom caches, prefetching, smart background decompression, and more. And it's not just that. NukeUI also supports progressive images, has GIF support powered by [Gifu](https://github.com/kaishin/Gifu) and can even play short videos, which is [a much more efficient](https://web.dev/replace-gifs-with-videos/) to display animated images.
+`LazyImage` uses [Nuke](https://github.com/kean/Nuke) for loading images so you can take advantage of all of its advanced performance features, such as custom caches, prefetching, smart background decompression, and more. And it's not just that. NukeUI also supports progressive images, has GIF support powered by [Gifu](https://github.com/kaishin/Gifu), and can even play short videos, which is [a more efficient](https://web.dev/replace-gifs-with-videos/) way to display animated images.
 
 > **WARNING**. It's in early preview. The first stable release will be available soon.
 
@@ -132,7 +132,7 @@ There is nothing you need to do to enable video playback. It does the right thin
 - It doesn't prevent the display from sleeping
 - It displays a preview until the video is downloaded
 
-> **WARNING:** The number of players you can have at once on-screen is limited. The limit is not documented and depends on the platform. In general, expect to have about four players playing at once.
+> **Important:** The number of players you can have at once on-screen is limited. The limit is not documented and depends on the platform. In general, expect to have about four players playing at once.
 
 ## Minimum Requirements
 
