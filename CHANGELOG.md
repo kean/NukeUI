@@ -1,6 +1,10 @@
 
 # NukeUI 0.x
 
+## NukeUI 0.6.0
+
+*Jun 11, 2021*
+
 - Add `ImageView` (UIKit, AppKit) and `Image` (SwiftUI) components that support animated images and are now used by `LazyImageView`
 - Remove `LazyImageView` API for setting image, use `ImageView` directly instead
 - Fix reloading when the source changes but view identity is the same
@@ -8,8 +12,9 @@
 - Rename `contentMode` to `resizingMode`
 - `LazyImage` custom initialized now suggest `NukeUI.Image`
 
-
 ## NukeUI 0.5.0
+
+*Jun 10, 2021*
 
 - Rework `LazyImage` to use `FetchImage` on all platforms
 - Add new `init(source:content:)` initializer to `LazyImage`:

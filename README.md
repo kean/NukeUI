@@ -2,8 +2,8 @@
 
 A missing piece in SwiftUI that provides lazy image loading.
 
-- `LazyImage` for SwiftUI (similar to the native [`AsyncImage`](https://developer.apple.com/documentation/SwiftUI/AsyncImage), but better)
-- `LazyImageView` for UIKit and AppKit
+- `Image` and `LazyImage` for SwiftUI (similar to the native [`AsyncImage`](https://developer.apple.com/documentation/SwiftUI/AsyncImage), but better)
+- `ImageView` and `LazyImageView` for UIKit and AppKit
 
 `LazyImage` uses [Nuke](https://github.com/kean/Nuke) for loading images so you can take advantage of all of its advanced performance features, such as custom caches, prefetching, smart background decompression, and more. And it's not just that. NukeUI also supports progressive images, has GIF support powered by [Gifu](https://github.com/kaishin/Gifu), and can even play short videos, which is [a more efficient](https://web.dev/replace-gifs-with-videos/) way to display animated images.
 
@@ -39,11 +39,10 @@ LazyImage(source: request)
 
 > Learn more about customizing image requests in ["Image Requests."](https://kean.blog/nuke/guides/customizing-requests)
 
-The image view is lazy and doesn't know the size of the image before it downloads it. Thus, you must specify the view size before loading the image. By default, the image will resize preserving the aspect ratio to fill the available space. You can change this behavior by passing a different content mode.
+The image view is lazy and doesn't know the size of the image before it downloads it. Thus, you must specify the view size before loading the image. By default, the image will resize preserving the aspect ratio to fill the available space. You can change this behavior by passing a different resizing mode.
 
 ```swift
-LazyImage(source: "https://example.com/image.jpeg")
-    .contentMode(.center) // .aspectFit, .aspectFill, .center, .fill
+LazyImage(source: "https://example.com/image.jpeg", resizingMode: .center)
     .frame(height: 300)
 ```
 
@@ -62,8 +61,6 @@ LazyImage(source: $0) { state in
     }
 }
 ```
-
-> **Important**. If you use `Image` for rendering, the view will no longer support animated image and video playback.
 
 When the image is loaded, it is displayed with a default animation. You can change it using a custom `animation` option.
 
@@ -115,13 +112,15 @@ imageView.onCompletion = { print("Request completed")
 imageView.source = "https://example.com/image.jpeg"
 ````
 
+`Image` and `ImageView` are image components that support the same image formats that lazy variants (including animated images and video) but you can use them to display an already available image. 
+
 ## Animated Images
 
-Both `LazyImage` and `LazyImageView` support GIF playback powered by [Gifu](https://github.com/kaishin/Gifu) rendering engine. Please keep in mind that GIF rendering is expensive and can result in high CPU, battery, and memory usage. A best practice is to [replace GIF with video](https://web.dev/replace-gifs-with-videos/).
+All image components in NukeUI support GIF playback powered by [Gifu](https://github.com/kaishin/Gifu) rendering engine. Please keep in mind that GIF rendering is expensive and can result in high CPU, battery, and memory usage. A best practice is to [replace GIF with video](https://web.dev/replace-gifs-with-videos/).
 
 ## Video
 
-Both `LazyImage` and `LazyImageView` support video playback. It's aimed to be a replacement for GIF, which is [inefficient](https://web.dev/replace-gifs-with-videos/). With video, you get an order of magnitude smaller files and hardware-accelerated playback. In practice, it means that instead of a 20 MB GIF you can now download a ~2 MB video of comparable quality. And instead of 60% CPU usage and high energy impact, you'll see 0%.
+All image components in NukeUI support video playback. It's aimed to be a replacement for GIF, which is [inefficient](https://web.dev/replace-gifs-with-videos/). With video, you get an order of magnitude smaller files and hardware-accelerated playback. In practice, it means that instead of a 20 MB GIF you can now download a ~2 MB video of comparable quality. And instead of 60% CPU usage and high energy impact, you'll see 0%.
 
 There is nothing you need to do to enable video playback. It does the right thing by default:
 
@@ -158,8 +157,8 @@ extension ImageType {
  ```swift
 import SwiftSVG
 
-// Affects both all `LazyImage` and `LazyImageView` instances
-LazyImageView.registerContentView {
+// Affects both all image components, including `LazyImage` and `Image`
+LazyImage.registerContentView {
     if $0.type == .svg, let string = $0.data.map( {
         UIView(svgData: data)
     }
