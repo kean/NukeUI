@@ -82,20 +82,9 @@ extension NSView {
 #endif
 
 #if os(iOS) || os(tvOS)
-@available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
 extension UIView.ContentMode {
-    init(_ contentMode: LazyImageContentMode) {
-        switch contentMode {
-        case .aspectFill: self = .scaleAspectFill
-        case .aspectFit: self = .scaleAspectFit
-        case .center: self = .center
-        }
-    }
-}
-
-extension UIView.ContentMode {
-    init(_ contentMode: ImageView.ContentMode) {
-        switch contentMode {
+    init(resizingMode: ImageResizingMode) {
+        switch resizingMode {
         case .aspectFill: self = .scaleAspectFill
         case .aspectFit: self = .scaleAspectFit
         case .center: self = .center

@@ -31,20 +31,15 @@ public final class ImageView: _PlatformBaseView {
     public let imageView = UIImageView()
 #endif
 
-    public enum ContentMode {
-        case aspectFit
-        case aspectFill
-        case center
-        case fill
-    }
+
 
 #if os(iOS) || os(tvOS)
     /// Sets the content mode for all container views.
-    public var imageContentMode: ContentMode = .aspectFill {
+    public var resizingMode: ImageResizingMode = .aspectFill {
         didSet {
-            imageView.contentMode = .init(imageContentMode)
-            _animatedImageView?.contentMode = .init(imageContentMode)
-            _videoPlayerView?.videoGravity = .init(imageContentMode)
+            imageView.contentMode = .init(resizingMode: resizingMode)
+            _animatedImageView?.contentMode = .init(resizingMode: resizingMode)
+            _videoPlayerView?.videoGravity = .init(resizingMode)
         }
     }
 #endif
@@ -63,7 +58,7 @@ public final class ImageView: _PlatformBaseView {
 
     private func makeAnimatedImageView() -> AnimatedImageView {
         let view = AnimatedImageView()
-        view.contentMode = .init(imageContentMode)
+        view.contentMode = .init(resizingMode: resizingMode)
         return view
     }
 
@@ -86,7 +81,7 @@ public final class ImageView: _PlatformBaseView {
 #if os(macOS)
         view.videoGravity = .resizeAspect
 #else
-        view.videoGravity = .init(imageContentMode)
+        view.videoGravity = .init(resizingMode)
 #endif
         return view
     }

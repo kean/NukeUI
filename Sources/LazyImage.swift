@@ -24,9 +24,9 @@ public struct LazyImage<Content: View>: View {
     private let request: ImageRequest?
     private let requestId: ImageRequest.ID?
 
-    #if !os(watchOS)
+#if !os(watchOS)
     private var onCreated: ((ImageView) -> Void)?
-    #endif
+#endif
 
     // Options
     private var makeContent: ((LazyImageState) -> Content)?
@@ -40,23 +40,22 @@ public struct LazyImage<Content: View>: View {
     private var onSuccess: ((_ response: ImageResponse) -> Void)?
     private var onFailure: ((_ response: Error) -> Void)?
     private var onCompletion: ((_ result: Result<ImageResponse, Error>) -> Void)?
-    private var contentMode: LazyImageContentMode?
+    private var resizingMode: ImageResizingMode?
 
     // MARK: Initializers
 
-    #if !os(watchOS)
+#if !os(macOS)
     /// Loads and displays an image from the given URL when the view appears on screen.
     ///
     /// - Parameters:
     ///   - source: The image source (`String`, `URL`, `URLRequest`, or `ImageRequest`)
-    ///   - contentMode: Sets the content mode of the displayed media. By default, `aspectFill`.
-    ///   The image is resizable by default.
-    public init(source: ImageRequestConvertible?, contentMode: LazyImageContentMode = .aspectFill) where Content == SwiftUI.Image {
+    ///   - resizingMode: `.aspectFill` by default.
+    public init(source: ImageRequestConvertible?, resizingMode: ImageResizingMode = .aspectFill) where Content == SwiftUI.Image {
         self.request = source?.asImageRequest()
         self.requestId = request.map(ImageRequest.ID.init)
-        self.contentMode = contentMode
+        self.resizingMode = resizingMode
     }
-    #else
+#else
     /// Loads and displays an image from the given URL when the view appears on screen.
     ///
     /// - Parameters:
@@ -65,7 +64,7 @@ public struct LazyImage<Content: View>: View {
         self.request = source?.asImageRequest()
         self.requestId = request.map(ImageRequest.ID.init)
     }
-    #endif
+#endif
 
     /// Loads and displays an image from the given URL when the view appears on screen.
     ///
@@ -217,9 +216,16 @@ public struct LazyImage<Content: View>: View {
     @ViewBuilder private func makeDefaultContent() -> some View {
         if let imageContainer = model.imageContainer {
             #if os(watchOS)
-            model.view?
-                .resizable()
-                .aspectRatio(contentMode: contentMode == .aspectFit ? .fit : .fill)
+            switch resizingMode ?? ImageResizingMode.aspectFill {
+            case .center: model.view
+            case .aspectFit, .aspectFill:
+                model.view?
+                    .resizable()
+                    .aspectRatio(contentMode: resizingMode == .aspectFit ? .fit : .fill)
+            case .fill:
+                model.view?
+                    .resizable()
+            }
             #else
             Image(imageContainer, onCreated: onCreated)
             #endif
@@ -264,13 +270,10 @@ public struct LazyImage<Content: View>: View {
 
     private func onCreated(_ view: ImageView) {
         #if os(iOS) || os(tvOS)
-        if let contentMode = contentMode {
-            view.imageView.contentMode = .init(contentMode)
-            view.animatedImageView.contentMode = .init(contentMode)
-            view.videoPlayerView.videoGravity = .init(contentMode)
+        if let resizingMode = self.resizingMode {
+            view.resizingMode = resizingMode
         }
         #endif
-
         onCreated?(view)
     }
 
@@ -329,13 +332,11 @@ public struct LazyImageState {
     }
 }
 
-#if !os(watchOS)
-
-#warning("TODO: get rid of this")
-public enum LazyImageContentMode {
+public enum ImageResizingMode {
     case aspectFit
     case aspectFill
     case center
+    case fill
 }
 
 #if os(macOS)
@@ -360,11 +361,16 @@ private struct Image: NSViewRepresentable {
         imageView.imageContainer = model.imageContainer
     }
 }
-#else
+#elseif os(iOS) || os(tvOS)
 @available(iOS 13.0, tvOS 13.0, macOS 10.15, *)
 public struct Image: UIViewRepresentable {
     let imageContainer: ImageContainer
     let onCreated: ((ImageView) -> Void)?
+    var resizingMode: ImageResizingMode?
+
+    public init(_ image: UIImage) {
+        self.init(ImageContainer(image: image))
+    }
 
     public init(_ imageContainer: ImageContainer, onCreated: ((ImageView) -> Void)? = nil) {
         self.imageContainer = imageContainer
@@ -373,6 +379,9 @@ public struct Image: UIViewRepresentable {
 
     public func makeUIView(context: Context) -> ImageView {
         let imageView = ImageView()
+        if let resizingMode = self.resizingMode {
+            imageView.resizingMode = resizingMode
+        }
         onCreated?(imageView)
         return imageView
     }
@@ -381,7 +390,12 @@ public struct Image: UIViewRepresentable {
         guard imageView.imageContainer?.image !== imageContainer.image else { return }
         imageView.imageContainer = imageContainer
     }
-}
-#endif
 
+    /// Sets the resizing mode for the image.
+    public func resizingMode(_ mode: ImageResizingMode) -> Self {
+        var copy = self
+        copy.resizingMode = mode
+        return copy
+    }
+}
 #endif

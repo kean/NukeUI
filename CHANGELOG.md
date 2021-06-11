@@ -1,10 +1,13 @@
 
 # NukeUI 0.x
 
-- Add `ImageView` that supports animated images and it now used by `LazyImageView`
-- Remove `LazyImageView` view for setting image, you can use the underlying `ImageView` directly
-- All views now support video rendering by default
+- Add `ImageView` (UIKit, AppKit) and `Image` (SwiftUI) components that support animated images and are now used by `LazyImageView`
+- Remove `LazyImageView` API for setting image, use `ImageView` directly instead
 - Fix reloading when the source changes but view identity is the same
+- All views now support video rendering by default
+- Rename `contentMode` to `resizingMode`
+- `LazyImage` custom initialized now suggest `NukeUI.Image`
+
 
 ## NukeUI 0.5.0
 

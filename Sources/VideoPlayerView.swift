@@ -89,18 +89,7 @@ public final class VideoPlayerView: _PlatformBaseView {
 }
 
 extension AVLayerVideoGravity {
-    @available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
-    init(_ contentMode: LazyImageContentMode) {
-        switch contentMode {
-        case .aspectFit: self = .resizeAspect
-        case .aspectFill: self = .resizeAspectFill
-        case .center: self = .resizeAspect
-        }
-    }
-}
-
-extension AVLayerVideoGravity {
-    init(_ contentMode: ImageView.ContentMode) {
+    init(_ contentMode: ImageResizingMode) {
         switch contentMode {
         case .aspectFit: self = .resizeAspect
         case .aspectFill: self = .resizeAspectFill
