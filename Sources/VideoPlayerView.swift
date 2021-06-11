@@ -99,6 +99,16 @@ extension AVLayerVideoGravity {
     }
 }
 
+extension AVLayerVideoGravity {
+    init(_ contentMode: ImageView.ContentMode) {
+        switch contentMode {
+        case .aspectFit: self = .resizeAspect
+        case .aspectFill: self = .resizeAspectFill
+        case .center: self = .resizeAspect
+        }
+    }
+}
+
 // MARK: Private
 
 // This allows LazyImage to play video from memory.

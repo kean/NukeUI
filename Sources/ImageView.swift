@@ -23,15 +23,32 @@ public final class ImageView: _PlatformBaseView {
 
     // MARK: Underlying Views
 
-    #if os(macOS)
+#if os(macOS)
     /// Returns an underlying image view.
     public let imageView = NSImageView()
-    #else
+#else
     /// Returns an underlying image view.
     public let imageView = UIImageView()
-    #endif
+#endif
 
-    #if os(iOS) || os(tvOS)
+    public enum ContentMode {
+        case aspectFit
+        case aspectFill
+        case center
+    }
+
+#if os(iOS) || os(tvOS)
+    /// Sets the content mode for all container views.
+    public var imageContentMode: ContentMode = .aspectFill {
+        didSet {
+            imageView.contentMode = .init(imageContentMode)
+            _animatedImageView?.contentMode = .init(imageContentMode)
+            _videoPlayerView?.videoGravity = .init(imageContentMode)
+        }
+    }
+#endif
+
+#if os(iOS) || os(tvOS)
     /// Returns an underlying animated image view used for rendering animated images.
     public var animatedImageView: AnimatedImageView {
         if let view = _animatedImageView {
@@ -45,12 +62,12 @@ public final class ImageView: _PlatformBaseView {
 
     private func makeAnimatedImageView() -> AnimatedImageView {
         let view = AnimatedImageView()
-        view.contentMode = .scaleAspectFill
+        view.contentMode = .init(imageContentMode)
         return view
     }
 
     private var _animatedImageView: AnimatedImageView?
-    #endif
+#endif
 
     /// Returns an underlying video player view.
     public var videoPlayerView: VideoPlayerView {
@@ -65,11 +82,11 @@ public final class ImageView: _PlatformBaseView {
 
     private func makeVideoPlayerView() -> VideoPlayerView {
         let view = VideoPlayerView()
-        #if os(macOS)
+#if os(macOS)
         view.videoGravity = .resizeAspect
-        #else
-        view.videoGravity = .resizeAspectFill
-        #endif
+#else
+        view.videoGravity = .init(imageContentMode)
+#endif
         return view
     }
 
@@ -80,7 +97,7 @@ public final class ImageView: _PlatformBaseView {
     /// `true` by default. If disabled, animated image rendering will be disabled.
     public var isAnimatedImageRenderingEnabled = true
 
-    /// `true` by default. Set to `true` to enable video support. 
+    /// `true` by default. Set to `true` to enable video support.
     public var isVideoRenderingEnabled = true
 
 
@@ -99,15 +116,15 @@ public final class ImageView: _PlatformBaseView {
     private func didInit() {
         addContentView(imageView)
 
-        #if !os(macOS)
+#if !os(macOS)
         clipsToBounds = true
         imageView.contentMode = .scaleAspectFill
-        #else
+#else
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
         imageView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         imageView.animates = true // macOS supports animated images out of the box
-        #endif
+#endif
     }
 
     /// Displays the given image.
@@ -129,17 +146,17 @@ public final class ImageView: _PlatformBaseView {
 
     var _imageContainer: ImageContainer?
 
-    #if os(macOS)
+#if os(macOS)
     public var image: NSImage? {
         get { imageContainer?.image }
         set { imageContainer = newValue.map { ImageContainer(image: $0) } }
     }
-    #else
+#else
     public var image: UIImage? {
         get { imageContainer?.image }
         set { imageContainer = newValue.map { ImageContainer(image: $0) } }
     }
-    #endif
+#endif
 
     private func display(_ container: ImageContainer) {
         if let customView = makeCustomContentView(for: container) {
@@ -147,13 +164,13 @@ public final class ImageView: _PlatformBaseView {
             customView.isHidden = false
             return
         }
-        #if os(iOS) || os(tvOS)
+#if os(iOS) || os(tvOS)
         if isAnimatedImageRenderingEnabled, let data = container.data, container.type == .gif {
             animatedImageView.animate(withGIFData: data)
             animatedImageView.isHidden = false
             return
         }
-        #endif
+#endif
         if isVideoRenderingEnabled, let data = container.data, container.type == .mp4 {
             videoPlayerView.isHidden = false
             videoPlayerView.playVideo(data)
@@ -179,10 +196,10 @@ public final class ImageView: _PlatformBaseView {
         imageView.isHidden = true
         imageView.image = nil
 
-        #if os(iOS) || os(tvOS)
+#if os(iOS) || os(tvOS)
         _animatedImageView?.isHidden = true
         _animatedImageView?.image = nil
-        #endif
+#endif
 
         _videoPlayerView?.isHidden = true
         _videoPlayerView?.reset()
@@ -194,7 +211,7 @@ public final class ImageView: _PlatformBaseView {
 
     // MARK: Extending Rendering System
 
-    #if os(iOS) || os(tvOS)
+#if os(iOS) || os(tvOS)
     /// Registers a custom content view to be used for displaying the given image.
     ///
     /// - parameter closure: A closure to get called when the image needs to be
@@ -203,7 +220,7 @@ public final class ImageView: _PlatformBaseView {
     public static func registerContentView(_ closure: @escaping (ImageContainer) -> UIView?) {
         registersContentViews.append(closure)
     }
-    #else
+#else
     /// Registers a custom content view to be used for displaying the given image.
     ///
     /// - parameter closure: A closure to get called when the image needs to be
@@ -212,7 +229,7 @@ public final class ImageView: _PlatformBaseView {
     public static func registerContentView(_ closure: @escaping (ImageContainer) -> NSView?) {
         registersContentViews.append(closure)
     }
-    #endif
+#endif
 
     public static func removeAllRegisteredContentViews() {
         registersContentViews.removeAll()

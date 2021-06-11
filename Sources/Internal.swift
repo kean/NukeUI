@@ -92,6 +92,16 @@ extension UIView.ContentMode {
         }
     }
 }
+
+extension UIView.ContentMode {
+    init(_ contentMode: ImageView.ContentMode) {
+        switch contentMode {
+        case .aspectFill: self = .scaleAspectFill
+        case .aspectFit: self = .scaleAspectFit
+        case .center: self = .center
+        }
+    }
+}
 #endif
 
 #endif

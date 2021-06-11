@@ -328,6 +328,7 @@ public struct LazyImageState {
 
 #if !os(watchOS)
 
+#warning("TODO: get rid of this")
 public enum LazyImageContentMode {
     case aspectFit
     case aspectFill
@@ -366,6 +367,26 @@ private struct Image: UIViewRepresentable {
     func updateUIView(_ imageView: ImageView, context: Context) {
         guard imageView.imageContainer?.image !== model.imageContainer?.image else { return }
         imageView.imageContainer = model.imageContainer
+    }
+}
+
+final class ImageViewWrapper: _PlatformBaseView {
+    let imageView = ImageView()
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+
+        imageView.imageView
+    }
+
+    private var layoutConstraints: [NSLayoutConstraint] = []
+
+    override func updateConstraintsIfNeeded() {
+        super.updateConstraintsIfNeeded()
     }
 }
 #endif
