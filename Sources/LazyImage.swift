@@ -24,7 +24,7 @@ public struct LazyImage<Content: View>: View {
     private let request: ImageRequest?
 
     #if !os(watchOS)
-    private var onCreated: ((LazyImageView) -> Void)?
+    private var onCreated: ((ImageView) -> Void)?
     #endif
 
     // Options
@@ -50,7 +50,7 @@ public struct LazyImage<Content: View>: View {
     ///   - source: The image source (`String`, `URL`, `URLRequest`, or `ImageRequest`)
     ///   - contentMode: Sets the content mode of the displayed media. By default, `aspectFill`.
     ///   The image is resizable by default.
-    public init(source: ImageRequestConvertible?, contentMode: LazyImageContentMode = .aspectFill) where Content == Image {
+    public init(source: ImageRequestConvertible?, contentMode: LazyImageContentMode = .aspectFill) where Content == SwiftUI.Image {
         self.request = source?.asImageRequest()
         self.contentMode = contentMode
     }
@@ -184,7 +184,7 @@ public struct LazyImage<Content: View>: View {
     ///
     /// - parameter configure: A closure that gets called once when the view is
     /// created and allows you to configure it based on your needs.
-    public func onCreated(_ configure: ((LazyImageView) -> Void)?) -> Self {
+    public func onCreated(_ configure: ((ImageView) -> Void)?) -> Self {
         map { $0.onCreated = configure }
     }
     #endif
@@ -218,7 +218,7 @@ public struct LazyImage<Content: View>: View {
                 .resizable()
                 .aspectRatio(contentMode: contentMode == .aspectFit ? .fit : .fill)
             #else
-            LazyImageViewWrapper(onCreated: onCreated, model: model)
+            Image(onCreated: onCreated, model: model)
             #endif
         } else {
             Rectangle().foregroundColor(Color.secondary)
@@ -259,12 +259,12 @@ public struct LazyImage<Content: View>: View {
 
     #if !os(watchOS)
 
-    private func onCreated(_ view: LazyImageView) {
+    private func onCreated(_ view: ImageView) {
         #if os(iOS) || os(tvOS)
         if let contentMode = contentMode {
-            view.imageView.imageView.contentMode = .init(contentMode)
-            view.imageView.animatedImageView.contentMode = .init(contentMode)
-            view.imageView.videoPlayerView.videoGravity = .init(contentMode)
+            view.imageView.contentMode = .init(contentMode)
+            view.animatedImageView.contentMode = .init(contentMode)
+            view.videoPlayerView.videoGravity = .init(contentMode)
         }
         #endif
 
@@ -288,11 +288,11 @@ public struct LazyImageState {
     }
 
     /// Returns an image view.
-    public var image: Image? {
+    public var image: SwiftUI.Image? {
 #if os(macOS)
-        return imageContainer.map { Image(nsImage: $0.image) }
+        return imageContainer.map { SwiftUI.Image(nsImage: $0.image) }
 #else
-        return imageContainer.map { Image(uiImage: $0.image) }
+        return imageContainer.map { SwiftUI.Image(uiImage: $0.image) }
 #endif
     }
 
@@ -336,36 +336,36 @@ public enum LazyImageContentMode {
 
 #if os(macOS)
 @available(iOS 13.0, tvOS 13.0, macOS 10.15, *)
-private struct LazyImageViewWrapper: NSViewRepresentable {
-    var onCreated: (LazyImageView) -> Void
+private struct Image: NSViewRepresentable {
+    var onCreated: (ImageView) -> Void
     @ObservedObject var model: FetchImage
 
-    func makeNSView(context: Context) -> LazyImageView {
-        let view = LazyImageView()
+    func makeNSView(context: Context) -> ImageView {
+        let view = ImageView()
         onCreated(view)
         return view
     }
 
-    func updateNSView(_ imageView: LazyImageView, context: Context) {
-        guard imageView.imageView.imageContainer?.image !== model.imageContainer?.image else { return }
-        imageView.imageView.imageContainer = model.imageContainer
+    func updateNSView(_ imageView: ImageView, context: Context) {
+        guard imageView.imageContainer?.image !== model.imageContainer?.image else { return }
+        imageView.imageContainer = model.imageContainer
     }
 }
 #else
 @available(iOS 13.0, tvOS 13.0, macOS 10.15, *)
-private struct LazyImageViewWrapper: UIViewRepresentable {
-    var onCreated: (LazyImageView) -> Void
+private struct Image: UIViewRepresentable {
+    var onCreated: (ImageView) -> Void
     @ObservedObject var model: FetchImage
 
-    func makeUIView(context: Context) -> LazyImageView {
-        let imageView = LazyImageView()
+    func makeUIView(context: Context) -> ImageView {
+        let imageView = ImageView()
         onCreated(imageView)
         return imageView
     }
 
-    func updateUIView(_ imageView: LazyImageView, context: Context) {
-        guard imageView.imageView.imageContainer?.image !== model.imageContainer?.image else { return }
-        imageView.imageView.imageContainer = model.imageContainer
+    func updateUIView(_ imageView: ImageView, context: Context) {
+        guard imageView.imageContainer?.image !== model.imageContainer?.image else { return }
+        imageView.imageContainer = model.imageContainer
     }
 }
 #endif
