@@ -80,8 +80,8 @@ public final class ImageView: _PlatformBaseView {
     /// `true` by default. If disabled, animated image rendering will be disabled.
     public var isAnimatedImageRenderingEnabled = true
 
-    /// Set to `true` to enable video support. `false` by default.
-    public var isVideoRenderingEnabled = false
+    /// `true` by default. Set to `true` to enable video support. 
+    public var isVideoRenderingEnabled = true
 
 
     // MARK: Initializers

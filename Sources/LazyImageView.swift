@@ -231,7 +231,7 @@ public final class LazyImageView: _PlatformBaseView {
     private func load(_ request: ImageRequestConvertible?) {
         assert(Thread.isMainThread, "Must be called from the main thread")
 
-        if isVideoRenderingEnabled {
+        if imageView.isVideoRenderingEnabled {
             ImageDecoders.Video.register() // TODO: Can the codec also pull the first frame?
         }
 
