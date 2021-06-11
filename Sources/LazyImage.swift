@@ -215,13 +215,13 @@ public struct LazyImage<Content: View>: View {
     }
 
     @ViewBuilder private func makeDefaultContent() -> some View {
-        if model.image != nil {
+        if let imageContainer = model.imageContainer {
             #if os(watchOS)
             model.view?
                 .resizable()
                 .aspectRatio(contentMode: contentMode == .aspectFit ? .fit : .fill)
             #else
-            Image(onCreated: onCreated, model: model)
+            Image(imageContainer, onCreated: onCreated)
             #endif
         } else {
             Rectangle().foregroundColor(Color.secondary)
@@ -341,12 +341,17 @@ public enum LazyImageContentMode {
 #if os(macOS)
 @available(iOS 13.0, tvOS 13.0, macOS 10.15, *)
 private struct Image: NSViewRepresentable {
-    var onCreated: (ImageView) -> Void
-    @ObservedObject var model: FetchImage
+    let imageContainer: ImageContainer
+    let onCreated: ((ImageView) -> Void)?
+
+    public init(_ imageContainer: ImageContainer, onCreated: ((ImageView) -> Void)? = nil) {
+        self.imageContainer = imageContainer
+        self.onCreated = onCreated
+    }
 
     func makeNSView(context: Context) -> ImageView {
         let view = ImageView()
-        onCreated(view)
+        onCreated?(view)
         return view
     }
 
@@ -357,39 +362,24 @@ private struct Image: NSViewRepresentable {
 }
 #else
 @available(iOS 13.0, tvOS 13.0, macOS 10.15, *)
-private struct Image: UIViewRepresentable {
-    var onCreated: (ImageView) -> Void
-    @ObservedObject var model: FetchImage
+public struct Image: UIViewRepresentable {
+    let imageContainer: ImageContainer
+    let onCreated: ((ImageView) -> Void)?
 
-    func makeUIView(context: Context) -> ImageView {
+    public init(_ imageContainer: ImageContainer, onCreated: ((ImageView) -> Void)? = nil) {
+        self.imageContainer = imageContainer
+        self.onCreated = onCreated
+    }
+
+    public func makeUIView(context: Context) -> ImageView {
         let imageView = ImageView()
-        onCreated(imageView)
+        onCreated?(imageView)
         return imageView
     }
 
-    func updateUIView(_ imageView: ImageView, context: Context) {
-        guard imageView.imageContainer?.image !== model.imageContainer?.image else { return }
-        imageView.imageContainer = model.imageContainer
-    }
-}
-
-final class ImageViewWrapper: _PlatformBaseView {
-    let imageView = ImageView()
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-
-        imageView.imageView
-    }
-
-    private var layoutConstraints: [NSLayoutConstraint] = []
-
-    override func updateConstraintsIfNeeded() {
-        super.updateConstraintsIfNeeded()
+    public func updateUIView(_ imageView: ImageView, context: Context) {
+        guard imageView.imageContainer?.image !== imageContainer.image else { return }
+        imageView.imageContainer = imageContainer
     }
 }
 #endif
