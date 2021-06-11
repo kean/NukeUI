@@ -109,10 +109,3 @@ extension ImageRequest {
         }
     }
 }
-
-@available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
-func withoutAnimation(_ closure: () -> Void) {
-    var transaction = Transaction(animation: nil)
-    transaction.disablesAnimations = true
-    withTransaction(transaction, closure)
-}
