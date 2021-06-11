@@ -4,6 +4,7 @@
 - Add `ImageView` that supports animated images and it now used by `LazyImageView`
 - Remove `LazyImageView` view for setting image, you can use the underlying `ImageView` directly
 - All views now support video rendering by default
+- Fix reloading when the source changes but view identity is the same
 
 ## NukeUI 0.5.0
 

@@ -22,6 +22,7 @@ public struct LazyImage<Content: View>: View {
     @StateObject private var model = FetchImage()
 
     private let request: ImageRequest?
+    private let requestId: ImageRequest.ID?
 
     #if !os(watchOS)
     private var onCreated: ((ImageView) -> Void)?
@@ -52,6 +53,7 @@ public struct LazyImage<Content: View>: View {
     ///   The image is resizable by default.
     public init(source: ImageRequestConvertible?, contentMode: LazyImageContentMode = .aspectFill) where Content == SwiftUI.Image {
         self.request = source?.asImageRequest()
+        self.requestId = request.map(ImageRequest.ID.init)
         self.contentMode = contentMode
     }
     #else
@@ -61,6 +63,7 @@ public struct LazyImage<Content: View>: View {
     ///   - source: The image source (`String`, `URL`, `URLRequest`, or `ImageRequest`)
     public init(source: ImageRequestConvertible?) where Content == Image {
         self.request = source?.asImageRequest()
+        self.requestId = request.map(ImageRequest.ID.init)
     }
     #endif
 
@@ -105,6 +108,7 @@ public struct LazyImage<Content: View>: View {
     /// ```
     public init(source: ImageRequestConvertible?, @ViewBuilder content: @escaping (LazyImageState) -> Content) {
         self.request = source?.asImageRequest()
+        self.requestId = request.map(ImageRequest.ID.init)
         self.makeContent = content
     }
 
@@ -199,8 +203,7 @@ public struct LazyImage<Content: View>: View {
         }
         .onAppear(perform: onAppear)
         .onDisappear(perform: onDisappear)
-        // Making sure it reload if the source changes
-        .id(request.map(ImageRequest.ID.init))
+        .onChange(of: requestId) { _ in model.load(request) }
     }
 
     @ViewBuilder private var content: some View {
