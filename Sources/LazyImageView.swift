@@ -162,12 +162,6 @@ public final class LazyImageView: _PlatformBaseView {
     /// This option also affects the previews for animated images or videos.
     public var isProgressiveImageRenderingEnabled = true
 
-    /// `true` by default. If disabled, animated image rendering will be disabled.
-    public var isAnimatedImageRenderingEnabled = true
-
-    /// Set to `true` to enable video support. `false` by default.
-    public var isVideoRenderingEnabled = false
-
     /// `true` by default. If enabled, the image view will be cleared before the
     /// new download is started. You can disable it if you want to keep the
     /// previous content while the new download is in progress.
