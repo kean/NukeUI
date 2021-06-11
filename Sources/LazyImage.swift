@@ -50,7 +50,7 @@ public struct LazyImage<Content: View>: View {
     /// - Parameters:
     ///   - source: The image source (`String`, `URL`, `URLRequest`, or `ImageRequest`)
     ///   - resizingMode: `.aspectFill` by default.
-    public init(source: ImageRequestConvertible?, resizingMode: ImageResizingMode = .aspectFill) where Content == SwiftUI.Image {
+    public init(source: ImageRequestConvertible?, resizingMode: ImageResizingMode = .aspectFill) where Content == Image {
         self.request = source?.asImageRequest()
         self.requestId = request.map(ImageRequest.ID.init)
         self.resizingMode = resizingMode
@@ -294,11 +294,11 @@ public struct LazyImageState {
     }
 
     /// Returns an image view.
-    public var image: SwiftUI.Image? {
+    public var image: Image? {
 #if os(macOS)
-        return imageContainer.map { SwiftUI.Image(nsImage: $0.image) }
+        return imageContainer.map { Image($0.image) }
 #else
-        return imageContainer.map { SwiftUI.Image(uiImage: $0.image) }
+        return imageContainer.map { Image($0.image) }
 #endif
     }
 
