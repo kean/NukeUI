@@ -242,6 +242,7 @@ public class ImageView: _PlatformBaseView {
 }
 
 final class ImageViewWrapper: ImageView {
+    #if os(iOS) || os(tvOS)
     var _intrinsicContentSize: CGSize = CGSize(width: -1, height: -1)
 
     override var intrinsicContentSize: CGSize {
@@ -256,6 +257,7 @@ final class ImageViewWrapper: ImageView {
             invalidateIntrinsicContentSize()
         }
     }
+    #endif
 }
 
 #endif
