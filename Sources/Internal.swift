@@ -99,6 +99,7 @@ extension UIView.ContentMode {
         case .aspectFill: self = .scaleAspectFill
         case .aspectFit: self = .scaleAspectFit
         case .center: self = .center
+        case .fill: self = .scaleToFill
         }
     }
 }

@@ -35,6 +35,7 @@ public final class ImageView: _PlatformBaseView {
         case aspectFit
         case aspectFill
         case center
+        case fill
     }
 
 #if os(iOS) || os(tvOS)
