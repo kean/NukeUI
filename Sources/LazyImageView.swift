@@ -13,12 +13,6 @@ import AppKit
 import UIKit
 #endif
 
-#if canImport(Gifu)
-import Gifu
-
-public typealias AnimatedImageView = Gifu.GIFImageView
-#endif
-
 /// Lazily loads and displays images.
 public final class LazyImageView: _PlatformBaseView {
 
@@ -117,65 +111,8 @@ public final class LazyImageView: _PlatformBaseView {
 
     // MARK: Underlying Views
 
-    #if os(macOS)
-    /// This is where all content views (images, video, etc) are displayed.
-    public let contentView = NSView()
-
-    /// Returns an underlying image view.
-    public let imageView = NSImageView()
-    #else
-    /// This is where all content views (images, video, etc) are displayed.
-    public let contentView = UIView()
-
-    /// Returns an underlying image view.
-    public let imageView = UIImageView()
-    #endif
-
-    #if os(iOS) || os(tvOS)
-    /// Returns an underlying animated image view used for rendering animated images.
-    public var animatedImageView: AnimatedImageView {
-        if let view = _animatedImageView {
-            return view
-        }
-        let view = makeAnimatedImageView()
-        addContentView(view)
-        _animatedImageView = view
-        return view
-    }
-
-    private func makeAnimatedImageView() -> AnimatedImageView {
-        let view = AnimatedImageView()
-        view.contentMode = .scaleAspectFill
-        return view
-    }
-
-    private var _animatedImageView: AnimatedImageView?
-    #endif
-
-    /// Returns an underlying video player view.
-    public var videoPlayerView: VideoPlayerView {
-        if let view = _videoPlayerView {
-            return view
-        }
-        let view = makeVideoPlayerView()
-        addContentView(view)
-        _videoPlayerView = view
-        return view
-    }
-
-    private func makeVideoPlayerView() -> VideoPlayerView {
-        let view = VideoPlayerView()
-        #if os(macOS)
-        view.videoGravity = .resizeAspect
-        #else
-        view.videoGravity = .resizeAspectFill
-        #endif
-        return view
-    }
-
-    private var _videoPlayerView: VideoPlayerView?
-
-    private var _customContentView: _PlatformBaseView?
+    /// Returns the underlying image view.
+    public let imageView = ImageView()
 
     // MARK: Managing Image Tasks
 
@@ -258,57 +195,14 @@ public final class LazyImageView: _PlatformBaseView {
     }
 
     private func didInit() {
-        addSubview(contentView)
-        contentView.pinToSuperview()
-
-        addContentView(imageView)
-
-        #if !os(macOS)
-        clipsToBounds = true
-        imageView.contentMode = .scaleAspectFill
-        #else
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        imageView.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
-        imageView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-        imageView.animates = true // macOS supports animated images out of the box
-        #endif
+        addSubview(imageView)
+        imageView.pinToSuperview()
     }
 
     /// Sets the given source and immediately starts the download.
     public var source: ImageRequestConvertible? {
         didSet { load(source) }
     }
-
-    /// Displays the given image.
-    ///
-    /// Supports platform images (`UIImage`) and `ImageContainer`. Use `ImageContainer`
-    /// if you need to pass additional parameters alongside the image, like
-    /// original image data for GIF rendering.
-    public var imageContainer: ImageContainer? {
-        get { _imageContainer }
-        set {
-            _imageContainer = newValue
-            if let imageContainer = newValue {
-                display(imageContainer, isFromMemory: true)
-            } else {
-                reset()
-            }
-        }
-    }
-
-    var _imageContainer: ImageContainer?
-
-    #if os(macOS)
-    public var image: NSImage? {
-        get { imageContainer?.image }
-        set { imageContainer = newValue.map { ImageContainer(image: $0) } }
-    }
-    #else
-    public var model: UIImage? {
-        get { imageContainer?.image }
-        set { imageContainer = newValue.map { ImageContainer(image: $0) } }
-    }
-    #endif
 
     public override func updateConstraints() {
         super.updateConstraints()
@@ -321,26 +215,11 @@ public final class LazyImageView: _PlatformBaseView {
     public func reset() {
         cancel()
 
-        _imageContainer = nil
-
-        contentView.isHidden = true
+        imageView.imageContainer = nil
+        imageView.isHidden = true
 
         setPlaceholderViewHidden(true)
         setFailureViewHidden(true)
-
-        imageView.isHidden = true
-        imageView.image = nil
-
-        #if os(iOS) || os(tvOS)
-        _animatedImageView?.isHidden = true
-        _animatedImageView?.image = nil
-        #endif
-
-        _videoPlayerView?.isHidden = true
-        _videoPlayerView?.reset()
-
-        _customContentView?.removeFromSuperview()
-        _customContentView = nil
 
         isDisplayingContent = false
         isResetNeeded = false
@@ -443,8 +322,8 @@ public final class LazyImageView: _PlatformBaseView {
     private func display(_ container: ImageContainer, isFromMemory: Bool) {
         resetIfNeeded()
 
-        actuallyDisplay(container)
-        contentView.isHidden = false
+        imageView.imageContainer = container
+        imageView.isHidden = false
 
         if !isFromMemory, let transition = transition {
             runTransition(transition, container)
@@ -452,67 +331,7 @@ public final class LazyImageView: _PlatformBaseView {
 
         // It's used to determine when to perform certain transitions
         isDisplayingContent = true
-        _imageContainer = container
     }
-
-    private func actuallyDisplay(_ container: ImageContainer) {
-        if let customView = makeCustomContentView(for: container) {
-            addContentView(customView)
-            customView.isHidden = false
-            return
-        }
-        #if os(iOS) || os(tvOS)
-        if isAnimatedImageRenderingEnabled, let data = container.data, container.type == .gif {
-            animatedImageView.animate(withGIFData: data)
-            animatedImageView.isHidden = false
-            return
-        }
-        #endif
-        if isVideoRenderingEnabled, let data = container.data, container.type == .mp4 {
-            videoPlayerView.isHidden = false
-            videoPlayerView.playVideo(data)
-        } else {
-            imageView.image = container.image
-            imageView.isHidden = false
-        }
-    }
-
-    private func makeCustomContentView(for container: ImageContainer) -> _PlatformBaseView? {
-        for closure in LazyImageView.registersContentViews {
-            if let view = closure(container) {
-                return view
-            }
-        }
-        return nil
-    }
-
-    // MARK: Extending Rendering System
-
-    #if os(iOS) || os(tvOS)
-    /// Registers a custom content view to be used for displaying the given image.
-    ///
-    /// - parameter closure: A closure to get called when the image needs to be
-    /// displayed. The view gets added to the `contentView`. You can return `nil`
-    /// if you want the default rendering to happen.
-    public static func registerContentView(_ closure: @escaping (ImageContainer) -> UIView?) {
-        registersContentViews.append(closure)
-    }
-    #else
-    /// Registers a custom content view to be used for displaying the given image.
-    ///
-    /// - parameter closure: A closure to get called when the image needs to be
-    /// displayed. The view gets added to the `contentView`. You can return `nil`
-    /// if you want the default rendering to happen.
-    public static func registerContentView(_ closure: @escaping (ImageContainer) -> NSView?) {
-        registersContentViews.append(closure)
-    }
-    #endif
-
-    public static func removeAllRegisteredContentViews() {
-        registersContentViews.removeAll()
-    }
-
-    private static var registersContentViews: [(ImageContainer) -> _PlatformBaseView?] = []
 
     // MARK: Private (Placeholder View)
 
@@ -594,9 +413,9 @@ public final class LazyImageView: _PlatformBaseView {
 
     private func runFadeInTransition(duration: TimeInterval) {
         guard !isDisplayingContent else { return }
-        contentView.alpha = 0
+        imageView.alpha = 0
         UIView.animate(withDuration: duration, delay: 0, options: [.allowUserInteraction]) {
-            self.contentView.alpha = 1
+            self.imageView.alpha = 1
         }
     }
 
@@ -604,7 +423,7 @@ public final class LazyImageView: _PlatformBaseView {
 
     private func runFadeInTransition(duration: TimeInterval) {
         guard !isDisplayingContent else { return }
-        contentView.layer?.animateOpacity(duration: duration)
+        imageView.layer?.animateOpacity(duration: duration)
     }
 
     #endif
@@ -617,12 +436,6 @@ public final class LazyImageView: _PlatformBaseView {
 
         /// Fill the superview.
         case fill
-    }
-
-    private func addContentView(_ view: _PlatformBaseView) {
-        contentView.addSubview(view)
-        view.pinToSuperview()
-        view.isHidden = true
     }
 
     private func resetIfNeeded() {

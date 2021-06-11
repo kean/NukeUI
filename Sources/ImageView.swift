@@ -1,0 +1,232 @@
+// The MIT License (MIT)
+//
+// Copyright (c) 2015-2021 Alexander Grebenyuk (github.com/kean).
+
+import Foundation
+
+#if !os(watchOS)
+
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
+
+#if canImport(Gifu)
+import Gifu
+
+public typealias AnimatedImageView = Gifu.GIFImageView
+#endif
+
+/// Lazily loads and displays images.
+public final class ImageView: _PlatformBaseView {
+
+    // MARK: Underlying Views
+
+    #if os(macOS)
+    /// Returns an underlying image view.
+    public let imageView = NSImageView()
+    #else
+    /// Returns an underlying image view.
+    public let imageView = UIImageView()
+    #endif
+
+    #if os(iOS) || os(tvOS)
+    /// Returns an underlying animated image view used for rendering animated images.
+    public var animatedImageView: AnimatedImageView {
+        if let view = _animatedImageView {
+            return view
+        }
+        let view = makeAnimatedImageView()
+        addContentView(view)
+        _animatedImageView = view
+        return view
+    }
+
+    private func makeAnimatedImageView() -> AnimatedImageView {
+        let view = AnimatedImageView()
+        view.contentMode = .scaleAspectFill
+        return view
+    }
+
+    private var _animatedImageView: AnimatedImageView?
+    #endif
+
+    /// Returns an underlying video player view.
+    public var videoPlayerView: VideoPlayerView {
+        if let view = _videoPlayerView {
+            return view
+        }
+        let view = makeVideoPlayerView()
+        addContentView(view)
+        _videoPlayerView = view
+        return view
+    }
+
+    private func makeVideoPlayerView() -> VideoPlayerView {
+        let view = VideoPlayerView()
+        #if os(macOS)
+        view.videoGravity = .resizeAspect
+        #else
+        view.videoGravity = .resizeAspectFill
+        #endif
+        return view
+    }
+
+    private var _videoPlayerView: VideoPlayerView?
+
+    private var _customContentView: _PlatformBaseView?
+
+    /// `true` by default. If disabled, animated image rendering will be disabled.
+    public var isAnimatedImageRenderingEnabled = true
+
+    /// Set to `true` to enable video support. `false` by default.
+    public var isVideoRenderingEnabled = false
+
+
+    // MARK: Initializers
+
+    public override init(frame: CGRect) {
+        super.init(frame: frame)
+        didInit()
+    }
+
+    public required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        didInit()
+    }
+
+    private func didInit() {
+        addContentView(imageView)
+
+        #if !os(macOS)
+        clipsToBounds = true
+        imageView.contentMode = .scaleAspectFill
+        #else
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
+        imageView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        imageView.animates = true // macOS supports animated images out of the box
+        #endif
+    }
+
+    /// Displays the given image.
+    ///
+    /// Supports platform images (`UIImage`) and `ImageContainer`. Use `ImageContainer`
+    /// if you need to pass additional parameters alongside the image, like
+    /// original image data for GIF rendering.
+    public var imageContainer: ImageContainer? {
+        get { _imageContainer }
+        set {
+            _imageContainer = newValue
+            if let imageContainer = newValue {
+                display(imageContainer)
+            } else {
+                reset()
+            }
+        }
+    }
+
+    var _imageContainer: ImageContainer?
+
+    #if os(macOS)
+    public var image: NSImage? {
+        get { imageContainer?.image }
+        set { imageContainer = newValue.map { ImageContainer(image: $0) } }
+    }
+    #else
+    public var image: UIImage? {
+        get { imageContainer?.image }
+        set { imageContainer = newValue.map { ImageContainer(image: $0) } }
+    }
+    #endif
+
+    private func display(_ container: ImageContainer) {
+        if let customView = makeCustomContentView(for: container) {
+            addContentView(customView)
+            customView.isHidden = false
+            return
+        }
+        #if os(iOS) || os(tvOS)
+        if isAnimatedImageRenderingEnabled, let data = container.data, container.type == .gif {
+            animatedImageView.animate(withGIFData: data)
+            animatedImageView.isHidden = false
+            return
+        }
+        #endif
+        if isVideoRenderingEnabled, let data = container.data, container.type == .mp4 {
+            videoPlayerView.isHidden = false
+            videoPlayerView.playVideo(data)
+        } else {
+            imageView.image = container.image
+            imageView.isHidden = false
+        }
+    }
+
+    private func makeCustomContentView(for container: ImageContainer) -> _PlatformBaseView? {
+        for closure in ImageView.registersContentViews {
+            if let view = closure(container) {
+                return view
+            }
+        }
+        return nil
+    }
+
+    /// Cancels current request and prepares the view for reuse.
+    func reset() {
+        _imageContainer = nil
+
+        imageView.isHidden = true
+        imageView.image = nil
+
+        #if os(iOS) || os(tvOS)
+        _animatedImageView?.isHidden = true
+        _animatedImageView?.image = nil
+        #endif
+
+        _videoPlayerView?.isHidden = true
+        _videoPlayerView?.reset()
+
+        _customContentView?.removeFromSuperview()
+        _customContentView = nil
+    }
+
+
+    // MARK: Extending Rendering System
+
+    #if os(iOS) || os(tvOS)
+    /// Registers a custom content view to be used for displaying the given image.
+    ///
+    /// - parameter closure: A closure to get called when the image needs to be
+    /// displayed. The view gets added to the `contentView`. You can return `nil`
+    /// if you want the default rendering to happen.
+    public static func registerContentView(_ closure: @escaping (ImageContainer) -> UIView?) {
+        registersContentViews.append(closure)
+    }
+    #else
+    /// Registers a custom content view to be used for displaying the given image.
+    ///
+    /// - parameter closure: A closure to get called when the image needs to be
+    /// displayed. The view gets added to the `contentView`. You can return `nil`
+    /// if you want the default rendering to happen.
+    public static func registerContentView(_ closure: @escaping (ImageContainer) -> NSView?) {
+        registersContentViews.append(closure)
+    }
+    #endif
+
+    public static func removeAllRegisteredContentViews() {
+        registersContentViews.removeAll()
+    }
+
+    private static var registersContentViews: [(ImageContainer) -> _PlatformBaseView?] = []
+
+    // MARK: Misc
+
+    private func addContentView(_ view: _PlatformBaseView) {
+        addSubview(view)
+        view.pinToSuperview()
+        view.isHidden = true
+    }
+}
+
+#endif

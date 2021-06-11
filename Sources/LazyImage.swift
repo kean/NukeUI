@@ -262,9 +262,9 @@ public struct LazyImage<Content: View>: View {
     private func onCreated(_ view: LazyImageView) {
         #if os(iOS) || os(tvOS)
         if let contentMode = contentMode {
-            view.imageView.contentMode = .init(contentMode)
-            view.animatedImageView.contentMode = .init(contentMode)
-            view.videoPlayerView.videoGravity = .init(contentMode)
+            view.imageView.imageView.contentMode = .init(contentMode)
+            view.imageView.animatedImageView.contentMode = .init(contentMode)
+            view.imageView.videoPlayerView.videoGravity = .init(contentMode)
         }
         #endif
 
@@ -347,8 +347,8 @@ private struct LazyImageViewWrapper: NSViewRepresentable {
     }
 
     func updateNSView(_ imageView: LazyImageView, context: Context) {
-        guard imageView.imageContainer?.image !== model.imageContainer?.image else { return }
-        imageView.imageContainer = model.imageContainer
+        guard imageView.imageView.imageContainer?.image !== model.imageContainer?.image else { return }
+        imageView.imageView.imageContainer = model.imageContainer
     }
 }
 #else
@@ -364,8 +364,8 @@ private struct LazyImageViewWrapper: UIViewRepresentable {
     }
 
     func updateUIView(_ imageView: LazyImageView, context: Context) {
-        guard imageView.imageContainer?.image !== model.imageContainer?.image else { return }
-        imageView.imageContainer = model.imageContainer
+        guard imageView.imageView.imageContainer?.image !== model.imageContainer?.image else { return }
+        imageView.imageView.imageContainer = model.imageContainer
     }
 }
 #endif
