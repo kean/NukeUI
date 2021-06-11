@@ -19,7 +19,7 @@ public typealias AnimatedImageView = Gifu.GIFImageView
 #endif
 
 /// Lazily loads and displays images.
-public final class ImageView: _PlatformBaseView {
+public class ImageView: _PlatformBaseView {
 
     // MARK: Underlying Views
 
@@ -204,7 +204,6 @@ public final class ImageView: _PlatformBaseView {
         _customContentView = nil
     }
 
-
     // MARK: Extending Rendering System
 
 #if os(iOS) || os(tvOS)
@@ -239,6 +238,23 @@ public final class ImageView: _PlatformBaseView {
         addSubview(view)
         view.pinToSuperview()
         view.isHidden = true
+    }
+}
+
+final class ImageViewWrapper: ImageView {
+    var _intrinsicContentSize: CGSize = CGSize(width: -1, height: -1)
+
+    override var intrinsicContentSize: CGSize {
+        _intrinsicContentSize
+    }
+
+    override var imageContainer: ImageContainer? {
+        get { super.imageContainer }
+        set {
+            super.imageContainer = newValue
+            _intrinsicContentSize = systemLayoutSizeFitting(_PlatformBaseView.layoutFittingCompressedSize)
+            invalidateIntrinsicContentSize()
+        }
     }
 }
 

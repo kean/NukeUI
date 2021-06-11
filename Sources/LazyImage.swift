@@ -355,7 +355,7 @@ public struct Image: NSViewRepresentable {
     }
 
     public func makeNSView(context: Context) -> ImageView {
-        let view = ImageView()
+        let view = ImageViewWrapper()
         onCreated?(view)
         return view
     }
@@ -382,7 +382,7 @@ public struct Image: UIViewRepresentable {
     }
 
     public func makeUIView(context: Context) -> ImageView {
-        let imageView = ImageView()
+        let imageView = ImageViewWrapper()
         if let resizingMode = self.resizingMode {
             imageView.resizingMode = resizingMode
         }
