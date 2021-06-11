@@ -341,24 +341,28 @@ public enum ImageResizingMode {
 
 #if os(macOS)
 @available(iOS 13.0, tvOS 13.0, macOS 10.15, *)
-private struct Image: NSViewRepresentable {
+public struct Image: NSViewRepresentable {
     let imageContainer: ImageContainer
     let onCreated: ((ImageView) -> Void)?
+
+    public init(_ image: NSImage) {
+        self.init(ImageContainer(image: image))
+    }
 
     public init(_ imageContainer: ImageContainer, onCreated: ((ImageView) -> Void)? = nil) {
         self.imageContainer = imageContainer
         self.onCreated = onCreated
     }
 
-    func makeNSView(context: Context) -> ImageView {
+    public func makeNSView(context: Context) -> ImageView {
         let view = ImageView()
         onCreated?(view)
         return view
     }
 
-    func updateNSView(_ imageView: ImageView, context: Context) {
-        guard imageView.imageContainer?.image !== model.imageContainer?.image else { return }
-        imageView.imageContainer = model.imageContainer
+    public func updateNSView(_ imageView: ImageView, context: Context) {
+        guard imageView.imageContainer?.image !== imageContainer.image else { return }
+        imageView.imageContainer = imageContainer
     }
 }
 #elseif os(iOS) || os(tvOS)
