@@ -157,7 +157,7 @@ extension ImageType {
 import SwiftSVG
 
 // Affects both all image components, including `LazyImage` and `Image`
-LazyImage.registerContentView {
+ImageView.registerContentView {
     if $0.type == .svg, let string = $0.data.map( {
         UIView(svgData: data)
     }
@@ -171,7 +171,7 @@ LazyImage.registerContentView {
 |---------------|-----------------|-----------------|---------------------------------------------------|
 | NukeUI 0.1    | Swift 5.3       | Xcode 12.0      | iOS 11.0 / watchOS 5.0 / macOS 10.13 / tvOS 11.0  |
 
-> `LazyImage` is available on the following platforms: iOS 14.0 / watchOS 7.0 / macOS 10.16 / tvOS 14.0
+> `LazyImage` and `Image` are available on the following platforms: iOS 14.0 / watchOS 7.0 / macOS 10.16 / tvOS 14.0
 
 ## License
 
