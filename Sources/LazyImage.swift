@@ -68,28 +68,6 @@ public struct LazyImage<Content: View>: View {
 
     /// Loads and displays an image from the given URL when the view appears on screen.
     ///
-    /// When an image is loaded, the `image` content is shown; when no image is
-    /// available, the `placeholder` is shown.
-    ///
-    /// - Parameters:
-    ///   - source: The image source (`String`, `URL`, `URLRequest`, or `ImageRequest`)
-    ///   - content: The view to show when the image is loaded.
-    ///   - placeholder: The view to show while the image is still loading.
-    ///   - failure: The view to show when the image fails to load.
-//    public init<I, P, F>(source: ImageRequestConvertible?, @ViewBuilder content: @escaping (Image) -> I, @ViewBuilder placeholder: @escaping () -> P, @ViewBuilder failure: @escaping (Error) -> F) where Content == _ConditionalContent<_ConditionalContent<I, F>,  P>, I: View, P: View, F: View {
-//        self.init(source: source) { state in
-//            if let image = state.image {
-//                content(image)
-//            } else if let error = state.error {
-//                failure(error)
-//            } else {
-//                placeholder()
-//            }
-//        }
-//    }
-
-    /// Loads and displays an image from the given URL when the view appears on screen.
-    ///
     /// - Parameters:
     ///   - source: The image source (`String`, `URL`, `URLRequest`, or `ImageRequest`)
     ///   - content: The view to show for each of the image loading states.
