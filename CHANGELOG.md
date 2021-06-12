@@ -1,6 +1,13 @@
 
 # NukeUI 0.x
 
+## NukeUI 0.6.1
+
+*Jun 11, 2021*
+
+- Fix default placeholder color for `LazyImage`
+- Update `LazyImageView` to match `LazyImage` in terms of the default parameters: placeholder and animation
+
 ## NukeUI 0.6.0
 
 *Jun 11, 2021*

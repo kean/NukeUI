@@ -95,7 +95,7 @@ public final class LazyImageView: _PlatformBaseView {
     // MARK: Transition
 
     /// A animated transition to be performed when displaying a loaded image
-    /// `nil` by default.
+    /// By default, `.fadeIn(duration: 0.33)`.
     public var transition: Transition?
 
     /// An animated transition.
@@ -191,6 +191,26 @@ public final class LazyImageView: _PlatformBaseView {
     private func didInit() {
         addSubview(imageView)
         imageView.pinToSuperview()
+
+        placeholderView = {
+            let view = _PlatformBaseView()
+            let color: _PlatformColor
+            if #available(iOS 13.0, *) {
+                color = .secondarySystemBackground
+            } else {
+                color = UIColor.lightGray.withAlphaComponent(0.5)
+            }
+            #if os(macOS)
+            view.wantsLayer = true
+            view.layer?.backgroundColor = color.cgColor
+            #else
+            view.backgroundColor = color
+            #endif
+
+            return view
+        }()
+
+        transition = .fadeIn(duration: 0.33)
     }
 
     /// Sets the given source and immediately starts the download.
