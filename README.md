@@ -9,9 +9,9 @@ A missing piece in SwiftUI that provides lazy image loading.
 
 > **WARNING**. It's in early preview. The first stable release will be available soon.
 
-## Usage
+## LazyImage
 
-The view is instantiated with a source.
+The view is instantiated with a source where a source can be a `String`, `URL`, `URLRequest`, or an [`ImageRequest`](https://kean.blog/nuke/guides/customizing-requests).
 
 ```swift
 struct ContainerView: View {
@@ -21,25 +21,9 @@ struct ContainerView: View {
 }
 ```
 
-The view is called "lazy" because it loads the image from the source only when it appears on the screen. And when it disappears (or is deallocated), the current request automatically gets canceled. When the view reappears, the download picks up where it left off, thanks to [resumable downloads](https://kean.blog/post/resumable-downloads). 
+The view is called "lazy" because it loads the image from source only when it appears on the screen. And when it disappears, the current request automatically gets canceled. When the view reappears, the download picks up where it left off, thanks to [resumable downloads](https://kean.blog/post/resumable-downloads). 
 
-The source can be anything from a `String` to a full `ImageRequest`.
-
-```swift
-LazyImage(source: "https://example.com/image.jpeg")
-LazyImage(source: URL(string: "https://example.com/image.jpeg"))
-LazyImage(source: URLRequest(url: URL(string: "https://example.com/image.jpeg")!))
-
-let request = ImageRequest(
-    url: URL(string: "https://example.com/image.jpeg"),
-    processors: [ImageProcessors.Resize(width: 44)]
-)
-LazyImage(source: request)
-```
-
-> Learn more about customizing image requests in ["Image Requests."](https://kean.blog/nuke/guides/customizing-requests)
-
-The image view is lazy and doesn't know the size of the image before it downloads it. Thus, you must specify the view size before loading the image. By default, the image will resize preserving the aspect ratio to fill the available space. You can change this behavior by passing a different resizing mode.
+The view doesn't know the size of the image before it downloads it. Thus, you must specify the view size before loading the image. By default, the image will resize preserving the aspect ratio to fill the available space. You can change this behavior by passing a different resizing mode.
 
 ```swift
 LazyImage(source: "https://example.com/image.jpeg", resizingMode: .center)
@@ -48,7 +32,13 @@ LazyImage(source: "https://example.com/image.jpeg", resizingMode: .center)
 
 > **Important**. You can’t apply image-specific modifiers, like `aspectRatio()`, directly to a `LazyImage`.
 
-Until the image loads, the view displays a standard placeholder that fills the available space. After the load completes successfully, the view updates to display the image. You can also specify a custom placeholder or a view to be displayed on failure.
+Until the image loads, the view displays a standard placeholder that fills the available space, just like [AsyncImage](https://developer.apple.com/documentation/SwiftUI/AsyncImage) does. After the load completes successfully, the view updates to display the image.
+
+<br>
+<img src="https://user-images.githubusercontent.com/1567433/121760622-bf4b9080-caf9-11eb-8727-bb53eb1736ea.png" width="600px">
+<br>
+
+You can also specify a custom placeholder, a view to be displayed on failure, or even show a download progress.
 
 ```swift
 LazyImage(source: $0) { state in
@@ -91,7 +81,7 @@ LazyImage(source: "https://example.com/image.jpeg")
     .onCompletion { ... }
 ```
 
-And if some API isn't exposed yet, you can always access the underlying `LazyImageView` instance.
+And if some API isn't exposed yet, you can always access the underlying `ImageView` instance.
 
 ```swift
 LazyImage(source: "https://example.com/image.jpeg")
@@ -99,6 +89,8 @@ LazyImage(source: "https://example.com/image.jpeg")
         view.videoGravity = .resizeAspect
     }
 ```
+
+## LazyImageView
 
 `LazyImageView` is a `LazyImage` counterpart for UIKit and AppKit with the equivalent set of APIs.
 
@@ -112,7 +104,14 @@ imageView.onCompletion = { print("Request completed")
 imageView.source = "https://example.com/image.jpeg"
 ````
 
-`Image` and `ImageView` are image components that support the same image formats that lazy variants (including animated images and video) but you can use them to display an already available image. 
+## Image and ImageView
+
+`Image` and `ImageView` are image components that support the same image formats that lazy variants (including animated images and video), but you can use them to display an already available image.
+
+```swift
+let container = ImageContainer(image: UIImage(data: data), data: data, type: .gif)
+Image(container)
+```
 
 ## Animated Images
 
