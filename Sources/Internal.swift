@@ -19,10 +19,12 @@ import Nuke
 public typealias _PlatformBaseView = NSView
 typealias _PlatformImage = NSImage
 typealias _PlatformImageView = NSImageView
+typealias _PlatformColor = NSColor
 #else
 public typealias _PlatformBaseView = UIView
 typealias _PlatformImage = UIImage
 typealias _PlatformImageView = UIImageView
+typealias _PlatformColor = UIColor
 #endif
 
 extension _PlatformBaseView {
@@ -77,6 +79,12 @@ extension NSView {
 
     func insertSubview(_ subivew: NSView, at index: Int) {
         addSubview(subivew, positioned: .below, relativeTo: subviews.first)
+    }
+}
+
+extension NSColor {
+    static var secondarySystemBackground: NSColor {
+        .controlBackgroundColor // Close-enough, but we should define a custom color
     }
 }
 #endif

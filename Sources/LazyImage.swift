@@ -205,10 +205,17 @@ public struct LazyImage<Content: View>: View {
                     .resizable()
             }
             #else
-            Image(imageContainer, onCreated: onCreated)
+            Image(imageContainer) {
+                #if os(iOS) || os(tvOS)
+                if let resizingMode = self.resizingMode {
+                    $0.resizingMode = resizingMode
+                }
+                #endif
+                onCreated?($0)
+            }
             #endif
         } else {
-            Rectangle().foregroundColor(Color.secondary)
+            Rectangle().foregroundColor(Color(_PlatformColor.secondarySystemBackground))
         }
     }
 
@@ -236,26 +243,11 @@ public struct LazyImage<Content: View>: View {
         }
     }
 
-    // MARK: Private
-
     private func map(_ closure: (inout LazyImage) -> Void) -> Self {
         var copy = self
         closure(&copy)
         return copy
     }
-
-    #if !os(watchOS)
-
-    private func onCreated(_ view: ImageView) {
-        #if os(iOS) || os(tvOS)
-        if let resizingMode = self.resizingMode {
-            view.resizingMode = resizingMode
-        }
-        #endif
-        onCreated?(view)
-    }
-
-    #endif
 }
 
 @available(iOS 13.0, tvOS 13.0, watchOS 7.0, macOS 10.15, *)
