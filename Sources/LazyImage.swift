@@ -215,7 +215,7 @@ public struct LazyImage<Content: View>: View {
             }
             #endif
         } else {
-            Rectangle().foregroundColor(Color(_PlatformColor.secondarySystemBackground))
+            Rectangle().foregroundColor(Color(.secondarySystemBackground))
         }
     }
 
@@ -267,6 +267,8 @@ public struct LazyImageState {
     public var image: Image? {
 #if os(macOS)
         return imageContainer.map { Image($0.image) }
+#elseif os(watchOS)
+return imageContainer.map { Image(uiImage: $0.image) }
 #else
         return imageContainer.map { Image($0.image) }
 #endif

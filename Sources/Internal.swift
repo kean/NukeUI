@@ -104,6 +104,17 @@ extension UIView.ContentMode {
 
 #endif
 
+#if os(tvOS) || os(watchOS)
+import UIKit
+
+extension UIColor {
+    @objc(secondarySystemBackgroundColor)
+    public static var secondarySystemBackground: UIColor {
+        return lightGray.withAlphaComponent(0.5)
+    }
+}
+#endif
+
 extension ImageRequest {
     struct ID: Hashable {
         let imageId: String?
