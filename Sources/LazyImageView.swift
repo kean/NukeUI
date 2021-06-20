@@ -198,7 +198,7 @@ public final class LazyImageView: _PlatformBaseView {
             if #available(iOS 13.0, *) {
                 color = .secondarySystemBackground
             } else {
-                color = UIColor.lightGray.withAlphaComponent(0.5)
+                color = _PlatformColor.lightGray.withAlphaComponent(0.5)
             }
             #if os(macOS)
             view.wantsLayer = true
