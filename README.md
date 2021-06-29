@@ -63,7 +63,7 @@ You can pass a complete `ImageRequest` as a source, but you can also configure t
 
 ```swift
 LazyImage(source: "https://example.com/image.jpeg")
-    .processors([ImageProcessors.Resize(width: 44])
+    .processors([ImageProcessors.Resize(width: 44)])
     .priority(.high)
     .pipeline(customPipeline)
 ```
