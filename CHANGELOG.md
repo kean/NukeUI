@@ -1,6 +1,12 @@
 
 # NukeUI 0.x
 
+## NukeUI 0.6.2
+
+*Jul 8, 2021*
+
+- Revert the changes to `Image` sizing behavior. Now it again simply takes all the available space and you can use `resizingMode` to change the image rendering behavior. 
+
 ## NukeUI 0.6.1
 
 *Jun 11, 2021*

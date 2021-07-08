@@ -240,24 +240,4 @@ public class ImageView: _PlatformBaseView {
         view.isHidden = true
     }
 }
-
-final class ImageViewWrapper: ImageView {
-    #if os(iOS) || os(tvOS)
-    var _intrinsicContentSize: CGSize = CGSize(width: -1, height: -1)
-
-    override var intrinsicContentSize: CGSize {
-        _intrinsicContentSize
-    }
-
-    override var imageContainer: ImageContainer? {
-        get { super.imageContainer }
-        set {
-            super.imageContainer = newValue
-            _intrinsicContentSize = systemLayoutSizeFitting(_PlatformBaseView.layoutFittingCompressedSize)
-            invalidateIntrinsicContentSize()
-        }
-    }
-    #endif
-}
-
 #endif
