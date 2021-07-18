@@ -180,7 +180,7 @@ public struct LazyImage<Content: View>: View {
         }
         .onAppear(perform: onAppear)
         .onDisappear(perform: onDisappear)
-        .onChange(of: requestId) { _ in model.load(request) }
+        .onChange(of: requestId) { _ in load() }
     }
 
     @ViewBuilder private var content: some View {
@@ -232,6 +232,11 @@ public struct LazyImage<Content: View>: View {
         model.onFailure = onFailure
         model.onCompletion = onCompletion
 
+        load()
+    }
+
+    private func load() {
+        ImageDecoders.Video.register()
         model.load(request)
     }
 

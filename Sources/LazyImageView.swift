@@ -252,7 +252,7 @@ public final class LazyImageView: _PlatformBaseView {
         assert(Thread.isMainThread, "Must be called from the main thread")
 
         if imageView.isVideoRenderingEnabled {
-            ImageDecoders.Video.register() // TODO: Can the codec also pull the first frame?
+            ImageDecoders.Video.register()
         }
 
         cancel()
