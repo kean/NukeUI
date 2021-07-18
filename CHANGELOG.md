@@ -1,6 +1,12 @@
 
 # NukeUI 0.x
 
+## NukeUI 0.6.4
+
+*Jul 18, 2021*
+
+- Fix an issue with video decoder not being registered automatically for `LazyImage` - [#495](https://github.com/kean/Nuke/issues/495)
+
 ## NukeUI 0.6.3
 
 *Jul 8, 2021*
