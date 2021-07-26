@@ -114,17 +114,3 @@ extension UIColor {
     }
 }
 #endif
-
-extension ImageRequest {
-    struct ID: Hashable {
-        let imageId: String?
-        let priority: ImageRequest.Priority
-        let options: ImageRequest.Options
-
-        init(_ request: ImageRequest) {
-            self.imageId = request.imageId
-            self.priority = request.priority
-            self.options = request.options
-        }
-    }
-}

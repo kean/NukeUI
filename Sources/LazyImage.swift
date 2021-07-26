@@ -11,6 +11,25 @@ public typealias ImageRequest = Nuke.ImageRequest
 public typealias ImagePipeline = Nuke.ImagePipeline
 public typealias ImageContainer = Nuke.ImageContainer
 
+private struct HashableRequest: Hashable {
+    let request: ImageRequest
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(request.imageId)
+        hasher.combine(request.options)
+        hasher.combine(request.priority)
+    }
+
+    static func == (lhs: HashableRequest, rhs: HashableRequest) -> Bool {
+        let lhs = lhs.request
+        let rhs = rhs.request
+        return lhs.imageId == rhs.imageId &&
+            lhs.priority == rhs.priority &&
+            lhs.options == rhs.options
+    }
+    
+}
+
 /// Lazily loads and displays images.
 ///
 /// The image view is lazy and doesn't know the size of the image before it is
@@ -21,8 +40,7 @@ public typealias ImageContainer = Nuke.ImageContainer
 public struct LazyImage<Content: View>: View {
     @StateObject private var model = FetchImage()
 
-    private let request: ImageRequest?
-    private let requestId: ImageRequest.ID?
+    private let request: HashableRequest?
 
 #if !os(watchOS)
     private var onCreated: ((ImageView) -> Void)?
@@ -51,8 +69,7 @@ public struct LazyImage<Content: View>: View {
     ///   - source: The image source (`String`, `URL`, `URLRequest`, or `ImageRequest`)
     ///   - resizingMode: `.aspectFill` by default.
     public init(source: ImageRequestConvertible?, resizingMode: ImageResizingMode = .aspectFill) where Content == Image {
-        self.request = source?.asImageRequest()
-        self.requestId = request.map(ImageRequest.ID.init)
+        self.request = source.map { HashableRequest(request: $0.asImageRequest()) }
         self.resizingMode = resizingMode
     }
 #else
@@ -61,8 +78,7 @@ public struct LazyImage<Content: View>: View {
     /// - Parameters:
     ///   - source: The image source (`String`, `URL`, `URLRequest`, or `ImageRequest`)
     public init(source: ImageRequestConvertible?) where Content == Image {
-        self.request = source?.asImageRequest()
-        self.requestId = request.map(ImageRequest.ID.init)
+        self.request = source.map { HashableRequest(request: $0.asImageRequest()) }
     }
 #endif
 
@@ -84,8 +100,7 @@ public struct LazyImage<Content: View>: View {
     /// }
     /// ```
     public init(source: ImageRequestConvertible?, @ViewBuilder content: @escaping (LazyImageState) -> Content) {
-        self.request = source?.asImageRequest()
-        self.requestId = request.map(ImageRequest.ID.init)
+        self.request = source.map { HashableRequest(request: $0.asImageRequest()) }
         self.makeContent = content
     }
 
@@ -180,7 +195,7 @@ public struct LazyImage<Content: View>: View {
         }
         .onAppear(perform: onAppear)
         .onDisappear(perform: onDisappear)
-        .onChange(of: requestId) { _ in load() }
+        .onChange(of: request, perform: load)
     }
 
     @ViewBuilder private var content: some View {
@@ -232,12 +247,12 @@ public struct LazyImage<Content: View>: View {
         model.onFailure = onFailure
         model.onCompletion = onCompletion
 
-        load()
+        load(request)
     }
 
-    private func load() {
+    private func load(_ request: HashableRequest?) {
         ImageDecoders.Video.register()
-        model.load(request)
+        model.load(request?.request)
     }
 
     private func onDisappear() {
