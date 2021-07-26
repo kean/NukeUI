@@ -1,6 +1,12 @@
 
 # NukeUI 0.x
 
+## NukeUI 0.6.5
+
+*Jul 26, 2021*
+
+- Fix an issue with incorrect `source` change handling - [#14](https://github.com/kean/NukeUI/issues/14) 
+
 ## NukeUI 0.6.4
 
 *Jul 18, 2021*
