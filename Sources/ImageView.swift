@@ -12,7 +12,7 @@ import AppKit
 import UIKit
 #endif
 
-#if canImport(Gifu) && (os(iOS) || os(tvOS))
+#if os(iOS) || os(tvOS)
 import Gifu
 
 public typealias AnimatedImageView = Gifu.GIFImageView
