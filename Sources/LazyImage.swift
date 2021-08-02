@@ -251,7 +251,9 @@ public struct LazyImage<Content: View>: View {
     }
 
     private func load(_ request: HashableRequest?) {
+        #if !os(watchOS)
         ImageDecoders.Video.register()
+        #endif
         model.load(request?.request)
     }
 
