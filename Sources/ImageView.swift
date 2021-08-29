@@ -12,7 +12,7 @@ import AppKit
 import UIKit
 #endif
 
-#if os(iOS) || os(tvOS)
+#if (os(iOS) || os(tvOS)) && !targetEnvironment(macCatalyst)
 import Gifu
 
 public typealias AnimatedImageView = Gifu.GIFImageView
@@ -31,20 +31,20 @@ public class ImageView: _PlatformBaseView {
     public let imageView = UIImageView()
 #endif
 
-
-
 #if os(iOS) || os(tvOS)
     /// Sets the content mode for all container views.
     public var resizingMode: ImageResizingMode = .aspectFill {
         didSet {
             imageView.contentMode = .init(resizingMode: resizingMode)
+            #if !targetEnvironment(macCatalyst)
             _animatedImageView?.contentMode = .init(resizingMode: resizingMode)
+            #endif
             _videoPlayerView?.videoGravity = .init(resizingMode)
         }
     }
 #endif
 
-#if os(iOS) || os(tvOS)
+#if (os(iOS) || os(tvOS)) && !targetEnvironment(macCatalyst)
     /// Returns an underlying animated image view used for rendering animated images.
     public var animatedImageView: AnimatedImageView {
         if let view = _animatedImageView {
@@ -160,7 +160,7 @@ public class ImageView: _PlatformBaseView {
             customView.isHidden = false
             return
         }
-#if os(iOS) || os(tvOS)
+#if (os(iOS) || os(tvOS)) && !targetEnvironment(macCatalyst)
         if isAnimatedImageRenderingEnabled, let data = container.data, container.type == .gif {
             animatedImageView.animate(withGIFData: data)
             animatedImageView.isHidden = false
@@ -192,7 +192,7 @@ public class ImageView: _PlatformBaseView {
         imageView.isHidden = true
         imageView.image = nil
 
-#if os(iOS) || os(tvOS)
+#if (os(iOS) || os(tvOS)) && !targetEnvironment(macCatalyst)
         _animatedImageView?.isHidden = true
         _animatedImageView?.image = nil
 #endif
