@@ -1,6 +1,12 @@
 
 # NukeUI 0.x
 
+## NukeUI 0.6.8
+
+*Aug 29, 2021*
+
+- Fix a compilation issue on Catalyst - [#16](https://github.com/kean/NukeUI/issues/16) 
+
 ## NukeUI 0.6.5
 
 *Jul 26, 2021*
