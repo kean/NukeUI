@@ -60,12 +60,11 @@ extension ImageDecoders {
 }
 
 private func makePreview(for data: Data) -> _PlatformImage? {
-    let (asset, loader) = makeAVAsset(with: data)
+    let asset = AVDataAsset(data: data)
     let generator = AVAssetImageGenerator(asset: asset)
     guard let cgImage = try? generator.copyCGImage(at: CMTime(value: 0, timescale: 1), actualTime: nil) else {
         return nil
     }
-    _ = loader // Retain loader until preview is generated.
     #if os(macOS)
     return _PlatformImage(cgImage: cgImage, size: .zero)
     #else

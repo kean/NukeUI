@@ -167,9 +167,10 @@ public class ImageView: _PlatformBaseView {
             return
         }
 #endif
-        if isVideoRenderingEnabled, let data = container.data, container.type == .mp4 {
+        if isVideoRenderingEnabled, let asset = container.asset {
             videoPlayerView.isHidden = false
-            videoPlayerView.playVideo(data)
+            videoPlayerView.asset = asset
+            videoPlayerView.play()
         } else {
             imageView.image = container.image
             imageView.isHidden = false
