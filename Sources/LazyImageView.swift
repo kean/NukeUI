@@ -251,10 +251,6 @@ public final class LazyImageView: _PlatformBaseView {
     private func load(_ request: ImageRequestConvertible?) {
         assert(Thread.isMainThread, "Must be called from the main thread")
 
-        if imageView.isVideoRenderingEnabled {
-            ImageDecoders.Video.register()
-        }
-
         cancel()
 
         if isResetEnabled {

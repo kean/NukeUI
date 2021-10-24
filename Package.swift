@@ -13,7 +13,7 @@ let package = Package(
         .library(name: "NukeUI", targets: ["NukeUI"])
     ],
     dependencies: [
-        .package(url: "https://github.com/kean/Nuke.git", from: "10.3.0"),
+        .package(url: "https://github.com/kean/Nuke.git", from: "10.5.0"),
         .package(url: "https://github.com/kaishin/Gifu", from: "3.0.0")
     ],
     targets: [
