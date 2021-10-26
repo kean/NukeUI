@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name             = 'NukeUI'
-    s.version          = '0.6.7'
+    s.version          = '0.7.0'
     s.summary          = 'A powerful image loading and caching system'
     s.description  = <<-EOS
     A powerful image loading and caching system which makes simple tasks like loading images into views extremely simple, while also supporting more advanced features for more demanding apps.
@@ -21,7 +21,7 @@ Pod::Spec.new do |s|
 
     s.source_files  = 'Sources/**/*'
 
-    s.dependency 'Nuke', '~> 10.3'
+    s.dependency 'Nuke', '~> 10.5'
     s.ios.dependency 'Gifu', '~> 3.0'
     s.tvos.dependency 'Gifu', '~> 3.0'
 end

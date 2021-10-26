@@ -1,6 +1,12 @@
 
 # NukeUI 0.x
 
+## NukeUI 0.7.0
+
+*Oct 26, 2021*
+
+- Update to Nuke 10.5 (video support moved to Nuke) 
+
 ## NukeUI 0.6.8
 
 *Aug 29, 2021*
