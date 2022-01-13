@@ -140,6 +140,8 @@ public struct LazyImage<Content: View>: View {
         /// Cancels the current request but keeps the presentation state of
         /// the already displayed image.
         case cancel
+        /// Lowers the request's priority to very low
+        case lowerPriority
     }
 
     /// Override the behavior on disappear. By default, the view is reset.
@@ -259,6 +261,7 @@ public struct LazyImage<Content: View>: View {
         switch behavior {
         case .reset: model.reset()
         case .cancel: model.cancel()
+        case .lowerPriority: model.priority = .veryLow
         }
     }
 
