@@ -52,7 +52,7 @@ public struct LazyImage<Content: View>: View {
     private var processors: [ImageProcessing]?
     private var priority: ImageRequest.Priority?
     private var pipeline: ImagePipeline = .shared
-    private var onDisappearBehavior: DisappearBehavior? = .reset
+    private var onDisappearBehavior: DisappearBehavior? = .cancel
     private var onStart: ((_ task: ImageTask) -> Void)?
     private var onProgress: ((_ response: ImageResponse?, _ completed: Int64, _ total: Int64) -> Void)?
     private var onSuccess: ((_ response: ImageResponse) -> Void)?
