@@ -134,8 +134,7 @@ public struct LazyImage<Content: View>: View {
     }
 
     public enum DisappearBehavior {
-        /// Resets the image clearing all the used memory along with the
-        /// presentation state.
+        @available(*, deprecated, message: "Please use cancel instead.")
         case reset
         /// Cancels the current request but keeps the presentation state of
         /// the already displayed image.
