@@ -1,6 +1,11 @@
 
 # NukeUI 0.x
 
+## Upcoming
+
+- Add `DisappearBehavior.lowerPriority` - [#33](https://github.com/kean/NukeUI/pull/33), thanks to [Peter Kurzok](https://github.com/pkurzok)
+- Add more options to control video: loop, finish callback – [#32](https://github.com/kean/NukeUI/pull/32), thanks to [Son Changwoo](https://github.com/kor45cw)
+
 ## NukeUI 0.7.0
 
 *Oct 26, 2021*

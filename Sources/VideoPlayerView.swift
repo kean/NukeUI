@@ -17,7 +17,17 @@ public final class VideoPlayerView: _PlatformBaseView {
     }
 
     /// `true` by default. If disabled, will only play a video once.
-    public var isLooping = true
+    public var isLooping = true {
+        didSet {
+            player?.actionAtItemEnd = isLooping ? .none : .pause
+            if isLooping, !(player?.nowPlaying ?? false) {
+                restart()
+            }
+        }
+    }
+    
+    /// Add if you want to do something at the end of the video
+    var onVideoFinished: (() -> Void)?
 
     // MARK: Initialization
     #if !os(macOS)
@@ -52,9 +62,13 @@ public final class VideoPlayerView: _PlatformBaseView {
     #endif
 
     // MARK: Private
-
-    private var player: AVPlayer?
-    private var playerLooper: AnyObject?
+    
+    private var player: AVPlayer? {
+        didSet {
+            registerNotification()
+        }
+    }
+    
     private var playerObserver: AnyObject?
 
     public func reset() {
@@ -72,7 +86,20 @@ public final class VideoPlayerView: _PlatformBaseView {
             reset()
         }
     }
-
+    
+    private func registerNotification() {
+        NotificationCenter.default
+            .addObserver(self,
+                         selector: #selector(registerNotification(_:)),
+                         name: .AVPlayerItemDidPlayToEndTime,
+                         object: player?.currentItem)
+    }
+    
+    public func restart() {
+        player?.seek(to: CMTime.zero)
+        player?.play()
+    }
+    
     public func play() {
         guard let asset = asset else {
             return
@@ -82,9 +109,7 @@ public final class VideoPlayerView: _PlatformBaseView {
         let player = AVQueuePlayer(playerItem: playerItem)
         player.isMuted = true
         player.preventsDisplaySleepDuringVideoPlayback = false
-        if isLooping {
-            self.playerLooper = AVPlayerLooper(player: player, templateItem: playerItem)
-        }
+        player.actionAtItemEnd = isLooping ? .none : .pause
         self.player = player
 
         playerLayer.player = player
@@ -93,6 +118,18 @@ public final class VideoPlayerView: _PlatformBaseView {
             if player.status == .readyToPlay {
                 player.play()
             }
+        }
+    }
+    
+    @objc private func registerNotification(_ notification: Notification) {
+        guard let playerItem = notification.object as? AVPlayerItem else {
+            return
+        }
+        
+        if isLooping {
+            playerItem.seek(to: CMTime.zero, completionHandler: nil)
+        } else {
+            onVideoFinished?()
         }
     }
 }
@@ -105,6 +142,12 @@ extension AVLayerVideoGravity {
         case .center: self = .resizeAspect
         case .fill: self = .resize
         }
+    }
+}
+
+extension AVPlayer {
+    var nowPlaying: Bool {
+        return rate != 0 && error == nil
     }
 }
 

@@ -139,8 +139,21 @@ public class ImageView: _PlatformBaseView {
             }
         }
     }
-
     var _imageContainer: ImageContainer?
+
+    public var isVideoLooping: Bool {
+        set {
+            videoPlayerView.isLooping = newValue
+        }
+        get {
+            videoPlayerView.isLooping
+        }
+    }
+    var onVideoFinished: (() -> Void)?
+
+    func restartVideo() {
+        videoPlayerView.restart()
+    }
 
 #if os(macOS)
     public var image: NSImage? {
@@ -170,6 +183,7 @@ public class ImageView: _PlatformBaseView {
         if isVideoRenderingEnabled, let asset = container.asset {
             videoPlayerView.isHidden = false
             videoPlayerView.asset = asset
+            videoPlayerView.onVideoFinished = onVideoFinished
             videoPlayerView.play()
         } else {
             imageView.image = container.image
