@@ -46,7 +46,7 @@ public struct Image: NSViewRepresentable {
             imageView.isVideoLooping = isVideoLooping
         }
         if restartVideo {
-            imageView.videoReplay()
+            imageView.restartVideo()
         }
         guard imageView.imageContainer?.image !== imageContainer.image else { return }
         imageView.imageContainer = imageContainer
