@@ -5,6 +5,7 @@
 
 - Add `DisappearBehavior.lowerPriority` - [#33](https://github.com/kean/NukeUI/pull/33), thanks to [Peter Kurzok](https://github.com/pkurzok)
 - Add more options to control video: loop, finish callback – [#32](https://github.com/kean/NukeUI/pull/32), thanks to [Son Changwoo](https://github.com/kor45cw)
+- Fix GIF playback when using customizing image view using `LazyImageState` - [#34](https://github.com/kean/NukeUI/issues/34)
 
 ## NukeUI 0.7.0
 

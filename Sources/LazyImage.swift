@@ -288,11 +288,11 @@ public struct LazyImageState {
     /// Returns an image view.
     public var image: Image? {
 #if os(macOS)
-        return imageContainer.map { Image($0.image) }
+        return imageContainer.map { Image($0) }
 #elseif os(watchOS)
 return imageContainer.map { Image(uiImage: $0.image) }
 #else
-        return imageContainer.map { Image($0.image) }
+        return imageContainer.map { Image($0) }
 #endif
     }
 
