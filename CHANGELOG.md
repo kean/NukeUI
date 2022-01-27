@@ -1,7 +1,9 @@
 
 # NukeUI 0.x
 
-## Upcoming
+## NukeUI 0.8.0
+
+*Jan 27, 2022*
 
 - Add `DisappearBehavior.lowerPriority` - [#33](https://github.com/kean/NukeUI/pull/33), thanks to [Peter Kurzok](https://github.com/pkurzok)
 - Deprecate `DisappearBehavior.reset` (crashy)
