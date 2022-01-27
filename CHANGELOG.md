@@ -1,6 +1,10 @@
 
 # NukeUI 0.x
 
+Upcoming
+
+- Add more options to control video: loop, finish callback – [#32](https://github.com/kean/NukeUI/pull/32), thanks to [Son Changwoo](https://github.com/kor45cw)
+
 ## NukeUI 0.6.8
 
 *Aug 29, 2021*
