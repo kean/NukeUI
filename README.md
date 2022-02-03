@@ -7,8 +7,6 @@ A missing piece in SwiftUI that provides lazy image loading.
 
 `LazyImage` uses [Nuke](https://github.com/kean/Nuke) for loading images so you can take advantage of all of its advanced performance features, such as custom caches, prefetching, task coalescing, smart background decompression, request priorities, and more. And it's not just that. NukeUI also supports progressive images, has GIF support powered by [Gifu](https://github.com/kaishin/Gifu), and can even play short videos, which is [a more efficient](https://web.dev/replace-gifs-with-videos/) way to display animated images.
 
-> **WARNING**. It's in early preview. The first stable release will be available soon.
-
 ## LazyImage
 
 The view is instantiated with a source where a source can be a `String`, `URL`, `URLRequest`, or an [`ImageRequest`](https://kean.blog/nuke/guides/customizing-requests).
