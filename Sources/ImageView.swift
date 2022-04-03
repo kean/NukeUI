@@ -88,6 +88,18 @@ public class ImageView: _PlatformBaseView {
 
     private var _videoPlayerView: VideoPlayerView?
 
+    public var customContentView: _PlatformBaseView? {
+        get { _customContentView }
+        set {
+            _customContentView?.removeFromSuperview()
+            _customContentView = newValue
+            if let customView = _customContentView {
+                addContentView(customView)
+                customView.isHidden = false
+            }
+        }
+    }
+  
     private var _customContentView: _PlatformBaseView?
 
     /// `true` by default. If disabled, animated image rendering will be disabled.
@@ -169,8 +181,7 @@ public class ImageView: _PlatformBaseView {
 
     private func display(_ container: ImageContainer) {
         if let customView = makeCustomContentView(for: container) {
-            addContentView(customView)
-            customView.isHidden = false
+            customContentView = customView
             return
         }
 #if (os(iOS) || os(tvOS)) && !targetEnvironment(macCatalyst)
