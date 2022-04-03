@@ -1,6 +1,12 @@
 
 # NukeUI 0.x
 
+## NukeUI 0.8.1
+
+*Apr 3, 2022*
+
+- Fix an issue with previous custom `contentView` not removed on reuse - [#40](https://github.com/kean/NukeUI/pull/40), thanks to [Jon Funkhouser](https://github.com/jonfunkhouser) 
+
 ## NukeUI 0.8.0
 
 *Jan 27, 2022*
