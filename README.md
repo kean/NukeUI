@@ -119,15 +119,6 @@ All image components in NukeUI support GIF playback powered by [Gifu](https://gi
 
 All image components in NukeUI support video playback. It's aimed to be a replacement for GIF, which is [inefficient](https://web.dev/replace-gifs-with-videos/). With video, you get an order of magnitude smaller files and hardware-accelerated playback. In practice, it means that instead of a 20 MB GIF you can now download a ~2 MB video of comparable quality. And instead of 60% CPU usage and high energy impact, you'll see 0%.
 
-There is nothing you need to do to enable video playback. It does the right thing by default:
-
-- It plays automatically
-- It doesn't show any controls
-- It loops continuously
-- It's always silent
-- It doesn't prevent the display from sleeping
-- It displays a preview until the video is downloaded
-
 > **Important:** The number of players you can have at once on-screen is limited. The limit is not documented and depends on the platform. In general, expect to have about four players playing at once.
 
 ## Extending Rendering System
