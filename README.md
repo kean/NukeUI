@@ -72,7 +72,7 @@ You can also monitor the status of the download.
 
 ```swift
 LazyImage(source: "https://example.com/image.jpeg")
-    .onStart { print("Task started \($0)")
+    .onStart { print("Task started \($0)") }
     .onProgress { ... }
     .onSuccess { ... }
     .onFailure { ... }
