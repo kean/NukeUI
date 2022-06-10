@@ -65,7 +65,7 @@ public final class VideoPlayerView: _PlatformBaseView {
     
     private var player: AVPlayer? {
         didSet {
-            registerNotification()
+            registerNotifications()
         }
     }
     
@@ -87,12 +87,35 @@ public final class VideoPlayerView: _PlatformBaseView {
         }
     }
     
-    private func registerNotification() {
+    private var shouldResumeOnInteruption:Bool{
+        return player?.nowPlaying == false &&
+        player?.status == .readyToPlay &&
+        isLooping
+    }
+    
+    private func registerNotifications() {
         NotificationCenter.default
             .addObserver(self,
                          selector: #selector(registerNotification(_:)),
                          name: .AVPlayerItemDidPlayToEndTime,
                          object: player?.currentItem)
+        NotificationCenter.default
+            .addObserver(self,
+                         selector: #selector(willEnterForeground),
+                         name: UIApplication.willEnterForegroundNotification,
+                         object: nil)
+    }
+    
+    @objc private func willEnterForeground(){
+        if shouldResumeOnInteruption{
+            player?.play()
+        }
+    }
+    
+    public override func willMove(toWindow newWindow: UIWindow?) {
+        if newWindow != nil && shouldResumeOnInteruption{
+            player?.play()
+        }
     }
     
     public func restart() {
