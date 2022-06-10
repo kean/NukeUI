@@ -87,7 +87,7 @@ public final class VideoPlayerView: _PlatformBaseView {
         }
     }
     
-    private var shouldResumeOnInteruption:Bool{
+    private var shouldResumeOnInterruption:Bool{
         return player?.nowPlaying == false &&
         player?.status == .readyToPlay &&
         isLooping
@@ -107,13 +107,13 @@ public final class VideoPlayerView: _PlatformBaseView {
     }
     
     @objc private func willEnterForeground(){
-        if shouldResumeOnInteruption{
+        if shouldResumeOnInterruption{
             player?.play()
         }
     }
     
     public override func willMove(toWindow newWindow: UIWindow?) {
-        if newWindow != nil && shouldResumeOnInteruption{
+        if newWindow != nil && shouldResumeOnInterruption{
             player?.play()
         }
     }
