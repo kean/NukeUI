@@ -1,6 +1,12 @@
 
 # NukeUI 0.x
 
+## NukeUI 0.8.2
+
+*Jun 12, 2022*
+
+- Fix an issue with video playback not resuming when retruning from background - [#46](https://github.com/kean/NukeUI/pull/46), thanks to [Andy Meagher]*https://github.com/AndyMeagher)
+
 ## NukeUI 0.8.1
 
 *Apr 3, 2022*
