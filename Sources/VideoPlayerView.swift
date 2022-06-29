@@ -99,11 +99,13 @@ public final class VideoPlayerView: _PlatformBaseView {
                          selector: #selector(registerNotification(_:)),
                          name: .AVPlayerItemDidPlayToEndTime,
                          object: player?.currentItem)
+        #if os(iOS) || os(tvOS)
         NotificationCenter.default
             .addObserver(self,
                          selector: #selector(willEnterForeground),
                          name: UIApplication.willEnterForegroundNotification,
                          object: nil)
+        #endif
     }
     
     @objc private func willEnterForeground(){
@@ -111,12 +113,14 @@ public final class VideoPlayerView: _PlatformBaseView {
             player?.play()
         }
     }
-    
+
+    #if !os(macOS)
     public override func willMove(toWindow newWindow: UIWindow?) {
         if newWindow != nil && shouldResumeOnInterruption{
             player?.play()
         }
     }
+    #endif
     
     public func restart() {
         player?.seek(to: CMTime.zero)
