@@ -92,7 +92,7 @@ public final class VideoPlayerView: _PlatformBaseView {
         player?.status == .readyToPlay &&
         isLooping
     }
-    
+
     private func registerNotifications() {
         NotificationCenter.default
             .addObserver(self,
@@ -109,14 +109,14 @@ public final class VideoPlayerView: _PlatformBaseView {
     }
     
     @objc private func willEnterForeground(){
-        if shouldResumeOnInterruption{
+        if shouldResumeOnInterruption {
             player?.play()
         }
     }
 
     #if !os(macOS)
     public override func willMove(toWindow newWindow: UIWindow?) {
-        if newWindow != nil && shouldResumeOnInterruption{
+        if newWindow != nil && shouldResumeOnInterruption {
             player?.play()
         }
     }
