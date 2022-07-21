@@ -1,5 +1,7 @@
 # NukeUI
 
+> **Update**: Starting with [Nuke 11](https://github.com/kean/Nuke/releases/tag/11.0.0), NukeUI is now part of the main repo.
+
 A missing piece in SwiftUI that provides lazy image loading.
 
 - `Image` and `LazyImage` for SwiftUI (similar to the native [`AsyncImage`](https://developer.apple.com/documentation/SwiftUI/AsyncImage))
